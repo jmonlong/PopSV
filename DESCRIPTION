@@ -1,0 +1,28 @@
+Package: PopSV
+Type: Package
+Title: Population-based detection of structural variants from Read-Depth signal.
+Version: 1.0
+Date: 2014-09-27
+Author: Jean Monlong
+Maintainer: Jean Monlong <jean.monlong@mail.mcgill.ca>
+Description: Detect abnormal read coverage using a set of samples as
+    references. From high-throughput sequencing, the genome is binned and read
+    mapping to each bin are counted. From these read counts, PopSV test, in
+    each bin, is the read counts are different between a sample of interest and
+    a set of reference samples. Functions for pre/post-processing are also
+    provided.
+License: What license is it under? Good question
+Imports:
+    MASS,
+    vcd,
+    qvalue,
+    GenomicRanges,
+    IRanges,
+    Rsamtools,
+    outliers,
+    dplyr,
+    Biostrings,
+    fdrtool,
+    ggplot2
+Suggests:
+    BSgenome.Hsapiens.UCSC.hg19

@@ -1,0 +1,40 @@
+##' Correct GC bias by fitting a LOESS model. The bin counts are then corrected
+##' with a continuous normalization factor derived from the predicted bin count
+##' and global average bin count.
+##' @title Correct GC bias
+##' @param bc.f the name of the file with the bin cont for a particular sample OR
+##' a data.frame with 4 columns: 'chr', 'start', 'end' and 'bc'.
+##' @param gc.df a data.frame with the bin deifnition and GC content information.
+##' Column 'GCcontent' is required and can be obtained thanks to 'getGC.hp19' for
+##' example. 
+##' @param outfile.prefix the prefix of the name of the output file. The suffix '.bgz' will
+##' be appended to this name prefix after compression. 
+##' @param appendIndex.outfile if TRUE (default), the results will be saved on the
+##' output file which will be ultimately indexed. This is recommend when a large number
+##' of bins are analyzed. If FALSE, a data.frame with the corrected bin counts will
+##' be returned and no file are created.
+##' @return the name of the file with the corrected bin counts OR a new data.frame
+##' with corrected bin counts.
+##' @author Jean Monlong
+##' @export
+correct.GC <- function(bc.f,gc.df, outfile.prefix, appendIndex.outfile=TRUE){
+    gc.class = cut(gc.df$GCcontent, breaks=seq(0,1,.02), include.lowest=TRUE)
+    samp.ii = unlist(tapply(1:length(gc.class), gc.class, function(e)e[sample(1:length(e),min(c(length(e),500)))]))
+    bc.df = read.table(bc.f, as.is=TRUE, header=TRUE)
+    bc.df$GCcontent = gc.df$GCcontent
+    lo = loess(bc~GCcontent, data=bc.df[samp.ii,])
+    bc.df$bc = mean(bc.df$bc,na.rm=TRUE) * bc.df$bc / predict(lo,newdata=bc.df)
+    if(any(bc.df$bc<0, na.rm=TRUE)) bc.df$bc[bc.df$bc<0] = 0
+    bc.df$GCcontent = NULL
+
+    if(appendIndex.outfile){
+        write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t")
+        Rsamtools::bgzip(outfile.prefix, overwrite=TRUE)
+        file.remove(outfile.prefix)
+        Rsamtools::indexTabix(paste(outfile.prefix,".bgz",sep=""), format="bed")
+        return(paste(outfile.prefix,".bgz",sep=""))
+    } else {
+        return(bc.df)
+    }    
+
+}
