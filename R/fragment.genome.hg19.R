@@ -15,8 +15,9 @@ fragment.genome.hp19 <- function(bin.size=1e3){
     seql.1.22 = seqlengths(BSgenome.Hsapiens.UCSC.hg19)[paste0("chr",1:22)]
     fragment.chr <- function(chr.i){
         starts = as.integer(seq(1,seql.1.22[chr.i], bin.size))
-        starts[length(starts)] = as.integer(seql.1.22[chr.i])
-        data.frame(chr=chr.i,start = starts, end= as.integer(starts + bin.size - 1))
+        ends = as.integer(starts + bin.size - 1)
+        ends[length(ends)] = as.integer(seql.1.22[chr.i])
+        data.frame(chr=chr.i,start = starts, end= ends)
     }
     plyr::ldply(lapply(1:22, fragment.chr), identity)
 }
