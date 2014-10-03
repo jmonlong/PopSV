@@ -3,10 +3,10 @@
 \alias{getGC.hg19}
 \title{GC content computation for specific bins}
 \usage{
-getGC.hg19(bin.df)
+getGC.hg19(bins.df)
 }
 \arguments{
-\item{bin.df}{a data.frame with bin information. Columns 'chr', 'start' and 'end'
+\item{bins.df}{a data.frame with bin information. Columns 'chr', 'start' and 'end'
 are required.}
 }
 \value{

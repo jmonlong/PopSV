@@ -21,6 +21,7 @@ Imports:
     Rsamtools,
     outliers,
     dplyr,
+    plyr,
     Biostrings,
     fdrtool,
     ggplot2
