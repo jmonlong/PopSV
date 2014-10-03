@@ -69,10 +69,11 @@ Check manually and/or switch off option 'check.chr.name'.")
     bc.df = dplyr::do(dplyr::group_by(bin.df,chunk),binBam.chunk(.))
 
     if(appendIndex.outfile){
-        Rsamtools::bgzip(outfile.prefix, overwrite=TRUE)
+        final.file = paste(outfile.prefix,".bgz",sep="")
+        Rsamtools::bgzip(outfile.prefix, dest=final.file, overwrite=TRUE)
         file.remove(outfile.prefix)
-        Rsamtools::indexTabix(paste(outfile.prefix,".bgz",sep=""), format="bed")
-        return(paste(outfile.prefix,".bgz",sep=""))
+        Rsamtools::indexTabix(final.file, format="bed")
+        return(final.file)
     } else {
         bc.df$chunk = NULL
         return(bc.df)
