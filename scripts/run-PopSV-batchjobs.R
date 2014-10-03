@@ -2,11 +2,12 @@ library(BatchJobs)
 library(PopSV)
 library(dplyr)
 
-bam.files = NULL
-bins.df = NULL
+bam.files = NULL ## read.table("bamfiles.tsv", as.is=TRUE)
+bin.size = 1e3
 
 ## 1) Init file names
 files.df = initFileNames(bam.files, code="example")
+bins.df = fragment.genome.hp19(bin.size)
 
 ## 2) Get GC content
 ## system("rm -rf getGC")
