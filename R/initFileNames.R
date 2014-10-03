@@ -13,8 +13,9 @@
 ##' the working directory. Default is TRUE. Set to FALSE if providing absolute
 ##' paths (recommended).
 ##' @return an updated data.frame with the information about the files.
-##' Specifically a new column 'bc' and 'bc.gz' holds the name of the bin counts and
-##' compressed bin counts files to be created later.
+##' Specifically a new column 'bc', 'bc.gz', 'bc.gc' and 'bc.gc.bz' holds the name
+##' of the bin counts (raw/compressed), GC corrected bin counts (raw/compressed) files
+##' to be created later.
 ##' @author Jean Monlong
 ##' @export
 initFileNames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=NULL, dest.folder.relative.path=TRUE){
@@ -41,5 +42,7 @@ initFileNames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=NU
     }
     files.df$bc = paste0(dest.folder,.Platform$file.sep,files.df$sample,CODE,"-bc.tsv")
     files.df$bc.gz = paste0(files.df$bc,".gz")
+    files.df$bc.gc = paste0(dest.folder,.Platform$file.sep,files.df$sample,CODE,"-bc-gcCor.tsv")
+    files.df$bc.gc.gz = paste0(files.df$bc.gc,".gz")
     return(files.df)
 }

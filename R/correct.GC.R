@@ -29,10 +29,11 @@ correct.GC <- function(bc.f,gc.df, outfile.prefix, appendIndex.outfile=TRUE){
 
     if(appendIndex.outfile){
         write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t")
-        Rsamtools::bgzip(outfile.prefix, overwrite=TRUE)
+        final.file = paste(outfile.prefix,".bgz",sep="")
+        Rsamtools::bgzip(outfile.prefix, dest=final.file, overwrite=TRUE)
         file.remove(outfile.prefix)
-        Rsamtools::indexTabix(paste(outfile.prefix,".bgz",sep=""), format="bed")
-        return(paste(outfile.prefix,".bgz",sep=""))
+        Rsamtools::indexTabix(final.file, format="bed")
+        return(final.file)
     } else {
         return(bc.df)
     }    
