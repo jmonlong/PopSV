@@ -38,11 +38,11 @@ initFileNames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=NU
         }
     })
     if(!is.null(code)){
-        CODE = paste0("-",code)
+        code = paste0("-",code)
     }
-    files.df$bc = paste0(dest.folder,.Platform$file.sep,files.df$sample,CODE,"-bc.tsv")
+    files.df$bc = paste0(sample.destf,.Platform$file.sep,files.df$sample,code,"-bc.tsv")
     files.df$bc.gz = paste0(files.df$bc,".gz")
-    files.df$bc.gc = paste0(dest.folder,.Platform$file.sep,files.df$sample,CODE,"-bc-gcCor.tsv")
+    files.df$bc.gc = paste0(sample.destf,.Platform$file.sep,files.df$sample,code,"-bc-gcCor.tsv")
     files.df$bc.gc.gz = paste0(files.df$bc.gc,".gz")
     return(files.df)
 }
