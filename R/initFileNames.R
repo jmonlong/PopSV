@@ -37,8 +37,8 @@ initFileNames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=NU
             dir.create(fold,recursive=TRUE)
         }
     })
-    if(!is.null(CODE)){
-        CODE = paste0("-",CODE)
+    if(!is.null(code)){
+        CODE = paste0("-",code)
     }
     files.df$bc = paste0(dest.folder,.Platform$file.sep,files.df$sample,CODE,"-bc.tsv")
     files.df$bc.gz = paste0(files.df$bc,".gz")
