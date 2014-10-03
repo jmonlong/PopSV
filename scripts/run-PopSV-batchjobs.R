@@ -8,11 +8,17 @@ bin.size = 1e3
 ## 1) Init file names
 files.df = initFileNames(bam.files, code="example")
 bins.df = fragment.genome.hp19(bin.size)
+save(bins.df, file="bins.RData")
+rm(bins.df)
 
 ## 2) Get GC content
 ## system("rm -rf getGC")
 getGC.reg <- makeRegistry(id="getGC", seed=123, file.dir="getGC")
-batchMap(getGC.reg, getGC.hg19,bins.df)
+getGC.f <- function(imF){
+  load(imF)
+  getGC.hg19(bins.df)
+}
+batchMap(getGC.reg, getGC.f,"bins.RData")
 submitJobs(getGC.reg, 1, resources=list(walltime="12:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(getGC.reg)
 
