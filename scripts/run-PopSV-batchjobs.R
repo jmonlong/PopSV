@@ -37,3 +37,4 @@ batchMap(gcCor.reg, gcCor.f,1:nrow(files.df), more.args=list(gc.reg=getGC.reg, f
 submitJobs(gcCor.reg, findNotDone(gcCor.reg), resources=list(walltime="12:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(gcCor.reg)
 all(reduceResultsVector(gcCor.reg)==files.df$bc.gc.gz)
+

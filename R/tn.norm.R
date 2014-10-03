@@ -9,10 +9,10 @@
 ##' coverage where it is more robust to use Poisson assumptions.
 ##' @title Targeted-normalization of bin counts
 ##' @param bc a matrix or data.frame with the bin counts (bin x sample).
-##' @param nb.support.bins the number of bins to use for the normalization.
 ##' @param cont.sample the sample to use as baseline for the pairwise normalization.
 ##' All the samples will be normalized to it.
 ##' @param ref.samples a vector with the names of the samples to be used as reference.
+##' @param nb.support.bins the number of bins to use for the normalization.
 ##' @param bins a vector the names of the bins to normalize. If NULL (default), all
 ##' bins are normalized.
 ##' @param save.support.bins if TRUE (default) the bins used for the normalization are
@@ -30,7 +30,7 @@
 ##' \item{nb.support.bins, cont.sample, z.poisson}{a backup of the input parameters.}
 ##' @author Jean Monlong
 ##' @export
-tn.norm <- function(bc,nb.support.bins,cont.sample,ref.samples,bins=NULL,save.support.bins=TRUE, z.poisson=FALSE){
+tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,save.support.bins=TRUE, z.poisson=FALSE){
     all.samples = colnames(bc)
     ref.samples.ii = which(colnames(bc) %in% ref.samples)
     bc = t(bc)

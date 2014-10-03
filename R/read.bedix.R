@@ -26,7 +26,7 @@ read.bedix <- function(file,subset, col.names=NULL, as.is=TRUE){
     if(!is.null(col.names)){
         colnames(bed.df) = col.names
     } else {
-      colnames(bed.df) = as.character(read.table(file, nrow=1, as.is=TRUE))
+      colnames(bed.df) = as.character(read.table(file, nrows=1, as.is=TRUE))
     }
     for(ii in 1:ncol(bed.df)) bed.df[,ii] = type.convert(bed.df[,ii], as.is=as.is)
     
