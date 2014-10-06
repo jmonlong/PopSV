@@ -38,14 +38,14 @@ binBam <- function(bam.file,bin.df,outfile.prefix, appendIndex.outfile=TRUE,prop
 
     if(check.chr.name){
         ## Is it "chr1" or "1": try with 10 random bins; if no read try with other
-        bc.chrTest = binBam.single(bin.df[sample(1:nrow(bin.df),10),], bam.file)
+        bc.chrTest = binBam.single(bin.df[sample(1:nrow(bin.df),10),])
         if(all(bc.chrTest==0)){
             if(!grepl("chr",bin.df$chr[1])){
                 bin.df$chr = paste("chr",bin.df$chr,sep="")
             } else {
                 bin.df$chr = gsub("chr","",bin.df$chr)
             }
-            bc.chrTest = binBam.single(bin.df[sample(1:nrow(bin.df),10),], bam.file)
+            bc.chrTest = binBam.single(bin.df[sample(1:nrow(bin.df),10),])
             if(all(bc.chrTest==0)){
                 stop("Couldn't guess if chr 1 is defined as '1' or 'chr1'.
 Check manually and/or switch off option 'check.chr.name'.")
