@@ -24,6 +24,7 @@ Imports:
     plyr,
     Biostrings,
     fdrtool,
-    ggplot2
+    ggplot2,
+    shiny
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19
