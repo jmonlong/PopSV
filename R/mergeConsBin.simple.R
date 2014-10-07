@@ -20,19 +20,20 @@ mergeConsBin.simple <- function(res.df,col.mean=c("z","pv","qv","cn.coeff")){
         for(cons.i in which(rlv)){
             link.v[(cs.i[cons.i]+1):(cs.i[cons.i+1]+1)] = paste0("cons",cons.i)
         }
-        return(link.v)
+        df$link = as.character(link.v)
+        return(df)
     }
     
-    res.df = dplyr::mutate(dplyr::group_by(res.df,chr),link=link.annotate.f(.))
+    res.df = dplyr::do(dplyr::group_by(res.df,chr),link.annotate.f(.))
     merge.bin.f <- function(df){
         res = data.frame(chr=df$chr[1],
             start=df$start[1],
             end=df$end[nrow(df)],
-            nbBinCons=nrow(df))
+            nbBinCons=nrow(df), stringsAsFactors=FALSE)
         if(nrow(df)>2) df = df[c(2,nrow(df)-1),]
         cbind(res,t(apply(df[,intersect(colnames(df),col.mean),drop=FALSE],2,mean)))
     }
     res.df = dplyr::do(dplyr::group_by(res.df,link),merge.bin.f(.))
-    
-    
+    res.df$link = NULL
+    return(res.df)   
 }

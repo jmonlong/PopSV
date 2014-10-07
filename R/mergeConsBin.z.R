@@ -64,9 +64,10 @@ mergeConsBin.z <- function(res.df,fdr.th=.05,col.mean=c("z","pv","qv","cn.coeff"
         rl = rle(link.v)
         rlv = rl$values
         rlv[rlv!="none"] = paste(link.df$chr[1],rlv[rlv!="none"],1:sum(rlv!="none"))
-        return(rep(rlv, rl$lengths))
+        df$link = rep(rlv, rl$lengths)
+        return(df)
     }
-    res.df = dplyr::mutate(dplyr::group_by(res.df,chr),link=link.annotate.f(.))
+    res.df = dplyr::do(dplyr::group_by(res.df,chr),link.annotate.f(.))
     res.df = subset(res.df, link!="none")
     if(nrow(res.df)>0){
         merge.bin.f <- function(df){
