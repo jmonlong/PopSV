@@ -12,7 +12,7 @@ sv.summary.interactive <- function(res.df){
             shiny::headerPanel("PopSV - Results summary"),
             shiny::sidebarPanel(
                 shiny::textInput("fdr", "False Discovery rate", "0.05"),
-                conditionalPanel(condition = "input.conditionPanels == 'Copy number estimates'",
+                shiny::conditionalPanel(condition = "input.conditionPanels == 'Copy number estimates'",
                                  shiny::numericInput("nbc", "Minimum number of consecutive bins", 3, 0, Inf, 1),
                                  shiny::helpText("This take a bit of time to update, please be patient."))
                 ),
@@ -27,11 +27,11 @@ sv.summary.interactive <- function(res.df){
 
 
         server = function(input, output) {
-            plot.df <- reactive({
+            plot.df <- shiny::reactive({
                 subset(res.df, qv<as.numeric(input$fdr))
             })
 
-            res.m <- reactive({
+            res.m <- shiny::reactive({
                 dplyr::do(dplyr::group_by(plot.df(), sample),mergeConsBin.simple(.))
             })
             output$nb.calls = shiny::renderPlot({
