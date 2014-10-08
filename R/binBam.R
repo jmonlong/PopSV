@@ -60,7 +60,7 @@ Check manually and/or switch off option 'check.chr.name'.")
         if(appendIndex.outfile){
             df$chunk = NULL
             write.table(df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t", append=ch.nb>1, col.names=ch.nb==1)
-            return(data.frame())
+            return(data.frame(chunk=ch.nb, status="done"))
         } else {
             return(df)
         }
