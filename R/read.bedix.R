@@ -14,7 +14,7 @@
 read.bedix <- function(file,subset, col.names=NULL, as.is=TRUE){
 
     if(is.data.frame(subset)){
-        subset = with(subset, GenomicRanges::GRanges(chr, IRanges(start, end)))
+        subset = with(subset, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
     } else if(class(subset)!="GRanges"){
         stop("'subset' must be a data.frame or a GRanges object.")
     }
