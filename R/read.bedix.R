@@ -19,9 +19,22 @@ read.bedix <- function(file,subset, col.names=NULL, as.is=TRUE){
         stop("'subset' must be a data.frame or a GRanges object.")
     }
 
-    bed = unlist(Rsamtools::scanTabix(file,param=subset))
+    bed = tryCatch(unlist(Rsamtools::scanTabix(file,param=subset)),
+        error=function(e)c())
+    if(length(bed)==0){
+        return(NULL)
+    }
     ncol = length(strsplit(bed[1],"\t")[[1]])
-    bed.df = matrix(unlist(strsplit(bed,"\t")), length(bed), ncol, byrow=TRUE)
+    if(length(bed)>1e4){
+      bed.df = matrix(NA, length(bed), ncol)
+      chunks = cut(1:length(bed), ceiling(length(bed)/1e4))
+      for(ch.id in levels(chunks)){
+        ch.ii = which(chunks==ch.id)
+        bed.df[ch.ii,] = matrix(unlist(strsplit(bed[ch.ii],"\t")), length(ch.ii), ncol, byrow=TRUE)
+      }
+    } else {
+      bed.df = matrix(unlist(strsplit(bed,"\t")), length(bed), ncol, byrow=TRUE)
+    }
     bed.df = as.data.frame(bed.df, stringsAsFactors=FALSE)
     if(!is.null(col.names)){
         colnames(bed.df) = col.names

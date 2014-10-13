@@ -58,9 +58,10 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
     }
     
     if(appendIndex.outfile){
-        Rsamtools::bgzip(outfile.prefix, overwrite=TRUE)
+        final.file = paste(outfile.prefix,".bgz",sep="")
+        Rsamtools::bgzip(outfile.prefix, dest=final.file, overwrite=TRUE)
         file.remove(outfile.prefix)
-        Rsamtools::indexTabix(paste(outfile.prefix,".bgz",sep=""), format="bed")
+        Rsamtools::indexTabix(final.file, format="bed")
     }
 
     cor.bs <- function(x,nbsim=10,prop=.1,replace=FALSE){
