@@ -35,7 +35,7 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
         bc.df$start = bin.df$start
         bc.df$end = bin.df$end
         for(samp.i in 1:nrow(files.df)){
-            bc.df[,as.character(files.df$sample[samp.i])] = read.table(files.df$bc.qc.bg[samp.i], colClasses=c(rep("NULL",3),"numeric"))[,1]
+            bc.df[,as.character(files.df$sample[samp.i])] = read.table(files.df$bc.gc.gz[samp.i], colClasses=c(rep("NULL",3),"numeric"))[,1]
         }
         write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t")
     } else {
@@ -49,7 +49,7 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
             bc.df$start = df$start
             bc.df$end = df$end
             for(samp.i in 1:nrow(files.df)){
-                bc.df[,as.character(files.df$sample[samp.i])] = read.bedix(files.df$bc.qc.bg[samp.i], df)[,4]
+                bc.df[,as.character(files.df$sample[samp.i])] = read.bedix(files.df$bc.gc.gz[samp.i], df)[,4]
             }
             write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t", append=ch.nb>1, col.names=ch.nb==1)
             return(bc.df[sample(1:nrow(bc.df),chunk.size/nb.chunks),])
