@@ -11,14 +11,15 @@
 mergeConsBin.simple <- function(res.df,col.mean=c("z","pv","qv","cn.coeff")){
 
     link.annotate.f <- function(df){
+        chr.f = df$chr[1]
         df = dplyr::arrange(df, start)
         cons.v = df$end[-nrow(df)] + 1 == df$start[-1]
-        link.v = paste0("none",1:nrow(df))
+        link.v = paste0(chr.f,"none",1:nrow(df))
         rl = rle(cons.v)
         rlv = rl$values
         cs.i = c(0,cumsum(rl$lengths))
         for(cons.i in which(rlv)){
-            link.v[(cs.i[cons.i]+1):(cs.i[cons.i+1]+1)] = paste0("cons",cons.i)
+            link.v[(cs.i[cons.i]+1):(cs.i[cons.i+1]+1)] = paste0(chr.f,"cons",cons.i)
         }
         df$link = as.character(link.v)
         return(df)
@@ -26,11 +27,11 @@ mergeConsBin.simple <- function(res.df,col.mean=c("z","pv","qv","cn.coeff")){
     
     res.df = dplyr::do(dplyr::group_by(res.df,chr),link.annotate.f(.))
     merge.bin.f <- function(df){
+        if(nrow(df)<3) return(data.frame())
         res = data.frame(chr=df$chr[1],
             start=df$start[1],
             end=df$end[nrow(df)],
             nbBinCons=nrow(df), stringsAsFactors=FALSE)
-        if(nrow(df)>2) df = df[c(2,nrow(df)-1),]
         cbind(res,t(apply(df[,intersect(colnames(df),col.mean),drop=FALSE],2,mean)))
     }
     res.df = dplyr::do(dplyr::group_by(res.df,link),merge.bin.f(.))

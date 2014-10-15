@@ -26,6 +26,7 @@ Imports:
     fdrtool,
     ggplot2,
     ggdendro,
-    shiny
+    shiny, 
+    RColorBrewer
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19
