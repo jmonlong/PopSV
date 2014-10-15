@@ -72,6 +72,7 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
         return(res)
     }
 
+    bc.df$chunk = NULL
     all.samples = colnames(bc.df)[-(1:3)]
     corbs = cor.bs(bc.df[,all.samples])
     cor.pw = corbs
@@ -96,5 +97,5 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
         bc.df = paste(outfile.prefix,".bgz",sep="")
     }
     return(list(bc=bc.df,dstat=data.frame(sample=ref.samples,Dstat=meanCor),
-                pc.1.3=pc$x[,1:3]), cor.pw=corbs)
+                pc.1.3=pc$x[,1:3], cor.pw=corbs))
 }
