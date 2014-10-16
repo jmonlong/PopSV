@@ -1,10 +1,12 @@
 ##' Interactive summary of the individual bins with abnormal coverage as detected per 'call.abnomal.cov'. 
 ##' @title Interactive summary
 ##' @param res.df the data.frame with the results.
+##' @param merge.cons.bin TRUE if the single-bin calls has been merged
+##' (Default, 'merge' option in 'call.abnormal.cov'). FALSE for single-bin calls. 
 ##' @return a shiny app in the web browser. 
 ##' @author Jean Monlong
 ##' @export
-sv.summary.interactive <- function(res.df, merge=TRUE){
+sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE){
     freq.gr <- function(cnv.o){
         gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
         gr.d = GenomicRanges::disjoin(gr)
@@ -17,7 +19,7 @@ sv.summary.interactive <- function(res.df, merge=TRUE){
 
     res.df$cnDev = abs(res.df$cn.coeff-1)
     
-    if(merge){
+    if(merge.cons.bin){
 ###
 ### MERGED BIN CALLS
 ###

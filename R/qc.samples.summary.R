@@ -14,7 +14,7 @@ qc.samples.summary <- function(qc.res){
                 shiny::textInput("d", "D statistic threshold", "0.8"),
                 shiny::conditionalPanel(condition = "input.conditionPanels == 'Clustering'",
                                  shiny::selectInput("cl.meth", "Linkage method: ",
-                                                    c("Complete"="complete","Average"="average","Ward"="ward")))
+                                                    c("Average"="average","Complete"="complete","Ward"="ward.D")))
                 ),
             shiny::mainPanel(
                 shiny::tabsetPanel(
@@ -27,22 +27,21 @@ qc.samples.summary <- function(qc.res){
 
         server = function(input, output) {
             samples.ref <- shiny::reactive({
-                subset(qc.res$dstat, Dstat >= as.numeric(input$d))
+                subset(qc.res$dstat, Dstat >= as.numeric(input$d))$sample
             })
             output$d.hist = shiny::renderPlot({
                 plot.df = qc.res$dstat
                 plot.df$reference = plot.df$sample %in% samples.ref()
                 return(ggplot2::ggplot(plot.df, ggplot2::aes(x=Dstat)) + 
-                       ggplot2::geom_bar(ggplot2::aes(fill=reference)) + 
+                       ggplot2::geom_histogram(ggplot2::aes(fill=reference), binwidth=.005) + 
                        ggplot2::theme(legend.position=c(0,1),legend.justification=c(0,1)) + 
-                       ggplot2::theme_bw() +
-                       ggplot2::geom_vline(xintercept=input$d,linetype=2) +
-                       ggplot2::ylab("number of samples")
-                       )
+                       ggplot2::theme_bw() + ggplot2::ggtitle(paste(sum(plot.df$reference))) + 
+                       ggplot2::geom_vline(xintercept=as.numeric(input$d),linetype=2) +
+                       ggplot2::ylab("number of samples"))
             })
             output$clust = shiny::renderPlot({
                 hc.o = hclust(as.dist(1-qc.res$cor.pw), method=input$cl.meth)
-                dd <- ggdendro::dendro_data(as.dendrogram(hc.o))
+                dd <- ggdendro::dendro_data(hc.o)
                 l.df = dd$labels
                 l.df$reference = l.df$label %in% samples.ref()
                 return(ggplot2::ggplot(dd$segments) +
@@ -55,10 +54,10 @@ qc.samples.summary <- function(qc.res){
                        )
             })
             output$pca = shiny::renderPlot({
-                plot.df = data.frame(rownames(qc.res$pc.1.3), qc.res$pc.1.3, stringsAsFactors=FALSE)
+                plot.df = data.frame(sample=rownames(qc.res$pc.1.3), qc.res$pc.1.3, stringsAsFactors=FALSE)
                 plot.df$reference = plot.df$sample %in% samples.ref()
                 return(ggplot2::ggplot(plot.df, ggplot2::aes(x=PC1, y=PC2)) + 
-                       ggplot2::geom_point(ggplot2::aes(colour=reference, size=reference)) + 
+                       ggplot2::geom_point(ggplot2::aes(colour=reference)) + 
                        ggplot2::theme(legend.position="bottom") + 
                        ggplot2::theme_bw()
                        )                

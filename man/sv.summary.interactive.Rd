@@ -3,10 +3,13 @@
 \alias{sv.summary.interactive}
 \title{Interactive summary}
 \usage{
-sv.summary.interactive(res.df)
+sv.summary.interactive(res.df, merge.cons.bin = TRUE)
 }
 \arguments{
 \item{res.df}{the data.frame with the results.}
+
+\item{merge.cons.bin}{TRUE if the single-bin calls has been merged
+(Default, 'merge' option in 'call.abnormal.cov'). FALSE for single-bin calls.}
 }
 \value{
 a shiny app in the web browser.

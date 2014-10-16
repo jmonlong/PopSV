@@ -74,13 +74,14 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
 
     bc.df$chunk = NULL
     all.samples = colnames(bc.df)[-(1:3)]
-    corbs = cor.bs(bc.df[,all.samples])
+    bc.mv = medvar.norm.internal(bc.df[,all.samples])
+    corbs = cor.bs(bc.mv)
     cor.pw = corbs
     diag(cor.pw) = NA
     if(is.null(ref.samples)) ref.samples = colnames(cor.pw)
     meanCor = apply(cor.pw[ref.samples,ref.samples],1,function(e)mean(e,na.rm=TRUE))
     ## PCA
-    pc = prcomp(t(na.exclude(bc.df[,all.samples])))
+    pc = prcomp(t(na.exclude(bc.mv)))
     if(!is.null(out.pdf)){
         pdf(out.pdf,10,8)
         hc = hclust(as.dist(1-corbs))
