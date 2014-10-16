@@ -11,6 +11,7 @@
 ##' be converted into factors (e.g. 'character' columns).
 ##' @return a data.frame with the retrieved BED information.
 ##' @author Jean Monlong
+##' @export
 read.bedix <- function(file,subset, col.names=NULL, as.is=TRUE){
 
     if(is.data.frame(subset)){
