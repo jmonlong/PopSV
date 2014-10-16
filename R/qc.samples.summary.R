@@ -41,7 +41,7 @@ qc.samples.summary <- function(qc.res){
             })
             output$clust = shiny::renderPlot({
                 hc.o = hclust(as.dist(1-qc.res$cor.pw), method=input$cl.meth)
-                dd <- ggdendro::dendro_data(hc.o)
+                dd <- ggdendro::dendro_data.hclust(hc.o)
                 l.df = dd$labels
                 l.df$reference = l.df$label %in% samples.ref()
                 return(ggplot2::ggplot(dd$segments) +
