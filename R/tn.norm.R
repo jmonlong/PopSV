@@ -33,6 +33,7 @@
 tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,save.support.bins=TRUE, z.poisson=FALSE){
     all.samples = colnames(bc)
     ref.samples.ii = which(colnames(bc) %in% ref.samples)
+    if(is.null(rownames(bc))) rownames(bc) = paste(bc$chr, bc$start, sep="-")
     bc = t(bc)
     if(is.null(bins)) bins = colnames(bc)
     if(z.poisson){
