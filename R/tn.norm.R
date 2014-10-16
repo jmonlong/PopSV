@@ -31,10 +31,10 @@
 ##' @author Jean Monlong
 ##' @export
 tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,save.support.bins=TRUE, z.poisson=FALSE){
-    all.samples = colnames(bc)
-    ref.samples.ii = which(colnames(bc) %in% ref.samples)
+    all.samples = setdiff(colnames(bc),c("chr","start","end"))
+    ref.samples.ii = which(all.samples %in% ref.samples)
     rownames(bc) = paste(bc$chr, bc$start, sep="-")
-    bc = t(bc)
+    bc = t(bc[,all.samples])
     if(is.null(bins)) bins = colnames(bc)
     if(z.poisson){
         z.comp <- function(x, mean.c, sd.c){
