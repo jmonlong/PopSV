@@ -2,6 +2,7 @@
 
 export(binBam)
 export(call.abnormal.cov)
+export(chunk.bin)
 export(correct.GC)
 export(createBinBamRscripts)
 export(fragment.genome.hp19)
