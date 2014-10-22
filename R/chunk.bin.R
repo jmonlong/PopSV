@@ -14,7 +14,7 @@
 ##' @export
 chunk.bin <- function(bins.df, bg.chunk.size = 1e5, sm.chunk.size = 1e3){
     bins.df$bg.chunk = sample(rep(1:ceiling(nrow(bins.df)/bg.chunk.size),each=bg.chunk.size)[1:nrow(bins.df)])
-    bins.df = dplyr::mutate(dplyr::group_by(bins.df,bg.chunk),sm.chunk=paste(bg.chunk,sample(rep(1:ceiling(n()/sm.chunk.size),each=sm.chunk.size)[1:n()]), sep="-"))
+    bins.df = dplyr::mutate(dplyr::group_by(bins.df,bg.chunk),sm.chunk=paste(bg.chunk,sample(rep(1:ceiling(length(chr)/sm.chunk.size),each=sm.chunk.size)[1:length(chr)]), sep="-"))
     bins.df$bin = paste(bins.df$chr, bins.df$start, sep="-")
     bins.df
 }
