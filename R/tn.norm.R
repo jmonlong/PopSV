@@ -49,10 +49,10 @@ tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,sav
     }
     if(save.support.bins) {
         norm.stats = createEmptyDF(c("character",rep("numeric",4),rep("character",nb.support.bins)), length(bins))
-        colnames(norm.stats) = c("bin","d.max","mean","sd","nb.remove",paste("b",1:nb.support.bins,sep=""))
+        colnames(norm.stats) = c("bin","d.max","m","sd","nb.remove",paste("b",1:nb.support.bins,sep=""))
     } else {
         norm.stats = createEmptyDF(c("character",rep("numeric",4)), length(bins))
-        colnames(norm.stats) = c("bin","d.max","mean","sd","nb.remove")
+        colnames(norm.stats) = c("bin","d.max","m","sd","nb.remove")
     }
     bc.norm = createEmptyDF(c("character",rep("numeric",nrow(bc))), length(bins))
     z = createEmptyDF(c("character",rep("numeric",nrow(bc))), length(bins))
@@ -78,15 +78,15 @@ tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,sav
                 norm.coeff[ref.samples.ii] = norm.tm.opt(bc.g[,ref.samples.ii],ref.col=bc.g[,cont.sample])
                 msd = mean.sd.outlierR(bc.g[1,ref.samples.ii] * norm.coeff[ref.samples.ii],1e-6)
                 if(length(norm.coeff) > length(ref.samples.ii)){
-                    norm.coeff[-ref.samples.ii] = norm.tm.opt(bc.g[,-ref.samples.ii],ref.col=bc.g[,cont.sample],bc.mean.norm=msd$mean)
+                    norm.coeff[-ref.samples.ii] = norm.tm.opt(bc.g[,-ref.samples.ii],ref.col=bc.g[,cont.sample],bc.mean.norm=msd$m)
                 }
                 bc.t = bc.g[1,] * norm.coeff
                 if(any(!is.na(bc.t))){
-                    norm.stats[bin.ii,2:5]=c(d.max,msd$mean,msd$sd,msd$nb.remove)
+                    norm.stats[bin.ii,2:5]=c(d.max,msd$m,msd$sd,msd$nb.remove)
                     if(save.support.bins) norm.stats[bin.ii,6:ncol(norm.stats)] = bin.for.norm
                     bc.norm[bin.ii,-1] = bc.t
-                    z[bin.ii,-1] = z.comp(bc.t,msd$mean,msd$sd)
-                    cn.coeff[bin.ii,-1] = bc.t/msd$mean
+                    z[bin.ii,-1] = z.comp(bc.t,msd$m,msd$sd)
+                    cn.coeff[bin.ii,-1] = bc.t/msd$m
 
                 }
             }

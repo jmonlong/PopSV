@@ -48,11 +48,10 @@ mean.sd.outlierR <- function(x,pv.max.ol=1e-6){
     }
     sd.mad <- function(x){
         if(all(x==0,na.rm=TRUE)) x = rpois(length(x),.5)
-        K=1/qnorm(3/4)
-        sd.res = K*median(abs(x-median(x,na.rm=TRUE)),na.rm=TRUE)
+        sd.res = mad(x, na.rm=TRUE)
         if(sd.res==0) return(sd.mad(rep(0,length(x))))
         else return(sd.res)
     }
     x.rm = rm.outOl(x,pv.max=pv.max.ol)
-    return(list(mean=mean(x.rm,na.rm=TRUE),sd=sd.mad(x.rm),nb.remove=length(x)-sum(!is.na(x.rm))))
+    return(list(m=median(x.rm,na.rm=TRUE),sd=sd.mad(x.rm),nb.remove=length(x)-sum(!is.na(x.rm))))
 }
