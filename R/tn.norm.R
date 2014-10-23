@@ -34,8 +34,21 @@ tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,sav
     all.samples = setdiff(colnames(bc),c("chr","start","end"))
     ref.samples.ii = which(all.samples %in% ref.samples)
     rownames(bc) = paste(bc$chr, bc$start, sep="-")
-    bc = t(bc[,all.samples])
-    if(is.null(bins)) bins = colnames(bc)
+    if(is.null(bins)) bins = rownames(bc)
+    if(save.support.bins) {
+        norm.stats = createEmptyDF(c("character", rep("integer",2),rep("numeric",4),rep("character",nb.support.bins)), length(bins))
+        colnames(norm.stats) = c("chr", "start","end","d.max","m","sd","nb.remove",paste("b",1:nb.support.bins,sep=""))
+    } else {
+        norm.stats = createEmptyDF(c("character", rep("integer",2),rep("numeric",4)), length(bins))
+        colnames(norm.stats) = c("chr", "start","end","d.max","m","sd","nb.remove")
+    }
+    bc.norm = createEmptyDF(c("character", rep("integer",2),rep("numeric",ncol(bc))), length(bins))
+    z = createEmptyDF(c("character", rep("integer",2),rep("numeric",ncol(bc))), length(bins))
+    cn.coeff = createEmptyDF(c("character", rep("integer",2),rep("numeric",ncol(bc))), length(bins))
+    colnames(bc.norm) = colnames(z) = colnames(cn.coeff) = c("chr", "start","end",all.samples)
+    norm.stats$chr = bc.norm$chr = z$chr = cn.coeff$chr = bc[bins,"chr"]
+    norm.stats$start = bc.norm$start = z$start = cn.coeff$start = bc[bins,"start"]
+    norm.stats$end = bc.norm$end = z$end = cn.coeff$end = bc[bins,"end"]
     if(z.poisson){
         z.comp <- function(x, mean.c, sd.c){
             z.n = (x-mean.c)/sd.c
@@ -47,18 +60,7 @@ tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,sav
     } else {
         z.comp <- function(x, mean.c, sd.c){(x-mean.c)/sd.c}
     }
-    if(save.support.bins) {
-        norm.stats = createEmptyDF(c("character",rep("numeric",4),rep("character",nb.support.bins)), length(bins))
-        colnames(norm.stats) = c("bin","d.max","m","sd","nb.remove",paste("b",1:nb.support.bins,sep=""))
-    } else {
-        norm.stats = createEmptyDF(c("character",rep("numeric",4)), length(bins))
-        colnames(norm.stats) = c("bin","d.max","m","sd","nb.remove")
-    }
-    bc.norm = createEmptyDF(c("character",rep("numeric",nrow(bc))), length(bins))
-    z = createEmptyDF(c("character",rep("numeric",nrow(bc))), length(bins))
-    cn.coeff = createEmptyDF(c("character",rep("numeric",nrow(bc))), length(bins))
-    colnames(bc.norm) = colnames(z) = colnames(cn.coeff) = c("bin",all.samples)
-    norm.stats$bin = bc.norm$bin = z$bin = cn.coeff$bin = bins
+    bc = t(as.matrix(bc[,all.samples]))
     for(bin.ii in 1:length(bins)){
         bin = bins[bin.ii]
         bc.i = bc[,bin]
