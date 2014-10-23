@@ -78,7 +78,7 @@ tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,sav
                 norm.coeff[ref.samples.ii] = norm.tm.opt(bc.g[,ref.samples.ii],ref.col=bc.g[,cont.sample])
                 msd = mean.sd.outlierR(bc.g[1,ref.samples.ii] * norm.coeff[ref.samples.ii],1e-6)
                 if(length(norm.coeff) > length(ref.samples.ii)){
-                    norm.coeff[-ref.samples.ii] = norm.tm.opt(bc.g[,-ref.samples.ii],ref.col=bc.g[,cont.sample],bc.mean.norm=msd$m)
+                    norm.coeff[-ref.samples.ii] = norm.tm.opt(bc.g[,-ref.samples.ii,drop=FALSE],ref.col=bc.g[,cont.sample],bc.mean.norm=msd$m)
                 }
                 bc.t = bc.g[1,] * norm.coeff
                 if(any(!is.na(bc.t))){
