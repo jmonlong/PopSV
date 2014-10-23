@@ -35,7 +35,7 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
         bc.df$start = bin.df$start
         bc.df$end = bin.df$end
         for(samp.i in 1:nrow(files.df)){
-            bc.df[,as.character(files.df$sample[samp.i])] = read.table(files.df$bc.gc.gz[samp.i], colClasses=c(rep("NULL",3),"numeric"))[,1]
+            bc.df[,as.character(files.df$sample[samp.i])] = read.table(files.df$bc.gc.gz[samp.i], colClasses=c(rep("NULL",3),"numeric"), header=TRUE)[,1]
         }
         write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t")
     } else {
