@@ -84,11 +84,11 @@ tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,sav
                 }
                 bc.t = bc.g[1,] * norm.coeff
                 if(any(!is.na(bc.t))){
-                    norm.stats[bin.ii,2:5]=c(d.max,msd$m,msd$sd,msd$nb.remove)
-                    if(save.support.bins) norm.stats[bin.ii,6:ncol(norm.stats)] = bin.for.norm
-                    bc.norm[bin.ii,-1] = bc.t
-                    z[bin.ii,-1] = z.comp(bc.t,msd$m,msd$sd)
-                    cn.coeff[bin.ii,-1] = bc.t/msd$m
+                    norm.stats[bin.ii,4:7]=c(d.max,msd$m,msd$sd,msd$nb.remove)
+                    if(save.support.bins) norm.stats[bin.ii,8:ncol(norm.stats)] = bin.for.norm
+                    bc.norm[bin.ii,-(1:3)] = bc.t
+                    z[bin.ii,-(1:3)] = z.comp(bc.t,msd$m,msd$sd)
+                    cn.coeff[bin.ii,-(1:3)] = bc.t/msd$m
 
                 }
             }
