@@ -26,7 +26,8 @@ getGC.hg19 <- function(bins.df){
         df$GCcontent = rowSums(lf) / (df$end-df$start)
         subset(df, !is.na(GCcontent))
     }
-    bins.df = dplyr::do(dplyr::group_by(bins.df,chunk),addGC(.))
+    ##bins.df = dplyr::do(dplyr::group_by(bins.df,chunk),addGC(.))
+    bins.df = dplyr::do(dplyr::group_by(bins.df, chunk), addGC(.))
     bins.df$chunk = NULL
-    return(bins.df)
+    return(as.data.frame(bins.df))
 }
