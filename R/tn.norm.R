@@ -42,9 +42,9 @@ tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,sav
         norm.stats = createEmptyDF(c("character", rep("integer",2),rep("numeric",4)), length(bins))
         colnames(norm.stats) = c("chr", "start","end","d.max","m","sd","nb.remove")
     }
-    bc.norm = createEmptyDF(c("character", rep("integer",2),rep("numeric",ncol(bc))), length(bins))
-    z = createEmptyDF(c("character", rep("integer",2),rep("numeric",ncol(bc))), length(bins))
-    cn.coeff = createEmptyDF(c("character", rep("integer",2),rep("numeric",ncol(bc))), length(bins))
+    bc.norm = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
+    z = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
+    cn.coeff = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
     colnames(bc.norm) = colnames(z) = colnames(cn.coeff) = c("chr", "start","end",all.samples)
     norm.stats$chr = bc.norm$chr = z$chr = cn.coeff$chr = bc[bins,"chr"]
     norm.stats$start = bc.norm$start = z$start = cn.coeff$start = bc[bins,"start"]
