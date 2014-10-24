@@ -27,6 +27,7 @@ read.bedix <- function(file,subset, col.names=NULL, as.is=TRUE){
     if(length(bed)==0){
         return(NULL)
     }
+    gc() ## Not sure if needed
     ncol = length(strsplit(bed[1],"\t")[[1]])
     if(length(bed)>1e4){
       bed.df = matrix(NA, length(bed), ncol)
@@ -44,7 +45,9 @@ read.bedix <- function(file,subset, col.names=NULL, as.is=TRUE){
     } else {
       colnames(bed.df) = as.character(read.table(file, nrows=1, as.is=TRUE))
     }
-    for(ii in 1:ncol(bed.df)) bed.df[,ii] = type.convert(bed.df[,ii], as.is=as.is)
+    gc()
+    col.classes = c("character",rep("integer",2), rep("numeric",ncol-3))
+    for(ii in 1:ncol(bed.df)) class(bed.df[,ii]) = col.classes[ii]
     
     return(bed.df)
 }
