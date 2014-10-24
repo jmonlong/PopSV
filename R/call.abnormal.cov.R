@@ -73,7 +73,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FA
               ggplot2::ylab("number of bins") + 
               ggplot2::theme_bw())
         print(ggplot2::ggplot(res.df,ggplot2::aes(x=pv)) + ggplot2::geom_histogram() +
-              ggplot2::xlab("P-value") + 
+              ggplot2::xlab("P-value") + ggplot2::xlim(0,1) + 
               ggplot2::ylab("number of bins") + 
               ggplot2::theme_bw())
     }

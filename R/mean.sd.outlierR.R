@@ -52,6 +52,10 @@ mean.sd.outlierR <- function(x,pv.max.ol=1e-6){
         if(sd.res==0) return(sd.mad(rep(0,length(x))))
         else return(sd.res)
     }
+    trim.mean <- function(x){
+        x.ii = order(abs(x-median(x,na.rm=TRUE)))[1:10]
+        return(mean(x[x.ii], na.rm=TRUE))
+    }
     x.rm = rm.outOl(x,pv.max=pv.max.ol)
-    return(list(m=median(x.rm,na.rm=TRUE),sd=sd.mad(x.rm),nb.remove=length(x)-sum(!is.na(x.rm))))
+    return(list(m=trim.mean(x.rm),sd=sd.mad(x.rm),nb.remove=length(x)-sum(!is.na(x.rm))))
 }
