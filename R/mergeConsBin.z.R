@@ -83,5 +83,5 @@ mergeConsBin.z <- function(res.df,fdr.th=.05,col.mean=c("z","pv","qv","cn.coeff"
         res.df = NULL
     }
     res.df$link = NULL
-    return(res.df)
+    return(as.data.frame(res.df))
 }

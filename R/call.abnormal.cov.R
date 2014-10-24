@@ -9,7 +9,7 @@
 ##' @title Call abnormal bins
 ##' @param z the name of the file with the Z-scores for all samples OR or a
 ##' data.frame with the Z-scores for all samples. 
-##' @param sample the name of the sample to analyze.
+##' @param samp the name of the sample to analyze.
 ##' @param out.pdf the name of the output pdf file.
 ##' @param FDR.th the False Discovery Rate to use for the calls. Further filtering
 ##' can always be performed.
@@ -26,19 +26,19 @@
 ##' 'merge.cons.bins=TRUE')}
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z,sample,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FALSE, cn=NULL){
+call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FALSE, cn=NULL){
 
     ## load Z-scores and CN coefficients
     if(is.character(z) & length(z)==1){
         headers = read.table(z,nrows=1,as.is=TRUE)
         colC = rep("NULL",length(headers))
-        if(!all(c("chr","start","end",sample) %in% headers)){
+        if(!all(c("chr","start","end",samp) %in% headers)){
             stop("Columns missing in Z file. Check that 'chr', 'start', 'end' and the sample column are present.")
         }
-        colC[headers %in% c("chr","start","end",sample)] = c("character", rep("integer",2),"numeric")
+        colC[headers %in% c("chr","start","end",samp)] = c("character", rep("integer",2),"numeric")
         res.df = read.table(z,header=TRUE,colClasses=colC)
     } else {
-        res.df = z[,c("chr","start","end",sample)]
+        res.df = z[,c("chr","start","end",samp)]
         rm(z)
     }
     colnames(res.df)[4] = "z"
@@ -46,13 +46,13 @@ call.abnormal.cov <- function(z,sample,out.pdf=NULL,FDR.th=.05, merge.cons.bins=
         if(is.character(cn) & length(cn)==1){
             headers = read.table(cn,nrows=1,as.is=TRUE)
             colC = rep("NULL",length(headers))
-            if(all(headers!=sample)){
+            if(all(headers!=samp)){
                 stop("Columns missing in CN file. Check that 'chr', 'start', 'end' and the sample column are present.")
             }
-            colC[headers==sample] = "numeric"
+            colC[headers==samp] = "numeric"
             cn = read.table(cn,header=TRUE,colClasses=colC)
         } 
-        res.df$cn.coeff = cn[,sample]
+        res.df$cn.coeff = cn[,samp]
         rm(cn)
     }
     
@@ -102,9 +102,9 @@ call.abnormal.cov <- function(z,sample,out.pdf=NULL,FDR.th=.05, merge.cons.bins=
     }
 
     if(nrow(res.df)>0 & merge.cons.bins){
-        return(data.frame(sample=sample,res.df))
+        return(data.frame(sample=samp,res.df))
     } else if(any(res.df$qv <= FDR.th, na.rm=TRUE)){
-        return(data.frame(sample=sample,subset(res.df, qv<=FDR.th)))
+        return(data.frame(sample=samp,subset(res.df, qv<=FDR.th)))
     } else {
         return(NULL)
     }
