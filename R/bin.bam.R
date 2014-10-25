@@ -22,7 +22,7 @@
 ##' the bin counts if not.
 ##' @author Jean Monlong
 ##' @export
-binBam <- function(bam.file,bin.df,outfile.prefix, appendIndex.outfile=TRUE,proper=TRUE,map.quality=30, chunk.size=1e4, check.chr.name=TRUE){
+bin.bam <- function(bam.file,bin.df,outfile.prefix, appendIndex.outfile=TRUE,proper=TRUE,map.quality=30, chunk.size=1e4, check.chr.name=TRUE){
     bin.df = dplyr::arrange(bin.df, chr, start)
     bin.df$chunk = rep(1:ceiling(nrow(bin.df)/chunk.size),each=chunk.size)[1:nrow(bin.df)]
 

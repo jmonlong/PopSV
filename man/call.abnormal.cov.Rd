@@ -3,14 +3,14 @@
 \alias{call.abnormal.cov}
 \title{Call abnormal bins}
 \usage{
-call.abnormal.cov(z, sample, out.pdf = NULL, FDR.th = 0.05,
+call.abnormal.cov(z, samp, out.pdf = NULL, FDR.th = 0.05,
   merge.cons.bins = FALSE, cn = NULL)
 }
 \arguments{
 \item{z}{the name of the file with the Z-scores for all samples OR or a
 data.frame with the Z-scores for all samples.}
 
-\item{sample}{the name of the sample to analyze.}
+\item{samp}{the name of the sample to analyze.}
 
 \item{out.pdf}{the name of the output pdf file.}
 

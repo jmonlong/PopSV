@@ -18,7 +18,7 @@
 ##' to be created later.
 ##' @author Jean Monlong
 ##' @export
-initFileNames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=NULL, dest.folder.relative.path=TRUE){
+init.filenames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=NULL, dest.folder.relative.path=TRUE){
     if(!all(c("sample","bam")%in%colnames(files.df))){
         stop("Columns 'sample' and 'bam' are required in 'files.df' data.frame.")
     }
