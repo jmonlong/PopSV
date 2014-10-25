@@ -39,7 +39,99 @@ Abnormal Read-Depth signal is detected by using a population of samples ase refe
 view the whole genome can be robustly interrogated, including regions of low mappability. Moreover, any divergence from
 the reference samples are detected, even if the signal is incomplete, e.g. tumoral aberrations or SV involving repeats.</p>
 
+<h3>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h3>
+
 <p>To install the latest development version: <code>devtools::install_github("jmonlong/PopSV")</code>. This requires <code>devtools</code> package (more information <a href="https://github.com/hadley/devtools">here</a>) which can be easily installed with <code>install.packages("devtools")</code>. </p>
+
+<p>It requires R 3.1 or higher.</p>
+
+<h3>
+<a name="analysis-steps" class="anchor" href="#analysis-steps"><span class="octicon octicon-link"></span></a>Analysis steps</h3>
+
+<p>Examples of a analysis, for local computation or computing cluster usage, can be found on the <code>scripts</code> folder. For more information on a specific function, see the manual or access the documentation through <code>?the.function.name</code>.</p>
+
+<h4>
+<a name="input-files" class="anchor" href="#input-files"><span class="octicon octicon-link"></span></a>Input files</h4>
+
+<p>The analysis can start directly from the BAM files. Each BAM file needs to be <strong>sorted</strong> and <strong>indexed</strong> (see <a href="http://www.htslib.org/">samtools</a>).</p>
+
+<p>A tabular separated values (<em>tsv</em>) file with the name of the sample (in column named <em>sample</em>) and the path to the corresponding BAM (in column named <em>bam</em>) is imported and  given to the <code>init.filenames</code>. This function will create the path and file names for the different files created and used throughout the analysis.</p>
+
+<p>Then, the regions of interest or <em>bins</em> have to be defined. <code>fragment.genome.hp19</code> automatically fragments hg19 genome into non-overlapping consecutive windows of a specified size. However PopSV can perform with any type of windows. It is still recommended to define non-overlapping windows and, for computation reasons, no more than a total of several million of bins. If a custom definition is used it should follow the BED format with columns named <em>chr</em>, <em>start</em> and <em>end</em>.</p>
+
+<p>Finally, the GC content of each bin can be computed, for hg19, using function <code>getGC.hg19</code>. If another genome is to be used, GC content should be define following BedGraph format, i.e with columns named <em>chr</em>, <em>start</em>, <em>end</em> and <em>GCcontent</em>.</p>
+
+<h4>
+<a name="counting-reads" class="anchor" href="#counting-reads"><span class="octicon octicon-link"></span></a>Counting reads</h4>
+
+<p>Reads are counted in each bin to measure coverage. <code>bin.bam</code> function will count reads in each bin for a given sample.</p>
+
+<p>Eventually, this can be done externally, e.g. using <a href="">bedtools coverage</a>. The final count file should have these four columns: <em>chr</em>, <em>start</em>, <em>end</em> and <em>bc</em> (for bin count).</p>
+
+<h4>
+<a name="gc-bias-correction" class="anchor" href="#gc-bias-correction"><span class="octicon octicon-link"></span></a>GC bias correction</h4>
+
+<p>GC bias is corrected using a LOESS model. Using this model, a normalization coefficient is computed for each bin based on its GC content. This step is performed by <code>correct.GC</code> function.</p>
+
+<h4>
+<a name="sample-quality-control" class="anchor" href="#sample-quality-control"><span class="octicon octicon-link"></span></a>Sample Quality Control</h4>
+
+<p>The last "pre-processing" step aims at defining the set of reference samples. These samples will define "normal" coverage. A natural set of reference samples are the controls in case/control studies or normal samples in normal/tumor paired samples designs. The more the better but these samples should also be homogeneous to get optimal detection power.</p>
+
+<p><code>qc.samples</code> function will join all bin count files and compute some comparative measures to help define an homogeneous set of reference samples. Using the output of <code>qc.samples</code>, <code>qc.samples.summary</code> open an interactive visualization application, in a web browser, to best assess which threshold to choose. </p>
+
+<h4>
+<a name="normalization-and-z-score-computation" class="anchor" href="#normalization-and-z-score-computation"><span class="octicon octicon-link"></span></a>Normalization and Z-score computation</h4>
+
+<p>This is the core of the test where the coverage in each bin is normalized and tested against the reference. Depending on the normalization method used different function can be used: <code>tn.norm</code> for Targeted Normalization (recommended), <code>pca.norm</code> for Principal Component regression normalization, <code>medvar.norm</code> for a more naive normalization of the coverage median and variance.</p>
+
+<p>The output of these functions is a list with:</p>
+
+<ul>
+<li>
+<em>z</em>: the Z-scores for each bin and each sample.</li>
+<li>
+<em>cn.coeff</em>: an estimated copy number for each bin and each sample.</li>
+<li>
+<em>bc.norm</em>: the normalized read count for each bin and each sample.</li>
+<li>
+<em>norm.stats</em>: some metrics on the efficiency of the normalization.</li>
+</ul>
+
+<h4>
+<a name="abnormal-coverage-calls" class="anchor" href="#abnormal-coverage-calls"><span class="octicon octicon-link"></span></a>Abnormal coverage calls</h4>
+
+<p>To find which bins have abnormally low/high coverage, <code>call.abnormal.cov</code> will derive P-value from the Z-score from a particular sample and use False Discovery Rate control. A simple bin merging strategy is natively available. In summary, looking at the Z-score of two consecutive bins, compared to the Z-scores of two randomly chosen bins, bins are joined or not. Other segmentation methods can be used on the Z-scores through <code>TODO</code> function.</p>
+
+<h3>
+<a name="running-on-computing-clusters" class="anchor" href="#running-on-computing-clusters"><span class="octicon octicon-link"></span></a>Running on computing clusters</h3>
+
+<p><code>PopSV</code> can be used on a cluster using package <code>BatchJobs</code>. An example of an analysis using <code>BatchJobs</code> can
+be found in folder <code>scripts</code>.</p>
+
+<p><code>BatchJobs</code> is a potent package but basic functions are enough in our situation. Here is a quick practical summary of <code>BatchJobs</code> commands used in the script:</p>
+
+<ul>
+<li>
+<code>makeRegistry</code> creates a registry used to manipulate jobs for a particular analysis step.</li>
+<li>
+<code>batchMap</code> adds jobs to a registry. Simply, the user gives a function and a list of parameters. One job per parameter will be created to compute the output of the function using this specific parameter.</li>
+<li>
+<code>submitJobs</code> submits the jobs to the cluster. This is where the queue, ,maximum computation time, number of core can be specified. Moreover, if needed, a subset of the jobs can be sent to the cluster. Functions <code>findNotDone</code> and <code>findErrors</code> are particularly useful to find which the jobs that didn't finish or were lost in the limbo of the cluster management process.</li>
+<li>
+<code>showStatus</code> outputs the status of the computations.</li>
+<li>
+<code>loadResult</code> retrieves the output of one specific job, while <code>reduceResultsList</code> retrieves output for all jobs into a list format.</li>
+</ul>
+
+<p>Another important point about <code>BatchJobs</code> is its configuration for the computing cluster. An example of the configuration files can be found in the <code>scripts</code> folder:</p>
+
+<ul>
+<li>If present in the working directory, <code>.BatchJobs.R</code> is loaded when the <code>BatchJobs</code> package is loaded. It defines which template to use and <code>BatchJobs</code> functions. In practice, it loads another R script file (here <code>makeClusterFunctionsAdaptive.R</code>) with the functions to use. In <code>.BatchJobs.R</code> users would only need to change the email address where to send the log messages to.</li>
+<li>In <code>makeClusterFunctionsAdaptive.R</code>, users just need to check/replace <code>qsub</code>/<code>qdel</code>/<code>qstat</code> calls with the correct bash commands (sometimes <code>msub</code>/<code>canceljob</code>/<code>showq</code>). This file should also be in the working directory when <code>BatchJobs</code> is loaded.</li>
+<li>Finally <code>cluster.tmpl</code> is a template form of a job bash script that would be send to the cluster. There the correct syntax for the resources or parameters of the cluster are defined. This file should also be in the working directory when <code>BatchJobs</code> is loaded.</li>
+</ul>
       </section>
     </div>
 
