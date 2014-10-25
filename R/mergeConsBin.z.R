@@ -12,7 +12,7 @@
 ##' @param sd.null the estimated standard deviation of the Z-score null distribution.
 ##' Usually, computed during P-value estimation by 'fdrtool.quantile'.
 ##' @param nb.sim the number of simulated Z-scores for the P-value computation.
-##' @return a data.frame similar to the input 'res.df' but with an extra 'nbBinCons'
+##' @return a data.frame similar to the input 'res.df' but with an extra 'nb.bin.cons'
 ##' column (the number of bin merged for each event).
 ##' @author Jean Monlong
 ##' @keywords internal
@@ -74,7 +74,7 @@ mergeConsBin.z <- function(res.df,fdr.th=.05,col.mean=c("z","pv","qv","cn.coeff"
             res = data.frame(chr=df$chr[1],
                 start=df$start[1],
                 end=df$end[nrow(df)],
-                nbBinCons=nrow(df))
+                nb.bin.cons=nrow(df))
             if(nrow(df)>2) df = df[c(2,nrow(df)-1),]
             cbind(res,t(apply(df[,intersect(colnames(df),col.mean),drop=FALSE],2,mean)))
         }

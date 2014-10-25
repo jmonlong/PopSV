@@ -1,4 +1,4 @@
 Add coverage measure in binBam function
-Add deviation from cn.coeff 1
+Change all the 'cn' mention to 'fc' for Fold change.
 Add other segmentation option
 Homogenize other normalization outputs

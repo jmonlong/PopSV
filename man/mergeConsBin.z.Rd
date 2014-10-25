@@ -21,7 +21,7 @@ Usually, computed during P-value estimation by 'fdrtool.quantile'.}
 \item{nb.sim}{the number of simulated Z-scores for the P-value computation.}
 }
 \value{
-a data.frame similar to the input 'res.df' but with an extra 'nbBinCons'
+a data.frame similar to the input 'res.df' but with an extra 'nb.bin.cons'
 column (the number of bin merged for each event).
 }
 \description{

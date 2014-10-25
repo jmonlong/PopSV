@@ -22,8 +22,9 @@
 ##' \item{z}{the Z-score}
 ##' \item{pv, qv}{the P-value and Q-value(~FDR)}
 ##' \item{cn.coeff}{the copy number estimate (if 'cn' was not NULL).}
-##' \item{nbBinCons}{the number of consecutive bins (if the bins were merged;
+##' \item{nb.bin.cons}{the number of consecutive bins (if the bins were merged;
 ##' 'merge.cons.bins=TRUE')}
+##' \item{cn.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
 call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FALSE, cn=NULL){
@@ -81,14 +82,14 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FA
     if(merge.cons.bins){
         res.df = mergeConsBin.z(res.df, fdr.th=FDR.th, sd.null=fdr$sigma.est)
 
-        print(ggplot2::ggplot(res.df,ggplot2::aes(x=factor(nbBinCons))) +
+        print(ggplot2::ggplot(res.df,ggplot2::aes(x=factor(nb.bin.cons))) +
               ggplot2::geom_histogram() +
               ggplot2::ylab("number of bins") + 
               ggplot2::xlab("number of consecutive abnormal bins") +
               ggplot2::theme_bw())
 
-        if(any(colnames(res.df)=="cn.coeff") & any(res.df$nbBinCons>2)) {
-            print(ggplot2::ggplot(subset(res.df, nbBinCons>2),ggplot2::aes(x=2*cn.coeff)) +
+        if(any(colnames(res.df)=="cn.coeff") & any(res.df$nb.bin.cons>2)) {
+            print(ggplot2::ggplot(subset(res.df, nb.bin.cons>2),ggplot2::aes(x=2*cn.coeff)) +
                   ggplot2::geom_histogram() + ggplot2::theme_bw() +
                   ggplot2::ylab("number of bins") + 
                   ggplot2::xlab("copy number estimate") +
@@ -101,6 +102,8 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FA
         dev.off()
     }
 
+    res.df$cn.dev = abs(res.df$cn.coeff-1)
+    
     if(nrow(res.df)>0 & merge.cons.bins){
         return(data.frame(sample=samp,res.df))
     } else if(any(res.df$qv <= FDR.th, na.rm=TRUE)){

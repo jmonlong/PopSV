@@ -17,8 +17,6 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE){
         freq.df
     }
 
-    res.df$cnDev = abs(res.df$cn.coeff-1)
-    
     if(merge.cons.bin){
 ###
 ### MERGED BIN CALLS
@@ -52,7 +50,7 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE){
             
             server = function(input, output) {
                 plot.df <- shiny::reactive({
-                    subset(res.df, qv<as.numeric(input$fdr) & cnDev>=input$cnD)
+                    subset(res.df, qv<as.numeric(input$fdr) & cn.dev>=input$cnD)
                 })
                 
                 output$nb.calls = shiny::renderPlot({
@@ -62,7 +60,7 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE){
                         pdf$col = ifelse(pdf$cn.coeff>1, "duplication","deletion")
                         extra.gg = ggplot2::scale_fill_brewer(name=input$col,palette="Set1")
                     } else if(input$col=="event size"){
-                        pdf$col = cut(pdf$nbBinCons, breaks=c(0,1,2,3,5,10,Inf))
+                        pdf$col = cut(pdf$nb.bin.cons, breaks=c(0,1,2,3,5,10,Inf))
                         extra.gg = ggplot2::scale_fill_brewer(name=input$col,palette="Set1")
                     } else if(input$col=="sample"){
                         pdf$col = as.character(pdf$sample)
@@ -78,12 +76,12 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE){
                     gp
                 })
                 output$cn = shiny::renderPlot({
-                    pdf = subset(plot.df(), nbBinCons>=input$nbc)
+                    pdf = subset(plot.df(), nb.bin.cons>=input$nbc)
                     if(input$col=="event type"){
                         pdf$col = ifelse(pdf$cn.coeff>1, "duplication","deletion")
                         extra.gg = ggplot2::scale_fill_brewer(name=input$col,palette="Set1")
                     } else if(input$col=="event size"){
-                        pdf$col = cut(pdf$nbBinCons, breaks=c(0,1,2,3,5,10,Inf))
+                        pdf$col = cut(pdf$nb.bin.cons, breaks=c(0,1,2,3,5,10,Inf))
                         extra.gg = ggplot2::scale_fill_brewer(name=input$col,palette="Set1")
                     } else if(input$col=="sample"){
                         pdf$col = as.character(pdf$sample)
@@ -149,7 +147,7 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE){
                             ggplot2::theme(axis.text.x=ggplot2::element_text(angle=90))
                 })
                 output$cn = shiny::renderPlot({
-                    ggplot2::ggplot(subset(res.m(), nbBinCons>input$nbc), ggplot2::aes(x=cn.coeff*2)) +
+                    ggplot2::ggplot(subset(res.m(), nb.bin.cons>input$nbc), ggplot2::aes(x=cn.coeff*2)) +
                         ggplot2::geom_bar() + ggplot2::theme_bw() + ggplot2::xlim(0,5)
                 })
                 output$freq = shiny::renderPlot({

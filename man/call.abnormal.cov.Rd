@@ -29,8 +29,9 @@ a data.frame with columns
 \item{z}{the Z-score}
 \item{pv, qv}{the P-value and Q-value(~FDR)}
 \item{cn.coeff}{the copy number estimate (if 'cn' was not NULL).}
-\item{nbBinCons}{the number of consecutive bins (if the bins were merged;
+\item{nb.bin.cons}{the number of consecutive bins (if the bins were merged;
 'merge.cons.bins=TRUE')}
+\item{cn.dev}{Copy number deviation from the reference }
 }
 \description{
 Detect abnormal bin from the Z-score distribution. A normal distribution is first
