@@ -24,6 +24,7 @@ correct.GC <- function(bc.f,gc.df, outfile.prefix, appendIndex.outfile=TRUE){
     bc.df$GCcontent = gc.df$GCcontent
     lo = loess(bc~GCcontent, data=bc.df[samp.ii,])
     bc.df$bc = mean(bc.df$bc,na.rm=TRUE) * bc.df$bc / predict(lo,newdata=bc.df)
+    bc.df$bc = round(bc.df$bc, digits=2)
     if(any(bc.df$bc<0, na.rm=TRUE)) bc.df$bc[bc.df$bc<0] = 0
     bc.df$GCcontent = NULL
 
