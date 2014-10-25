@@ -1,2 +1,6 @@
 Add coverage measure in binBam function
 Add deviation from cn.coeff 1
+Change initFileNames to init.filenames
+Change binBam to bin.bam
+Add other segmentation option
+Homogenize other normalization outputs
