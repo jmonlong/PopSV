@@ -2,3 +2,4 @@ Add coverage measure in binBam function
 Change all the 'cn' mention to 'fc' for Fold change.
 Add other segmentation option
 Homogenize other normalization outputs
+Add chr frequency visualization

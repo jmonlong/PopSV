@@ -105,9 +105,9 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FA
     res.df$cn.dev = abs(res.df$cn.coeff-1)
     
     if(nrow(res.df)>0 & merge.cons.bins){
-        return(data.frame(sample=samp,res.df))
+        return(data.frame(sample=samp,res.df, stringsAsFactors=FALSE))
     } else if(any(res.df$qv <= FDR.th, na.rm=TRUE)){
-        return(data.frame(sample=samp,subset(res.df, qv<=FDR.th)))
+        return(data.frame(sample=samp,subset(res.df, qv<=FDR.th), stringsAsFactors=FALSE))
     } else {
         return(NULL)
     }
