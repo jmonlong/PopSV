@@ -57,7 +57,8 @@ mergeConsBin.z <- function(res.df,fdr.th=.05,col.mean=c("z","pv","qv","cn.coeff"
     link.df$qv.del = fdrtool::fdrtool(link.df$pv.del, statistic="pvalue",plot=FALSE,verbose=FALSE)$qval
     ## Annotate and merge bins
     link.annotate.f <- function(df){
-        link.df = subset(link.df, chr==link.df$chr[1])
+      cat(df$chr[1],"\n")
+      link.df = subset(link.df, chr==df$chr[1])
         link.v = rep("none", nrow(df))
         link.v[c(FALSE,link.df$qv.dup<=fdr.th) | c(link.df$qv.dup<=fdr.th,FALSE) | (df$qv<=fdr.th & df$z>0)] = "dup"
         link.v[c(FALSE,link.df$qv.del<=fdr.th) | c(link.df$qv.del<=fdr.th,FALSE) | (df$qv<=fdr.th & df$z<0)] = "del"

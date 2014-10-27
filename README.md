@@ -27,7 +27,7 @@ Finally, the GC content of each bin can be computed, for hg19, using function `g
 #### Counting reads
 Reads are counted in each bin to measure coverage. `bin.bam` function will count reads in each bin for a given sample.
 
-Eventually, this can be done externally, e.g. using [bedtools coverage](). The final count file should have these four columns: *chr*, *start*, *end* and *bc* (for bin count).
+Eventually, this can be done externally, e.g. using [bedtools coverage](http://bedtools.readthedocs.org/en/latest/content/tools/coverage.html). The final count file should have these four columns: *chr*, *start*, *end* and *bc* (for bin count).
 
 #### GC bias correction
 GC bias is corrected using a LOESS model. Using this model, a normalization coefficient is computed for each bin based on its GC content. This step is performed by `correct.GC` function.
