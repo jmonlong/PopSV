@@ -3,17 +3,29 @@
 ##' @param res.df the data.frame with the results.
 ##' @param merge.cons.bin TRUE if the single-bin calls has been merged
 ##' (Default, 'merge' option in 'call.abnormal.cov'). FALSE for single-bin calls. 
+##' @param height the height of the plot in the webpage. Default is "500px".
 ##' @return a shiny app in the web browser. 
 ##' @author Jean Monlong
 ##' @export
-sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE){
+sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
     freq.gr <- function(cnv.o){
         gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
         gr.d = GenomicRanges::disjoin(gr)
         ol = GenomicRanges::findOverlaps(gr.d, gr)
         freq.df = as.data.frame(table(IRanges::queryHits(ol)))
-        colnames(freq.df) = c("freq.n", "nb")
-        freq.df$prop = freq.df$n / length(unique(cnv.o$sample))
+        colnames(freq.df) = c("win.id", "nb")
+        freq.df$prop = freq.df$nb / length(unique(cnv.o$sample))
+        freq.df
+    }
+    freq.chr.gr <- function(cnv.o){
+        gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
+        gr.d = GenomicRanges::disjoin(gr)
+        ol = GenomicRanges::findOverlaps(gr.d, gr)
+        freq.df = as.data.frame(table(IRanges::queryHits(ol)), stringsAsFactors=FALSE)
+        colnames(freq.df) = c("win.id", "nb")
+        freq.df = cbind(GenomicRanges::as.data.frame(gr.d[as.numeric(freq.df$win.id)])[,1:3],freq.df)
+        colnames(freq.df)[1] = "chr"
+        freq.df$prop = freq.df$nb / length(unique(cnv.o$sample))
         freq.df
     }
 
@@ -29,20 +41,23 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE){
                 shiny::sidebarPanel(
                     shiny::textInput("fdr", "False Discovery rate", "0.05"),
                     shiny::textInput("cnD", "Deviation from CN 2", "0"),
-                    shiny::conditionalPanel(condition = "input.conditionPanels != 'Frequency distribution'",
+                    shiny::conditionalPanel(condition = "input.conditionPanels == 'Copy number estimates' | input.conditionPanels == 'Number of calls'",
                                             shiny::radioButtons("col", "Colour by ", c("event type","event size","sample"))),
                     shiny::conditionalPanel(condition = "input.conditionPanels == 'Copy number estimates'",
                                             shiny::numericInput("nbc", "Minimum number of consecutive bins", 3, 0, Inf, 1),
                                             shiny::numericInput("cnMin", "Minimum CN shown", 0, 0, Inf, 1),
                                             shiny::numericInput("cnMax", "Maximum CN shown", 5, 1, Inf, 1)),
+                    shiny::conditionalPanel(condition = "input.conditionPanels == 'Frequency across the genome'",
+                                            shiny::selectInput("chr","Chromosome",c("all",1:22)),shiny::radioButtons("freq.rep","Frequency representation",c("Stacked","Sample"))),
                     shiny::conditionalPanel(condition = "input.conditionPanels == 'Frequency distribution'",
                                             shiny::numericInput("nbMin", "Minimum number of samples shown", 0, 0, Inf, 1))
                     ),
                 shiny::mainPanel(
                     shiny::tabsetPanel(
-                        shiny::tabPanel("Number of calls", shiny::plotOutput("nb.calls")),
-                        shiny::tabPanel("Copy number estimates", shiny::plotOutput("cn")),
-                        shiny::tabPanel("Frequency distribution", shiny::plotOutput("freq")), id="conditionPanels"
+                        shiny::tabPanel("Number of calls", shiny::plotOutput("nb.calls", height=height)),
+                        shiny::tabPanel("Copy number estimates", shiny::plotOutput("cn", height=height)),
+                        shiny::tabPanel("Frequency distribution", shiny::plotOutput("freq", height=height)),
+                        shiny::tabPanel("Frequency across the genome", shiny::plotOutput("freq.chr", height=height)), id="conditionPanels"
                         )
                     )
                 ),
@@ -51,6 +66,10 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE){
             server = function(input, output) {
                 plot.df <- shiny::reactive({
                     subset(res.df, qv<as.numeric(input$fdr) & cn.dev>=input$cnD)
+                })
+                freq.df <- shiny::reactive({
+                    rbind(data.frame(type="deletion",freq.chr.gr(subset(res.df, qv<as.numeric(input$fdr) & cn.dev>=input$cnD & cn.coeff<1))),
+                          data.frame(type="duplication",freq.chr.gr(subset(res.df, qv<as.numeric(input$fdr) & cn.dev>=input$cnD & cn.coeff>1))))
                 })
                 
                 output$nb.calls = shiny::renderPlot({
@@ -96,16 +115,49 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE){
                     gp
                 })
                 output$freq = shiny::renderPlot({
-                    freq.df = freq.gr(plot.df())
-                    ggplot2::ggplot(subset(freq.df, nb>=input$nbMin), ggplot2::aes(x=nb)) +
+                    f.df = freq.df()
+                    f.df = dplyr::summarize(dplyr::group_by(f.df, chr, start, end), nb=sum(nb))
+                    ggplot2::ggplot(subset(f.df, nb>=input$nbMin), ggplot2::aes(x=nb, fill=chr)) +
                         ggplot2::geom_bar() + ggplot2::theme_bw() +
                             ggplot2::ylab("number of unique genomic region") +
-                                ggplot2::xlab("number of samples")
+                                ggplot2::xlab("number of samples") + ggplot2::guides(fill=FALSE) +
+                                    ggplot2::scale_fill_manual(values=rep(RColorBrewer::brewer.pal(9,"Set1"),3)) 
+                })
+                output$freq.chr = shiny::renderPlot({
+                    if(input$chr=="all"){
+                        chr.df = freq.df()
+                        chr.df$chr = factor(chr.df$chr, levels=1:22)
+                        pdf = plot.df()
+                        pdf$chr = factor(pdf$chr, levels=1:22)
+                        facet.o = ggplot2::facet_wrap(~chr,scales="free")
+                    } else {
+                        chr.df = subset(freq.df(), chr==input$chr)
+                        pdf = subset(plot.df(), chr==input$chr)
+                        facet.o = NULL
+                    }
+                    pdf$type = ifelse(pdf$cn.coeff>1, "duplication","deletion")
+                    pdf$sample = factor(pdf$sample)
+                    if(input$freq.rep=="Stacked"){
+                        return(ggplot2::ggplot(chr.df, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=0, ymax=nb, fill=type)) + ggplot2::scale_fill_brewer(palette="Set1") + 
+                        ggplot2::geom_rect(alpha=.6) + ggplot2::theme_bw() +
+                            ggplot2::ylab("number of samples") + ggplot2::theme(legend.position="top") + 
+                                ggplot2::xlab("position (Mb)") + facet.o)
+                    } else {
+                        ##return(ggplot2::ggplot(pdf, aes(x=start/1e6, xend=end/1e6, y=sample, yend=sample, colour=type)) + ggplot2::scale_colour_brewer(palette="Set1") + 
+                        ##ggplot2::geom_segment(size=1.5) + ggplot2::theme_bw() +
+                          ##  ggplot2::theme(legend.position="top") + 
+                            ##    ggplot2::xlab("position (Mb)") + facet.o)
+                        return(ggplot2::ggplot(pdf, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=as.numeric(sample)-.5, ymax=as.numeric(sample)+.5, fill=type)) + ggplot2::scale_fill_brewer(palette="Set1") +
+                               ggplot2::geom_rect() + ggplot2::theme_bw() +
+                               ggplot2::ylab("sample") + ggplot2::theme(axis.text.y=ggplot2::element_blank(),legend.position="top") + 
+                               ggplot2::xlab("position (Mb)") + facet.o)
+                    }
+
                 })
             }))
-        
-        
     } else {
+
+
 ###
 ### SINGLE BIN CALLS
 ###
