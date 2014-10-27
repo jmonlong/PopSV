@@ -3,7 +3,8 @@
 \alias{norm.tm.opt}
 \title{Trimmed-Mean normalization optimized}
 \usage{
-norm.tm.opt(df, ref.col, lm.min.prop = 0.1, bc.mean.norm = NULL)
+norm.tm.opt(df, ref.col, lm.min.prop = 0.1, bc.mean.norm = NULL,
+  chrs = NULL)
 }
 \arguments{
 \item{df}{a data.frame with the bin counts (bin x sample).}
@@ -16,6 +17,9 @@ local maximum.}
 
 \item{bc.mean.norm}{the average coverage in the reference sample. To be used to
 help normalize tumor samples.}
+
+\item{chrs}{the chromosomes of the bins used. The diversity of the chromosome is
+useful to differentiate misleading coefficient from a few aberrant chromosomes.}
 }
 \value{
 a vector with the normalization coefficients for each column (sample).

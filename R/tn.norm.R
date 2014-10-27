@@ -33,7 +33,7 @@
 tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,save.support.bins=TRUE, z.poisson=FALSE){
     all.samples = setdiff(colnames(bc),c("chr","start","end"))
     ref.samples.ii = which(all.samples %in% ref.samples)
-    rownames(bc) = paste(bc$chr, bc$start, sep="-")
+    rownames(bc) = paste(bc$chr, as.integer(bc$start), sep="-")
     if(is.null(bins)) bins = rownames(bc)
     if(save.support.bins) {
         norm.stats = createEmptyDF(c("character", rep("integer",2),rep("numeric",4),rep("character",nb.support.bins)), length(bins))
@@ -60,6 +60,7 @@ tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,sav
     } else {
         z.comp <- function(x, mean.c, sd.c){(x-mean.c)/sd.c}
     }
+    chrs = bc$chr
     bc = t(as.matrix(bc[,all.samples]))
     for(bin.ii in 1:length(bins)){
         bin = bins[bin.ii]
@@ -80,7 +81,7 @@ tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,sav
                 norm.coeff[ref.samples.ii] = norm.tm.opt(bc.g[,ref.samples.ii],ref.col=bc.g[,cont.sample])
                 msd = mean.sd.outlierR(bc.g[1,ref.samples.ii] * norm.coeff[ref.samples.ii],1e-6)
                 if(length(norm.coeff) > length(ref.samples.ii)){
-                    norm.coeff[-ref.samples.ii] = norm.tm.opt(bc.g[,-ref.samples.ii,drop=FALSE],ref.col=bc.g[,cont.sample],bc.mean.norm=msd$m)
+                    norm.coeff[-ref.samples.ii] = norm.tm.opt(bc.g[,-ref.samples.ii,drop=FALSE],ref.col=bc.g[,cont.sample],bc.mean.norm=msd$m,chrs=chrs[d.o.i])
                 }
                 bc.t = bc.g[1,] * norm.coeff
                 if(any(!is.na(bc.t))){
