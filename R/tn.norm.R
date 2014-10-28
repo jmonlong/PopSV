@@ -19,6 +19,10 @@
 ##' saved in the output object 'norm.stats'.
 ##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
 ##' Details). Default is FALSE.
+##' @param aberrant.cases if TRUE (default) a more robust (but sligthly longer) normalization
+##' is performed on cases to deal with potential large chromosomal aberrations. In practice,
+##' it is recommended for cancer but can be turned off if less than 20% of the genome is expected
+##' to be affected.
 ##' @return a list with
 ##' \item{norm.stats}{a data.frame witht some metrics about the normalization of each
 ##' bin (row) : correlation with worst supporting bin; coverage average and standard
@@ -30,7 +34,7 @@
 ##' \item{nb.support.bins, cont.sample, z.poisson}{a backup of the input parameters.}
 ##' @author Jean Monlong
 ##' @export
-tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,save.support.bins=TRUE, z.poisson=FALSE){
+tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,save.support.bins=TRUE, z.poisson=FALSE, aberrant.cases=TRUE){
     all.samples = setdiff(colnames(bc),c("chr","start","end"))
     ref.samples.ii = which(all.samples %in% ref.samples)
     rownames(bc) = paste(bc$chr, as.integer(bc$start), sep="-")
@@ -81,7 +85,11 @@ tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,sav
                 norm.coeff[ref.samples.ii] = norm.tm.opt(bc.g[,ref.samples.ii],ref.col=bc.g[,cont.sample])
                 msd = mean.sd.outlierR(bc.g[1,ref.samples.ii] * norm.coeff[ref.samples.ii],1e-6)
                 if(length(norm.coeff) > length(ref.samples.ii)){
-                    norm.coeff[-ref.samples.ii] = norm.tm.opt(bc.g[,-ref.samples.ii,drop=FALSE],ref.col=bc.g[,cont.sample],bc.mean.norm=msd$m,chrs=chrs[d.o.i])
+                    if(aberrant.cases){
+                        norm.coeff[-ref.samples.ii] = norm.tm.opt(bc.g[,-ref.samples.ii,drop=FALSE],ref.col=bc.g[,cont.sample],bc.mean.norm=msd$m,chrs=chrs[d.o.i])
+                    } else {
+                        norm.coeff[-ref.samples.ii] = norm.tm.opt(bc.g[,-ref.samples.ii,drop=FALSE],ref.col=bc.g[,cont.sample])
+                    }
                 }
                 bc.t = bc.g[1,] * norm.coeff
                 if(any(!is.na(bc.t))){

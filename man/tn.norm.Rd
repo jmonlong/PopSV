@@ -4,7 +4,7 @@
 \title{Targeted-normalization of bin counts}
 \usage{
 tn.norm(bc, cont.sample, ref.samples, nb.support.bins = 1000, bins = NULL,
-  save.support.bins = TRUE, z.poisson = FALSE)
+  save.support.bins = TRUE, z.poisson = FALSE, aberrant.cases = TRUE)
 }
 \arguments{
 \item{bc}{a matrix or data.frame with the bin counts (bin x sample).}
@@ -24,6 +24,11 @@ saved in the output object 'norm.stats'.}
 
 \item{z.poisson}{Should the Z-score be computed as an normal-poisson hybrid (see
 Details). Default is FALSE.}
+
+\item{aberrant.cases}{if TRUE (default) a more robust (but sligthly longer) normalization
+is performed on cases to deal with potential large chromosomal aberrations. In practice,
+it is recommended for cancer but can be turned off if less than 20% of the genome is expected
+to be affected.}
 }
 \value{
 a list with
