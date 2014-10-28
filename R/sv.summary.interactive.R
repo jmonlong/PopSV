@@ -138,16 +138,21 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                     pdf$type = ifelse(pdf$cn.coeff>1, "duplication","deletion")
                     pdf$sample = factor(pdf$sample)
                     if(input$freq.rep=="Stacked"){
-                        return(ggplot2::ggplot(chr.df, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=0, ymax=nb, fill=type)) + ggplot2::scale_fill_brewer(palette="Set1") + 
-                        ggplot2::geom_rect(alpha=.6) + ggplot2::theme_bw() +
-                            ggplot2::ylab("number of samples") + ggplot2::theme(legend.position="top") + 
-                                ggplot2::xlab("position (Mb)") + facet.o)
+                        return(ggplot2::ggplot(chr.df, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=0, ymax=nb, fill=type)) +
+                               ggplot2::scale_fill_brewer(palette="Set1") + 
+                               ggplot2::scale_x_continuous(breaks=seq(0,max(chr.df$end)/1e6,20)) + 
+                               ggplot2::geom_rect(alpha=.6) + ggplot2::theme_bw() +
+                               ggplot2::ylab("number of samples") +
+                               ggplot2::theme(legend.position="top") + 
+                               ggplot2::xlab("position (Mb)") + facet.o)
                     } else {
                         ##return(ggplot2::ggplot(pdf, aes(x=start/1e6, xend=end/1e6, y=sample, yend=sample, colour=type)) + ggplot2::scale_colour_brewer(palette="Set1") + 
                         ##ggplot2::geom_segment(size=1.5) + ggplot2::theme_bw() +
                           ##  ggplot2::theme(legend.position="top") + 
                             ##    ggplot2::xlab("position (Mb)") + facet.o)
-                        return(ggplot2::ggplot(pdf, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=as.numeric(sample)-.5, ymax=as.numeric(sample)+.5, fill=type)) + ggplot2::scale_fill_brewer(palette="Set1") +
+                        return(ggplot2::ggplot(pdf, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=as.numeric(sample)-.5, ymax=as.numeric(sample)+.5, fill=type)) +
+                               ggplot2::scale_fill_brewer(palette="Set1") +
+                               ggplot2::scale_x_continuous(breaks=seq(0,max(chr.df$end)/1e6,20)) + 
                                ggplot2::geom_rect() + ggplot2::theme_bw() +
                                ggplot2::ylab("sample") + ggplot2::theme(axis.text.y=ggplot2::element_blank(),legend.position="top") + 
                                ggplot2::xlab("position (Mb)") + facet.o)
