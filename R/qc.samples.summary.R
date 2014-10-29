@@ -22,7 +22,7 @@ qc.samples.summary <- function(qc.res){
                 shiny::conditionalPanel(condition = "input.conditionPanels == 'Clustering'",
                                         shiny::selectInput("cl.meth", "Linkage method: ",
                                                            c("Average"="average","Complete"="complete","Ward"="ward.D"))),
-                hr(),
+                shiny::hr(),
                 shiny::textOutput("nbsamp")
                 ),
             shiny::mainPanel(
@@ -30,7 +30,7 @@ qc.samples.summary <- function(qc.res){
                     shiny::tabPanel("D distribution", shiny::plotOutput("d.hist")),
                     shiny::tabPanel("Clustering", shiny::plotOutput("clust")),
                     shiny::tabPanel("PCA", shiny::plotOutput("pca")),
-                    shiny::tabPanel("Export", shiny::actionButton("exp","Export to 'ref-samples.RData'"),hr(),shiny::textOutput("export")),id="conditionPanels"
+                    shiny::tabPanel("Export", shiny::actionButton("exp","Export to 'ref-samples.RData'"),shiny::hr(),shiny::textOutput("export")),id="conditionPanels"
                     )
                 )),
             
@@ -90,7 +90,7 @@ qc.samples.summary <- function(qc.res){
             })
             output$export = shiny::renderText({
                 input$exp
-                ref.samples = isolate(samples.ref())
+                ref.samples = shiny::isolate(samples.ref())
                 save(ref.samples, file="ref-samples.RData")
                 return(paste(length(ref.samples)," samples saved in 'ref-samples.RData'."))
             })
