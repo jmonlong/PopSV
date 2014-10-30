@@ -8,24 +8,18 @@
 ##' @author Jean Monlong
 ##' @export
 sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
-    freq.gr <- function(cnv.o){
-        gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
-        gr.d = GenomicRanges::disjoin(gr)
-        ol = GenomicRanges::findOverlaps(gr.d, gr)
-        freq.df = as.data.frame(table(IRanges::queryHits(ol)))
-        colnames(freq.df) = c("win.id", "nb")
-        freq.df$prop = freq.df$nb / length(unique(cnv.o$sample))
-        freq.df
-    }
+    nb.samp = length(unique(res.df$sample))
     freq.chr.gr <- function(cnv.o){
         gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
         gr.d = GenomicRanges::disjoin(gr)
         ol = GenomicRanges::findOverlaps(gr.d, gr)
-        freq.df = as.data.frame(table(IRanges::queryHits(ol)), stringsAsFactors=FALSE)
-        colnames(freq.df) = c("win.id", "nb")
-        freq.df = cbind(GenomicRanges::as.data.frame(gr.d[as.numeric(freq.df$win.id)])[,1:3],freq.df)
-        colnames(freq.df)[1] = "chr"
-        freq.df$prop = freq.df$nb / length(unique(cnv.o$sample))
+        thits = base::table(IRanges::queryHits(ol))
+        freq.df = data.frame(win.id = as.numeric(names(thits)), nb=as.numeric(thits))
+        win.df = GenomicRanges::as.data.frame(gr.d[as.numeric(freq.df$win.id)])[,1:3]
+        freq.df$chr = as.character(win.df$seqnames)
+        freq.df$start = as.numeric(win.df$start)
+        freq.df$end = as.numeric(win.df$end)
+        freq.df$prop = freq.df$nb / nb.samp
         freq.df
     }
 
@@ -48,9 +42,15 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                                             shiny::numericInput("cnMin", "Minimum CN shown", 0, 0, Inf, 1),
                                             shiny::numericInput("cnMax", "Maximum CN shown", 5, 1, Inf, 1)),
                     shiny::conditionalPanel(condition = "input.conditionPanels == 'Frequency across the genome'",
-                                            shiny::selectInput("chr","Chromosome",c("all",1:22)),shiny::radioButtons("freq.rep","Frequency representation",c("Stacked","Sample"))),
+                                            shiny::selectInput("chr","Chromosome",c("all",1:22)),shiny::radioButtons("fchr.rep","Representation",c("Stacked","Sample"))),
+                    shiny::conditionalPanel(condition = "input.conditionPanels == 'Frequency across the genome' | input.conditionPanels == 'Frequency distribution'",
+                                            shiny::radioButtons("freq.rep","Frequency:", c("Number of samples"="nb","Proportion of samples"="prop"))),
                     shiny::conditionalPanel(condition = "input.conditionPanels == 'Frequency distribution'",
-                                            shiny::numericInput("nbMin", "Minimum number of samples shown", 0, 0, Inf, 1))
+                                            shiny::numericInput("nbMin", "Minimum frequency (number of samples) shown", 0, 0, Inf, 1),
+                                            shiny::hr(),
+                                            shiny::helpText("Colours represent chromosomes."),
+                                            shiny::hr(),
+                                            shiny::helpText("Frequency computation might take a few seconds."))
                     ),
                 shiny::mainPanel(
                     shiny::tabsetPanel(
@@ -116,12 +116,16 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                 })
                 output$freq = shiny::renderPlot({
                     f.df = freq.df()
-                    f.df = dplyr::summarize(dplyr::group_by(f.df, chr, start, end), nb=sum(nb))
-                    ggplot2::ggplot(subset(f.df, nb>=input$nbMin), ggplot2::aes(x=nb, fill=chr)) +
-                        ggplot2::geom_bar() + ggplot2::theme_bw() +
-                            ggplot2::ylab("number of unique genomic region") +
-                                ggplot2::xlab("number of samples") + ggplot2::guides(fill=FALSE) +
-                                    ggplot2::scale_fill_manual(values=rep(RColorBrewer::brewer.pal(9,"Set1"),3)) 
+                    f.df = dplyr::summarize(dplyr::group_by(f.df, chr, start, end), nb=sum(nb), prop=sum(prop))
+                    if(input$freq.rep=="nb"){
+                        ggp = ggplot2::ggplot(subset(f.df, nb>=input$nbMin), ggplot2::aes(x=nb, fill=chr)) + ggplot2::xlab("number of samples") 
+                    } else {
+                        ggp = ggplot2::ggplot(subset(f.df, nb>=input$nbMin), ggplot2::aes(x=prop, fill=chr)) + ggplot2::xlab("proportion of samples") 
+                    }
+                    ggp + ggplot2::geom_bar() + ggplot2::theme_bw() +
+                        ggplot2::ylab("number of unique genomic region") +
+                            ggplot2::guides(fill=FALSE) +
+                                ggplot2::scale_fill_manual(values=rep(RColorBrewer::brewer.pal(9,"Set1"),3)) 
                 })
                 output$freq.chr = shiny::renderPlot({
                     if(input$chr=="all"){
@@ -137,19 +141,25 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                     }
                     pdf$type = ifelse(pdf$cn.coeff>1, "duplication","deletion")
                     pdf$sample = factor(pdf$sample)
-                    if(input$freq.rep=="Stacked"){
-                        return(ggplot2::ggplot(chr.df, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=0, ymax=nb, fill=type)) +
+                    if(input$fchr.rep=="Stacked"){
+                        if(input$freq.rep=="nb"){
+                            ggp = ggplot2::ggplot(chr.df, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=0, ymax=nb, fill=type)) + ggplot2::ylab("number of samples")  +
+                                ggplot2::geom_segment(ggplot2::aes(x=(end+start)/2e6,xend=(end+start)/2e6, y=0, yend=nb, colour=type), data=subset(chr.df, end-start<max(chr.df$end/1e3)))
+                        } else {
+                            ggp = ggplot2::ggplot(chr.df, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=0, ymax=prop, fill=type)) + ggplot2::ylab("proportion of samples") +
+                                ggplot2::geom_segment(ggplot2::aes(x=(end+start)/2e6,xend=(end+start)/2e6, y=0, yend=prop, colour=type), data=subset(chr.df, end-start<max(chr.df$end/1e3)))
+                        }
+                        return(ggp +
                                ggplot2::scale_fill_brewer(palette="Set1") + 
                                ggplot2::scale_x_continuous(breaks=seq(0,max(chr.df$end)/1e6,20)) + 
                                ggplot2::geom_rect(alpha=.6) + ggplot2::theme_bw() +
-                               ggplot2::ylab("number of samples") +
                                ggplot2::theme(legend.position="top") + 
                                ggplot2::xlab("position (Mb)") + facet.o)
                     } else {
-                        ##return(ggplot2::ggplot(pdf, aes(x=start/1e6, xend=end/1e6, y=sample, yend=sample, colour=type)) + ggplot2::scale_colour_brewer(palette="Set1") + 
-                        ##ggplot2::geom_segment(size=1.5) + ggplot2::theme_bw() +
-                          ##  ggplot2::theme(legend.position="top") + 
-                            ##    ggplot2::xlab("position (Mb)") + facet.o)
+                        widths = pdf$end-pdf$start
+                        wmin = max(chr.df$end/1e3)
+                        if(any(widths<wmin))widths[widths<wmin] = wmin
+                        pdf$end = pdf$start + widths
                         return(ggplot2::ggplot(pdf, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=as.numeric(sample)-.5, ymax=as.numeric(sample)+.5, fill=type)) +
                                ggplot2::scale_fill_brewer(palette="Set1") +
                                ggplot2::scale_x_continuous(breaks=seq(0,max(chr.df$end)/1e6,20)) + 
@@ -157,7 +167,6 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                                ggplot2::ylab("sample") + ggplot2::theme(axis.text.y=ggplot2::element_blank(),legend.position="top") + 
                                ggplot2::xlab("position (Mb)") + facet.o)
                     }
-
                 })
             }))
     } else {
@@ -209,7 +218,6 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                 })
                 output$freq = shiny::renderPlot({
                     p.df = plot.df()
-                    nb.samp = length(unique(p.df$sample))
                     freq.df = dplyr::summarize(dplyr::group_by(p.df, chr, start),
                         freq.n = length(start), freq.p = length(start)/nb.samp)
                     ggplot2::ggplot(freq.df, ggplot2::aes(x=freq.n)) +
