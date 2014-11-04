@@ -32,7 +32,8 @@ norm.tm.opt <- function(df,ref.col,lm.min.prop=0.1,bc.mean.norm=NULL, chrs=NULL)
                 s.h = lM.o$h / max(lM.o$h)
                 s.c = sapply(lM.o$lM, function(rr)max(table(chrs[order(abs(rr-r))[1:100]])))
                 s.c = 1 - s.c / max(s.c)
-                return(lM.o$lM[which.max(s.mn+s.h+s.c)])
+                ##return(lM.o$lM[which.max(s.mn+s.h+s.c)])
+                return(lM.o$lM[which.max(s.mn+s.h)])
             } else {
                 return(median(r,na.rm=TRUE))
             }
