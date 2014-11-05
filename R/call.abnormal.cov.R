@@ -53,7 +53,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FA
             colC[headers==samp] = "numeric"
             cn = read.table(cn,header=TRUE,colClasses=colC)
         } 
-        res.df$cn.coeff = cn[,samp]
+        res.df$cn.coeff = cn[,make.names(samp)]
         rm(cn)
     }
     
