@@ -4,7 +4,8 @@
 \title{Join and QC of samples}
 \usage{
 qc.samples(files.df, bin.df, ref.samples = NULL, outfile.prefix,
-  out.pdf = NULL, appendIndex.outfile = TRUE, chunk.size = 1e+05)
+  out.pdf = NULL, appendIndex.outfile = TRUE, chunk.size = 1e+05,
+  col.bc = "bc.gc.gz")
 }
 \arguments{
 \item{files.df}{a data.frame with the information about the files to
@@ -30,6 +31,8 @@ file are created.}
 
 \item{chunk.size}{the number of bins to analyze at a time (for memory optimization).
 Default is 100 000. Reduce this number if memory problems arise.}
+
+\item{col.bc}{the column from 'files.df' defining the bin count file names.}
 }
 \value{
 a list with
