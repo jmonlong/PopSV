@@ -12,13 +12,16 @@
 ##' @param dest.folder.relative.path Is the specified folder defined relatively to
 ##' the working directory. Default is TRUE. Set to FALSE if providing absolute
 ##' paths (recommended).
+##' @param sub.folder if non-null, sample folders will be structure into sub folder
+##' defined by the column in 'files.df' named 'sub.folder'. Useful when many samples
+##' from different projects are studied together.
 ##' @return an updated data.frame with the information about the files.
 ##' Specifically a new column 'bc', 'bc.gz', 'bc.gc' and 'bc.gc.bz' holds the name
 ##' of the bin counts (raw/compressed), GC corrected bin counts (raw/compressed) files
 ##' to be created later.
 ##' @author Jean Monlong
 ##' @export
-init.filenames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=NULL, dest.folder.relative.path=TRUE){
+init.filenames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=NULL, dest.folder.relative.path=TRUE, sub.folder=NULL){
     if(!all(c("sample","bam")%in%colnames(files.df))){
         stop("Columns 'sample' and 'bam' are required in 'files.df' data.frame.")
     }
@@ -28,6 +31,12 @@ init.filenames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=N
         dest.folder = paste(getwd(),dest.folder,sep=.Platform$file.sep)
     }
     sample.destf = dest.folder
+    if(!is.null(sub.folder)){
+        if(all(!(sub.folder%in%colnames(files.df)))){
+            stop(paste("If non-null, 'sub.folder' must be the name of a column from 'files.df'. There is no column named", sub.folder))
+        }
+        sample.destf = paste(sample.destf,files.df[,sub.folder],sep=.Platform$file.sep)
+    }
     if(sample.folder){
         sample.destf = paste(sample.destf,files.df$sample,sep=.Platform$file.sep)
     }

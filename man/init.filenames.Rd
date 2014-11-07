@@ -4,7 +4,7 @@
 \title{Init file names for analysis}
 \usage{
 init.filenames(files.df, dest.folder = ".", sample.folder = TRUE,
-  code = NULL, dest.folder.relative.path = TRUE)
+  code = NULL, dest.folder.relative.path = TRUE, sub.folder = NULL)
 }
 \arguments{
 \item{files.df}{a data.frame with the information about the files to
@@ -22,6 +22,10 @@ several times with different parameters. Default is NULL.}
 \item{dest.folder.relative.path}{Is the specified folder defined relatively to
 the working directory. Default is TRUE. Set to FALSE if providing absolute
 paths (recommended).}
+
+\item{sub.folder}{if non-null, sample folders will be structure into sub folder
+defined by the column in 'files.df' named 'sub.folder'. Useful when many samples
+from different projects are studied together.}
 }
 \value{
 an updated data.frame with the information about the files.
