@@ -32,7 +32,14 @@ bin.bam <- function(bam.file,bin.df,outfile.prefix, appendIndex.outfile=TRUE,pro
             what = c("mapq"),
             flag = Rsamtools::scanBamFlag(isProperPair=proper,isDuplicate=FALSE,isNotPassingQualityControls=FALSE,isUnmappedQuery=FALSE)
             )
-        bam = Rsamtools::scanBam(bam.file,param=param)
+        bai.file = sub("bam$","bai",bam.file,perl=TRUE)
+        if(!file.exists(bai.file)){
+            bai.file = paste0(bam.file,".bai")
+            if(!file.exists(bai.file)){
+                stop("Index file is missing (neither '.bai' nor '.bam.bai').")
+            }
+        }
+        bam = Rsamtools::scanBam(bam.file, index=bai.file,param=param)
         unlist(lapply(bam,function(e)sum(unlist(e)>map.quality)))
     }
 
