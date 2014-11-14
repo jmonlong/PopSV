@@ -25,8 +25,19 @@ init.filenames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=N
     if(!all(c("sample","bam")%in%colnames(files.df))){
         stop("Columns 'sample' and 'bam' are required in 'files.df' data.frame.")
     }
-    files.df$sample = as.character(files.df$sample)
+
+    ## Convert potential factors into character
+    ## Convert sample names into R-friendly names
+    files.df$sample = make.names(as.character(files.df$sample))
     files.df$bam = as.character(files.df$bam)
+
+    ## Check duplicate sample names
+    files.df = unique(files.df)
+    if(any(duplicated(files.df$sample))){
+        stop("Duplicated sample names: ", head(files.df$sample[duplicated(files.df$sample)]))
+    }
+
+    ## Create folder structure as required
     if(dest.folder.relative.path){
         dest.folder = paste(getwd(),dest.folder,sep=.Platform$file.sep)
     }
@@ -46,6 +57,8 @@ init.filenames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=N
             dir.create(fold,recursive=TRUE)
         }
     })
+
+    ## Create file names
     if(!is.null(code)){
         code = paste0("-",code)
     }
@@ -53,5 +66,6 @@ init.filenames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=N
     files.df$bc.gz = paste0(files.df$bc,".bgz")
     files.df$bc.gc = paste0(sample.destf,.Platform$file.sep,files.df$sample,code,"-bc-gcCor.tsv")
     files.df$bc.gc.gz = paste0(files.df$bc.gc,".bgz")
+
     return(files.df)
 }
