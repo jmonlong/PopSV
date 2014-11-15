@@ -30,19 +30,20 @@ bin.bam <- function(bam.file,bin.df,outfile.prefix=NULL, appendIndex.outfile=TRU
     bin.df = dplyr::arrange(bin.df, chr, start)
     bin.df$chunk = rep(1:ceiling(nrow(bin.df)/chunk.size),each=chunk.size)[1:nrow(bin.df)]
 
+    bai.file = sub("bam$","bai",bam.file,perl=TRUE)
+    if(!file.exists(bai.file)){
+        bai.file = paste0(bam.file,".bai")
+        if(!file.exists(bai.file)){
+            stop("Index file is missing (neither '.bai' nor '.bam.bai').")
+        }
+    }
+
     binBam.single <- function(df){
         gr.o = with(df,GenomicRanges::GRanges(chr,IRanges::IRanges(start=start,end=end)))
         param = Rsamtools::ScanBamParam(which=gr.o,
             what = c("mapq"),
             flag = Rsamtools::scanBamFlag(isProperPair=proper,isDuplicate=FALSE,isNotPassingQualityControls=FALSE,isUnmappedQuery=FALSE)
             )
-        bai.file = sub("bam$","bai",bam.file,perl=TRUE)
-        if(!file.exists(bai.file)){
-            bai.file = paste0(bam.file,".bai")
-            if(!file.exists(bai.file)){
-                stop("Index file is missing (neither '.bai' nor '.bam.bai').")
-            }
-        }
         bam = Rsamtools::scanBam(bam.file, index=bai.file,param=param)
         unlist(lapply(bam,function(e)sum(unlist(e)>map.quality)))
     }
