@@ -27,6 +27,7 @@ Imports:
     ggplot2,
     ggdendro,
     shiny,
-    RColorBrewer
+    RColorBrewer,
+    parallel
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19

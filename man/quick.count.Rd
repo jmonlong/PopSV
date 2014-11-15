@@ -3,7 +3,7 @@
 \alias{quick.count}
 \title{Counts reads across samples in a small number of bins}
 \usage{
-quick.count(files.df, bins.df)
+quick.count(files.df, bins.df, nb.cores = 1)
 }
 \arguments{
 \item{files.df}{a data.frame with the information about the files to
@@ -19,7 +19,8 @@ a data.frame with the bin location and read counts for all samples.
 This function retrieves bin count for all samples in the input file information
 data.frame. It was designed to count reads in a small amount of bins (a subset
 of what will be used for the full analysis). This counts can be used later to
-compare a potentially large number samples and guide the selection of samples to consider in the analysis.
+compare a potentially large number samples and guide the selection of samples
+to consider in the analysis.
 }
 \author{
 Jean Monlong
