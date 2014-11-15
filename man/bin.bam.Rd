@@ -3,7 +3,7 @@
 \alias{bin.bam}
 \title{Get read counts from BAM file}
 \usage{
-bin.bam(bam.file, bin.df, outfile.prefix, appendIndex.outfile = TRUE,
+bin.bam(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile = TRUE,
   proper = TRUE, map.quality = 30, chunk.size = 10000,
   check.chr.name = TRUE)
 }

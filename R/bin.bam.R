@@ -22,7 +22,11 @@
 ##' the bin counts if not.
 ##' @author Jean Monlong
 ##' @export
-bin.bam <- function(bam.file,bin.df,outfile.prefix, appendIndex.outfile=TRUE,proper=TRUE,map.quality=30, chunk.size=1e4, check.chr.name=TRUE){
+bin.bam <- function(bam.file,bin.df,outfile.prefix=NULL, appendIndex.outfile=TRUE,proper=TRUE,map.quality=30, chunk.size=1e4, check.chr.name=TRUE){
+    if(is.null(outfile.prefix) & appendIndex.outfile){
+        stop("If 'appendIndex.outfile' is TRUE, please provide 'outfile.prefix'.")
+    }
+
     bin.df = dplyr::arrange(bin.df, chr, start)
     bin.df$chunk = rep(1:ceiling(nrow(bin.df)/chunk.size),each=chunk.size)[1:nrow(bin.df)]
 
@@ -64,7 +68,7 @@ Check manually and/or switch off option 'check.chr.name'.")
         ch.nb = as.numeric(df$chunk[1])
         df = df[,c("chr","start","end")]
         df$bc = binBam.single(df)
-        if(appendIndex.outfile){
+        if(appendIndex.outfile & !is.null(outfile.prefix)){
             df$chunk = NULL
             write.table(df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t", append=ch.nb>1, col.names=ch.nb==1)
             return(data.frame(chunk=ch.nb, status="done"))
@@ -75,7 +79,7 @@ Check manually and/or switch off option 'check.chr.name'.")
 
     bc.df = dplyr::do(dplyr::group_by(bin.df,chunk),binBam.chunk(.))
 
-    if(appendIndex.outfile){
+    if(appendIndex.outfile & !is.null(outfile.prefix)){
         final.file = paste(outfile.prefix,".bgz",sep="")
         Rsamtools::bgzip(outfile.prefix, dest=final.file, overwrite=TRUE)
         file.remove(outfile.prefix)
