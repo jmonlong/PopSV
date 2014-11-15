@@ -15,7 +15,7 @@ quick.count <- function(files.df, bins.df){
         bc.s = bin.bam(files.df$bam[files.df$sample==samp], bins.df, appendIndex.outfile=FALSE, chunk.size=nrow(bins.df))
         bc.s$bc
     })
-    bc.df = createEmptyDF(c(sapply(c("chr","start","end"), function(cn)class(df[,cn])), rep("integer",ncol(bins.df))),nrow(bins.df))
+    bc.df = createEmptyDF(c(sapply(c("chr","start","end"), function(cn)class(bins.df[,cn])), rep("integer",nrow(files.df))),nrow(bins.df))
     colnames(bc.df) = c("chr","start","end",as.character(files.df$sample))
     bc.df[,1:3] = bins.df[,c("chr","start","end")]
     for(ii in 1:length(bc.l)){
