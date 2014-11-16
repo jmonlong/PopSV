@@ -8,10 +8,13 @@
 ##' use. Columns 'sample' and 'bam' are required.
 ##' @param bins.df a data.frame with the information about the bins. Columns 'chr', 'start'
 ##' and 'end' are required.
+##' @param nb.cores number of cores to use. If higher than 1, \code{parallel}
+##' package is used to parallelized the counting.
+##' @param ... extra paramaters for 'bin.bam' function
 ##' @return a data.frame with the bin location and read counts for all samples.
 ##' @author Jean Monlong
 ##' @export
-quick.count <- function(files.df, bins.df, nb.cores=1){
+quick.count <- function(files.df, bins.df, nb.cores=1,...){
     if(nb.cores>1){
         bc.l = parallel::mclapply(files.df$sample, function(samp){
             bc.s = bin.bam(files.df$bam[files.df$sample==samp], bins.df, appendIndex.outfile=FALSE, chunk.size=nrow(bins.df))
@@ -19,7 +22,7 @@ quick.count <- function(files.df, bins.df, nb.cores=1){
         },mc.cores=nb.cores)
     } else {
         bc.l = lapply(files.df$sample, function(samp){
-            bc.s = bin.bam(files.df$bam[files.df$sample==samp], bins.df, appendIndex.outfile=FALSE, chunk.size=nrow(bins.df))
+            bc.s = bin.bam(files.df$bam[files.df$sample==samp], bins.df, appendIndex.outfile=FALSE, chunk.size=nrow(bins.df),...)
             bc.s$bc
         })
     }
