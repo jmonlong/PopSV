@@ -17,7 +17,7 @@
 quick.count <- function(files.df, bins.df, nb.cores=1,...){
     if(nb.cores>1){
         bc.l = parallel::mclapply(files.df$sample, function(samp){
-            bc.s = bin.bam(files.df$bam[files.df$sample==samp], bins.df, appendIndex.outfile=FALSE, chunk.size=nrow(bins.df))
+            bc.s = bin.bam(files.df$bam[files.df$sample==samp], bins.df, appendIndex.outfile=FALSE, chunk.size=nrow(bins.df), ...)
             bc.s$bc
         },mc.cores=nb.cores)
     } else {
