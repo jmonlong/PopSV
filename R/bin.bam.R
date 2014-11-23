@@ -18,15 +18,17 @@
 ##' @param check.chr.name if TRUE (default), the function will try to check that the
 ##' definition of chromosome (e.g. '1' vs 'chr1') are consistent between the bin
 ##' definition and the BAM file. If FALSE, the analysis will continue either way.
-##' @return the final output file name if 'appendIndex.outfile' was TRUE; a data.frame with
-##' the bin counts if not.
+##' @return a list:
+##' \item{bc}{the final output file name if 'appendIndex.outfile' was TRUE; a data.frame with
+##' the bin counts if not.}
+##' \item{nb.reads}{the number of reads counted.}
 ##' @author Jean Monlong
 ##' @export
 bin.bam <- function(bam.file,bin.df,outfile.prefix=NULL, appendIndex.outfile=TRUE,proper=TRUE,map.quality=30, chunk.size=1e4, check.chr.name=TRUE){
     if(is.null(outfile.prefix) & appendIndex.outfile){
         stop("If 'appendIndex.outfile' is TRUE, please provide 'outfile.prefix'.")
     }
-
+    
     bin.df = dplyr::arrange(bin.df, chr, start)
     bin.df$chunk = rep(1:ceiling(nrow(bin.df)/chunk.size),each=chunk.size)[1:nrow(bin.df)]
 
@@ -43,7 +45,7 @@ bin.bam <- function(bam.file,bin.df,outfile.prefix=NULL, appendIndex.outfile=TRU
         param = Rsamtools::ScanBamParam(which=gr.o,
             what = c("mapq"),
             flag = Rsamtools::scanBamFlag(isProperPair=proper,isDuplicate=FALSE,isNotPassingQualityControls=FALSE,isUnmappedQuery=FALSE)
-            )
+                                        )
         bam = Rsamtools::scanBam(bam.file, index=bai.file,param=param)
         unlist(lapply(bam,function(e)sum(unlist(e)>map.quality)))
     }
@@ -72,7 +74,7 @@ Check manually and/or switch off option 'check.chr.name'.")
         if(appendIndex.outfile & !is.null(outfile.prefix)){
             df$chunk = NULL
             write.table(df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t", append=ch.nb>1, col.names=ch.nb==1)
-            return(data.frame(chunk=ch.nb, status="done"))
+            return(data.frame(chunk=ch.nb, nb.reads=sum(df$bc, na.rm=TRUE)))
         } else {
             return(df)
         }
@@ -85,9 +87,9 @@ Check manually and/or switch off option 'check.chr.name'.")
         Rsamtools::bgzip(outfile.prefix, dest=final.file, overwrite=TRUE)
         file.remove(outfile.prefix)
         Rsamtools::indexTabix(final.file, format="bed")
-        return(final.file)
+        return(list(bc=final.file, nb.reads=sum(bc.df$nb.reads, na.rm=TRUE)))
     } else {
         bc.df$chunk = NULL
-        return(bc.df)
+        return(list(bc=bc.df, nb.reads=sum(bc.df$bc, na.rm=TRUE)))
     }    
 }

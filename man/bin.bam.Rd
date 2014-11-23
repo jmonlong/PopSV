@@ -35,8 +35,10 @@ definition of chromosome (e.g. '1' vs 'chr1') are consistent between the bin
 definition and the BAM file. If FALSE, the analysis will continue either way.}
 }
 \value{
-the final output file name if 'appendIndex.outfile' was TRUE; a data.frame with
-the bin counts if not.
+a list:
+\item{bc}{the final output file name if 'appendIndex.outfile' was TRUE; a data.frame with
+the bin counts if not.}
+\item{nb.reads}{the number of reads counted.}
 }
 \description{
 Count the number of reads from a BAM file in specified bins.

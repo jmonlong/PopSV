@@ -32,7 +32,7 @@ getBC.f <- function(file.i, gc.reg, files.df){
 batchMap(getBC.reg, getBC.f,1:nrow(files.df), more.args=list(gc.reg=getGC.reg, files.df=files.df))
 submitJobs(getBC.reg, findNotDone(getBC.reg), resources=list(walltime="30:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(getBC.reg)
-all(reduceResultsVector(getBC.reg)==files.df$bc.gz)
+nb.reads = reduceResultsVector(getBC.reg, fun=function(job, res)res$nb.reads)
 
 ## 4) GC correction
 ## system("rm -rf gcCor")
