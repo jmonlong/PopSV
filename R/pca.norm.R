@@ -53,7 +53,7 @@ pca.norm <- function(bc, nb.pcs=3, ref.samples=NULL, z.poisson=FALSE){
     colnames(pca.o) = paste("pc",1:nb.pcs,sep="")
     reg.form = paste("bc.s ~ pc", paste(1:nb.pcs, collapse=" + pc"),sep="")
     bc.norm[, all.samples] = apply(bc, 2, function(bc.s){
-        lm.o = lm(reg.form, data=data.frame(bc.s=bc.s, pca.o))
+        lm.o = glm(reg.form, data=data.frame(bc.s=bc.s, pca.o), family=poisson)
         return(bc.s*lm.o$coefficients[1]/predict(lm.o))
     })
     for(bin.ii in 1:length(bins)){
