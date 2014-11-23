@@ -16,7 +16,7 @@
 ##' column (the number of bin merged for each event).
 ##' @author Jean Monlong
 ##' @keywords internal
-mergeConsBin.z <- function(res.df,fdr.th=.05,col.mean=c("z","pv","qv","cn.coeff"),sd.null=1,nb.sim=1e6){
+mergeConsBin.z <- function(res.df,fdr.th=.05,col.mean=c("z","pv","qv","fc"),sd.null=1,nb.sim=1e6){
     ## Compute P-value from an empirical null distribution
     compute.pv <- function(z,z.null, alt.greater=TRUE){
         if(length(z)>1){

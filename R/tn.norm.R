@@ -29,7 +29,7 @@
 ##' deviation; number of outlier reference samples; supporting bins.}
 ##' \item{bc.norm}{a matrix with the normalized bin counts (bin x sample).}
 ##' \item{z}{a matrix with the Z-scores for each bin and sample (bin x sample).}
-##' \item{cn.coeff}{a matrix with the copy-number coefficients for each bin and sample (
+##' \item{fc}{a matrix with the copy-number coefficients for each bin and sample (
 ##' bin x sample).}
 ##' \item{nb.support.bins, cont.sample, z.poisson}{a backup of the input parameters.}
 ##' @author Jean Monlong
@@ -48,11 +48,11 @@ tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,sav
     }
     bc.norm = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
     z = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
-    cn.coeff = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
-    colnames(bc.norm) = colnames(z) = colnames(cn.coeff) = c("chr", "start","end",all.samples)
-    norm.stats$chr = bc.norm$chr = z$chr = cn.coeff$chr = bc[bins,"chr"]
-    norm.stats$start = bc.norm$start = z$start = cn.coeff$start = bc[bins,"start"]
-    norm.stats$end = bc.norm$end = z$end = cn.coeff$end = bc[bins,"end"]
+    fc = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
+    colnames(bc.norm) = colnames(z) = colnames(fc) = c("chr", "start","end",all.samples)
+    norm.stats$chr = bc.norm$chr = z$chr = fc$chr = bc[bins,"chr"]
+    norm.stats$start = bc.norm$start = z$start = fc$start = bc[bins,"start"]
+    norm.stats$end = bc.norm$end = z$end = fc$end = bc[bins,"end"]
     if(z.poisson){
         z.comp <- function(x, mean.c, sd.c){
             z.n = (x-mean.c)/sd.c
@@ -97,11 +97,11 @@ tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,sav
                     if(save.support.bins) norm.stats[bin.ii,8:ncol(norm.stats)] = bin.for.norm
                     bc.norm[bin.ii,-(1:3)] = bc.t
                     z[bin.ii,-(1:3)] = z.comp(bc.t,msd$m,msd$sd)
-                    cn.coeff[bin.ii,-(1:3)] = bc.t/msd$m
+                    fc[bin.ii,-(1:3)] = bc.t/msd$m
 
                 }
             }
         }
     }
-    list(norm.stats=norm.stats, bc.norm=bc.norm,z=z, cn.coeff=cn.coeff, nb.support.bins=nb.support.bins, cont.sample=cont.sample, z.poisson=z.poisson)
+    list(norm.stats=norm.stats, bc.norm=bc.norm,z=z, fc=fc, nb.support.bins=nb.support.bins, cont.sample=cont.sample, z.poisson=z.poisson)
 }

@@ -3,8 +3,8 @@
 \alias{mergeConsBin.z}
 \title{Merge abnormal consecutive bins}
 \usage{
-mergeConsBin.z(res.df, fdr.th = 0.05, col.mean = c("z", "pv", "qv",
-  "cn.coeff"), sd.null = 1, nb.sim = 1e+06)
+mergeConsBin.z(res.df, fdr.th = 0.05, col.mean = c("z", "pv", "qv", "fc"),
+  sd.null = 1, nb.sim = 1e+06)
 }
 \arguments{
 \item{res.df}{a data.frame with the Z-scores. Columns 'chr', 'start', 'end' and 'z'

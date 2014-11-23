@@ -12,7 +12,7 @@ fragment.genome.hp19 <- function(bin.size=1e3){
 > biocLite(\"BSgenome.Hsapiens.UCSC.hg19\")
 ")
     }
-    seql.1.22 = seqlengths(BSgenome.Hsapiens.UCSC.hg19)[paste0("chr",1:22)]
+    seql.1.22 = GenomicRanges::seqlengths(BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)[paste0("chr",1:22)]
     fragment.chr <- function(chr.i){
         starts = as.integer(seq(1,seql.1.22[chr.i], bin.size))
         ends = as.integer(starts + bin.size - 1)

@@ -15,21 +15,21 @@
 ##' can always be performed.
 ##' @param merge.cons.bins Should consecutive abnormal bins be merged. If FALSE (default)
 ##' single bin calls are reported. If TRUE, reported bins are merged. 
-##' @param cn the name of the file with the copy number estimates for all samples OR
+##' @param fc the name of the file with the copy number estimates for all samples OR
 ##' or a data.frame with the copy number estimates for all samples. 
 ##' @return a data.frame with columns
 ##' \item{chr, start, end}{the genomic region definition}
 ##' \item{z}{the Z-score}
 ##' \item{pv, qv}{the P-value and Q-value(~FDR)}
-##' \item{cn.coeff}{the copy number estimate (if 'cn' was not NULL).}
+##' \item{fc}{the copy number estimate (if 'fc' was not NULL).}
 ##' \item{nb.bin.cons}{the number of consecutive bins (if the bins were merged;
 ##' 'merge.cons.bins=TRUE')}
-##' \item{cn.dev}{Copy number deviation from the reference }
+##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FALSE, cn=NULL){
+call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FALSE, fc=NULL){
 
-    ## load Z-scores and CN coefficients
+    ## load Z-scores and FC coefficients
     if(is.character(z) & length(z)==1){
         headers = read.table(z,nrows=1,as.is=TRUE)
         colC = rep("NULL",length(headers))
@@ -43,18 +43,18 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FA
         rm(z)
     }
     colnames(res.df)[4] = "z"
-    if(!is.null(cn)){
-        if(is.character(cn) & length(cn)==1){
-            headers = read.table(cn,nrows=1,as.is=TRUE)
+    if(!is.null(fc)){
+        if(is.character(fc) & length(fc)==1){
+            headers = read.table(fc,nrows=1,as.is=TRUE)
             colC = rep("NULL",length(headers))
             if(all(headers!=samp)){
-                stop("Columns missing in CN file. Check that 'chr', 'start', 'end' and the sample column are present.")
+                stop("Columns missing in FC file. Check that 'chr', 'start', 'end' and the sample column are present.")
             }
             colC[headers==samp] = "numeric"
-            cn = read.table(cn,header=TRUE,colClasses=colC)
+            fc = read.table(fc,header=TRUE,colClasses=colC)
         } 
-        res.df$cn.coeff = cn[,make.names(samp)]
-        rm(cn)
+        res.df$fc = fc[,make.names(samp)]
+        rm(fc)
     }
     
     res.df = subset(res.df, !is.na(z) & !is.infinite(z))
@@ -88,8 +88,8 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FA
               ggplot2::xlab("number of consecutive abnormal bins") +
               ggplot2::theme_bw())
 
-        if(any(colnames(res.df)=="cn.coeff") & any(res.df$nb.bin.cons>2)) {
-            print(ggplot2::ggplot(subset(res.df, nb.bin.cons>2),ggplot2::aes(x=2*cn.coeff)) +
+        if(any(colnames(res.df)=="fc") & any(res.df$nb.bin.cons>2)) {
+            print(ggplot2::ggplot(subset(res.df, nb.bin.cons>2),ggplot2::aes(x=2*fc)) +
                   ggplot2::geom_histogram() + ggplot2::theme_bw() +
                   ggplot2::ylab("number of bins") + 
                   ggplot2::xlab("copy number estimate") +
@@ -102,7 +102,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FA
         dev.off()
     }
 
-    res.df$cn.dev = abs(res.df$cn.coeff-1)
+    res.df$cn2.dev = abs(res.df$fc-1)
     
     if(nrow(res.df)>0 & merge.cons.bins){
         return(data.frame(sample=samp,res.df, stringsAsFactors=FALSE))

@@ -4,7 +4,7 @@
 \title{Call abnormal bins}
 \usage{
 call.abnormal.cov(z, samp, out.pdf = NULL, FDR.th = 0.05,
-  merge.cons.bins = FALSE, cn = NULL)
+  merge.cons.bins = FALSE, fc = NULL)
 }
 \arguments{
 \item{z}{the name of the file with the Z-scores for all samples OR or a
@@ -20,7 +20,7 @@ can always be performed.}
 \item{merge.cons.bins}{Should consecutive abnormal bins be merged. If FALSE (default)
 single bin calls are reported. If TRUE, reported bins are merged.}
 
-\item{cn}{the name of the file with the copy number estimates for all samples OR
+\item{fc}{the name of the file with the copy number estimates for all samples OR
 or a data.frame with the copy number estimates for all samples.}
 }
 \value{
@@ -28,10 +28,10 @@ a data.frame with columns
 \item{chr, start, end}{the genomic region definition}
 \item{z}{the Z-score}
 \item{pv, qv}{the P-value and Q-value(~FDR)}
-\item{cn.coeff}{the copy number estimate (if 'cn' was not NULL).}
+\item{fc}{the copy number estimate (if 'fc' was not NULL).}
 \item{nb.bin.cons}{the number of consecutive bins (if the bins were merged;
 'merge.cons.bins=TRUE')}
-\item{cn.dev}{Copy number deviation from the reference }
+\item{cn2.dev}{Copy number deviation from the reference }
 }
 \description{
 Detect abnormal bin from the Z-score distribution. A normal distribution is first

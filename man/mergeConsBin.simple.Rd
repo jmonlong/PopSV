@@ -3,7 +3,7 @@
 \alias{mergeConsBin.simple}
 \title{Simple merge of abnormal bins}
 \usage{
-mergeConsBin.simple(res.df, col.mean = c("z", "pv", "qv", "cn.coeff"))
+mergeConsBin.simple(res.df, col.mean = c("z", "pv", "qv", "fc"))
 }
 \arguments{
 \item{res.df}{a data.frame with the Z-scores. Columns 'chr', 'start', 'end' and 'z'

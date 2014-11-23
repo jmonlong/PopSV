@@ -65,18 +65,18 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
             
             server = function(input, output) {
                 plot.df <- shiny::reactive({
-                    subset(res.df, qv<as.numeric(input$fdr) & cn.dev>=input$cnD)
+                    subset(res.df, qv<as.numeric(input$fdr) & cn2.dev>=input$cnD)
                 })
                 freq.df <- shiny::reactive({
-                    rbind(data.frame(type="deletion",freq.chr.gr(subset(res.df, qv<as.numeric(input$fdr) & cn.dev>=input$cnD & cn.coeff<1))),
-                          data.frame(type="duplication",freq.chr.gr(subset(res.df, qv<as.numeric(input$fdr) & cn.dev>=input$cnD & cn.coeff>1))))
+                    rbind(data.frame(type="deletion",freq.chr.gr(subset(res.df, qv<as.numeric(input$fdr) & cn2.dev>=input$cnD & fc<1))),
+                          data.frame(type="duplication",freq.chr.gr(subset(res.df, qv<as.numeric(input$fdr) & cn2.dev>=input$cnD & fc>1))))
                 })
                 
                 output$nb.calls = shiny::renderPlot({
                     pdf = plot.df()
                     pdf$sample = factor(pdf$sample, levels=names(sort(table(pdf$sample))))
                     if(input$col=="event type"){
-                        pdf$col = ifelse(pdf$cn.coeff>1, "duplication","deletion")
+                        pdf$col = ifelse(pdf$fc>1, "duplication","deletion")
                         extra.gg = ggplot2::scale_fill_brewer(name=input$col,palette="Set1")
                     } else if(input$col=="event size"){
                         pdf$col = cut(pdf$nb.bin.cons, breaks=c(0,1,2,3,5,10,Inf))
@@ -97,7 +97,7 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                 output$cn = shiny::renderPlot({
                     pdf = subset(plot.df(), nb.bin.cons>=input$nbc)
                     if(input$col=="event type"){
-                        pdf$col = ifelse(pdf$cn.coeff>1, "duplication","deletion")
+                        pdf$col = ifelse(pdf$fc>1, "duplication","deletion")
                         extra.gg = ggplot2::scale_fill_brewer(name=input$col,palette="Set1")
                     } else if(input$col=="event size"){
                         pdf$col = cut(pdf$nb.bin.cons, breaks=c(0,1,2,3,5,10,Inf))
@@ -106,7 +106,7 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                         pdf$col = as.character(pdf$sample)
                         extra.gg = ggplot2::scale_fill_manual(values=rep(RColorBrewer::brewer.pal(9,"Set1"),ceiling(length(unique(pdf$sample))/9)))
                     }
-                    gp = ggplot2::ggplot(pdf, ggplot2::aes(x=cn.coeff*2, fill=col)) +
+                    gp = ggplot2::ggplot(pdf, ggplot2::aes(x=fc*2, fill=col)) +
                         ggplot2::geom_bar() + ggplot2::theme_bw() + ggplot2::xlim(input$cnMin,input$cnMax)+
                             ggplot2::theme(legend.position=c(1,1),legend.justification=c(1,1)) + extra.gg + ggplot2::xlab("Copy Number estimates") + ggplot2::ylab("number of calls")
                     if(input$col=="sample"){
@@ -139,7 +139,7 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                         pdf = subset(plot.df(), chr==input$chr)
                         facet.o = NULL
                     }
-                    pdf$type = ifelse(pdf$cn.coeff>1, "duplication","deletion")
+                    pdf$type = ifelse(pdf$fc>1, "duplication","deletion")
                     pdf$sample = factor(pdf$sample)
                     if(input$fchr.rep=="Stacked"){
                         if(input$freq.rep=="nb"){
@@ -213,7 +213,7 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                             ggplot2::theme(axis.text.x=ggplot2::element_text(angle=90))
                 })
                 output$cn = shiny::renderPlot({
-                    ggplot2::ggplot(subset(res.m(), nb.bin.cons>input$nbc), ggplot2::aes(x=cn.coeff*2)) +
+                    ggplot2::ggplot(subset(res.m(), nb.bin.cons>input$nbc), ggplot2::aes(x=fc*2)) +
                         ggplot2::geom_bar() + ggplot2::theme_bw() + ggplot2::xlim(0,5)
                 })
                 output$freq = shiny::renderPlot({

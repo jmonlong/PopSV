@@ -8,7 +8,7 @@
 ##' column (the number of bin merged for each event).
 ##' @author Jean Monlong
 ##' @keywords internal
-mergeConsBin.simple <- function(res.df,col.mean=c("z","pv","qv","cn.coeff")){
+mergeConsBin.simple <- function(res.df,col.mean=c("z","pv","qv","fc")){
 
     link.annotate.f <- function(df){
         chr.f = df$chr[1]

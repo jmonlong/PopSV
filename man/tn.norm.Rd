@@ -37,7 +37,7 @@ bin (row) : correlation with worst supporting bin; coverage average and standard
 deviation; number of outlier reference samples; supporting bins.}
 \item{bc.norm}{a matrix with the normalized bin counts (bin x sample).}
 \item{z}{a matrix with the Z-scores for each bin and sample (bin x sample).}
-\item{cn.coeff}{a matrix with the copy-number coefficients for each bin and sample (
+\item{fc}{a matrix with the copy-number coefficients for each bin and sample (
 bin x sample).}
 \item{nb.support.bins, cont.sample, z.poisson}{a backup of the input parameters.}
 }
