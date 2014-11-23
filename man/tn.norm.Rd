@@ -27,7 +27,7 @@ Details). Default is FALSE.}
 
 \item{aberrant.cases}{if TRUE (default) a more robust (but sligthly longer) normalization
 is performed on cases to deal with potential large chromosomal aberrations. In practice,
-it is recommended for cancer but can be turned off if less than 20% of the genome is expected
+it is recommended for cancer but can be turned off if less than ~20% of the genome is expected
 to be affected.}
 }
 \value{

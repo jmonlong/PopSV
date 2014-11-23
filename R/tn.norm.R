@@ -21,7 +21,7 @@
 ##' Details). Default is FALSE.
 ##' @param aberrant.cases if TRUE (default) a more robust (but sligthly longer) normalization
 ##' is performed on cases to deal with potential large chromosomal aberrations. In practice,
-##' it is recommended for cancer but can be turned off if less than 20% of the genome is expected
+##' it is recommended for cancer but can be turned off if less than ~20% of the genome is expected
 ##' to be affected.
 ##' @return a list with
 ##' \item{norm.stats}{a data.frame witht some metrics about the normalization of each

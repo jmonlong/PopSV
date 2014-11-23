@@ -3,7 +3,7 @@
 \alias{pca.norm}
 \title{PCA-based normalization of bin counts}
 \usage{
-pca.norm(bc, nb.pcs = 3, ref.samples = NULL)
+pca.norm(bc, nb.pcs = 3, ref.samples = NULL, z.poisson = FALSE)
 }
 \arguments{
 \item{bc}{bin count matrix or data.frame (bins x samples)}
@@ -12,9 +12,19 @@ pca.norm(bc, nb.pcs = 3, ref.samples = NULL)
 
 \item{ref.samples}{the names of the reference samples on which the PCA is performed.
 By default all samples are used.}
+
+\item{z.poisson}{Should the Z-score be computed as an normal-poisson hybrid (see
+Details). Default is FALSE.}
 }
 \value{
-a matrix with the normalized bin counts (bin x sample)
+a list with
+\item{norm.stats}{a data.frame witht some metrics about the normalization of each
+bin (row) : coverage average and standard deviation; number of outlier reference samples; principal components}
+\item{bc.norm}{a matrix with the normalized bin counts (bin x sample).}
+\item{z}{a matrix with the Z-scores for each bin and sample (bin x sample).}
+\item{fc}{a matrix with the copy-number coefficients for each bin and sample (
+bin x sample).}
+\item{z.poisson}{a backup of the input parameters.}
 }
 \description{
 Bin counts are normalized by regressing out the effect of the first Principal
