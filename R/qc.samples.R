@@ -19,6 +19,8 @@
 ##' @param chunk.size the number of bins to analyze at a time (for memory optimization).
 ##' Default is 100 000. Reduce this number if memory problems arise.
 ##' @param col.bc the column from 'files.df' defining the bin count file names.
+##' @param nb.cores number of cores to use. If higher than 1, \code{parallel}
+##' package is used to parallelized the counting.
 ##' @return a list with
 ##' \item{bc}{the name of the file with the joined bin counts OR a data.frame with
 ##' these bin counts.}
@@ -28,15 +30,24 @@
 ##' \item{cor.pw}{a matrix with correlation for any pair of samples.}
 ##' @author Jean Monlong
 ##' @export
-qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.pdf=NULL, appendIndex.outfile=TRUE, chunk.size=1e5, col.bc="bc.gc.gz"){
+qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.pdf=NULL, appendIndex.outfile=TRUE, chunk.size=1e5, col.bc="bc.gc.gz", nb.cores=1){
     if(nrow(bin.df)<1.3*chunk.size){
         bc.df = createEmptyDF(c("character",rep("integer",2), rep("numeric",nrow(files.df))), nrow(bin.df))
         colnames(bc.df) = c("chr","start","end", as.character(files.df$sample))
         bc.df$chr = bin.df$chr
         bc.df$start = bin.df$start
         bc.df$end = bin.df$end
+        if(nb.cores>1){
+            bc.l = parallel::mclapply(files.df$sample, function(samp){
+                read.bedix(files.df[samp,col.bc], bin.df)[,4]
+            },mc.cores=nb.cores)
+        } else {
+            bc.l = lapply(files.df$sample, function(samp){
+                read.bedix(files.df[samp,col.bc], bin.df)[,4]
+            })
+        }
         for(samp.i in 1:nrow(files.df)){
-            bc.df[,as.character(files.df$sample[samp.i])] = read.table(files.df[samp.i,col.bc], colClasses=c(rep("NULL",3),"numeric"), header=TRUE)[,1]
+            bc.df[,as.character(files.df$sample[samp.i])] = bc.l[[samp.i]]
         }
         write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t")
     } else {
@@ -49,8 +60,17 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
             bc.df$chr = df$chr
             bc.df$start = df$start
             bc.df$end = df$end
+            if(nb.cores>1){
+                bc.l = parallel::mclapply(files.df$sample, function(samp){
+                    read.bedix(files.df[samp,col.bc], df)[,4]
+                },mc.cores=nb.cores)
+            } else {
+                bc.l = lapply(files.df$sample, function(samp){
+                    read.bedix(files.df[samp,col.bc], df)[,4]
+                })
+            }
             for(samp.i in 1:nrow(files.df)){
-                bc.df[,as.character(files.df$sample[samp.i])] = read.bedix(files.df[samp.i,col.bc], df)[,4]
+                bc.df[,as.character(files.df$sample[samp.i])] = bc.l[[samp.i]]
             }
             write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t", append=ch.nb>1, col.names=ch.nb==1)
             return(bc.df[sample(1:nrow(bc.df),chunk.size/nb.chunks),])

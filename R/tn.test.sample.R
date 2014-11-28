@@ -1,7 +1,7 @@
 ##' Bin counts from one sample are normalized following instructions from
 ##' a previous targeted-normalization run.
 ##'
-##' ##' The Z-score is computed by substracting the bin count by the average bin count
+##' The Z-score is computed by substracting the bin count by the average bin count
 ##' across the reference samples and dividing by their standard deviation. If
 ##' 'z.poisson' is TRUE, a score using Poisson distribution is also computed, using
 ##' the average bin count as an estimator of the lambda. Then the score with the lowest

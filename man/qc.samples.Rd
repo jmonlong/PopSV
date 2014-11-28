@@ -5,7 +5,7 @@
 \usage{
 qc.samples(files.df, bin.df, ref.samples = NULL, outfile.prefix,
   out.pdf = NULL, appendIndex.outfile = TRUE, chunk.size = 1e+05,
-  col.bc = "bc.gc.gz")
+  col.bc = "bc.gc.gz", nb.cores = 1)
 }
 \arguments{
 \item{files.df}{a data.frame with the information about the files to
@@ -33,6 +33,9 @@ file are created.}
 Default is 100 000. Reduce this number if memory problems arise.}
 
 \item{col.bc}{the column from 'files.df' defining the bin count file names.}
+
+\item{nb.cores}{number of cores to use. If higher than 1, \code{parallel}
+package is used to parallelized the counting.}
 }
 \value{
 a list with
