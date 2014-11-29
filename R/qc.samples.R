@@ -38,12 +38,12 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
         bc.df$start = bin.df$start
         bc.df$end = bin.df$end
         if(nb.cores>1){
-            bc.l = parallel::mclapply(files.df$sample, function(samp){
-                read.bedix(files.df[samp,col.bc], bin.df)[,4]
+            bc.l = parallel::mclapply(files.df[,col.bc], function(fi){
+                read.bedix(fi, bin.df)[,4]
             },mc.cores=nb.cores)
         } else {
-            bc.l = lapply(files.df$sample, function(samp){
-                read.bedix(files.df[samp,col.bc], bin.df)[,4]
+            bc.l = lapply(files.df[,col.bc], function(fi){
+                read.bedix(fi, bin.df)[,4]
             })
         }
         for(samp.i in 1:nrow(files.df)){
@@ -61,12 +61,12 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
             bc.df$start = df$start
             bc.df$end = df$end
             if(nb.cores>1){
-                bc.l = parallel::mclapply(files.df$sample, function(samp){
-                    read.bedix(files.df[samp,col.bc], df)[,4]
+                bc.l = parallel::mclapply(files.df[,col.bc], function(fi){
+                    read.bedix(fi, df)[,4]
                 },mc.cores=nb.cores)
             } else {
-                bc.l = lapply(files.df$sample, function(samp){
-                    read.bedix(files.df[samp,col.bc], df)[,4]
+                bc.l = lapply(files.df[,col.bc], function(fi){
+                    read.bedix(fi, df)[,4]
                 })
             }
             for(samp.i in 1:nrow(files.df)){
