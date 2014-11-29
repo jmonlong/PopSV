@@ -47,9 +47,9 @@ mean.sd.outlierR <- function(x,pv.max.ol=1e-6){
         xss
     }
     sd.mad <- function(x){
-        if(all(x==0,na.rm=TRUE)) x = rpois(length(x),.5)
+        if(all(x==0,na.rm=TRUE)) return(sd(rpois(length(x),.5)))
         sd.res = mad(x, na.rm=TRUE)
-        if(sd.res==0) return(sd.mad(rep(0,length(x))))
+        if(sd.res==0)  return(sd(rpois(length(x),.5)))
         else return(sd.res)
     }
     trim.mean <- function(x){
