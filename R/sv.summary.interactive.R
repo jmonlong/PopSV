@@ -85,10 +85,11 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                         pdf$col = as.character(pdf$sample)
                         extra.gg = ggplot2::scale_fill_manual(values=rep(RColorBrewer::brewer.pal(9,"Set1"),ceiling(length(unique(pdf$sample))/9)))
                     }
-                    gp = ggplot2::ggplot(pdf, ggplot2::aes(x=sample, fill=col)) +
-                        ggplot2::geom_bar() + ggplot2::theme_bw() +
+                    pdf.s = dplyr::summarize(dplyr::group_by(pdf, sample, col), gen.kb=sum((end-start)/1e3))
+                    gp = ggplot2::ggplot(pdf.s, ggplot2::aes(x=sample, y=gen.kb, fill=col)) +
+                        ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() +
                             ggplot2::theme(axis.text.x=ggplot2::element_text(angle=90),
-                                           legend.position=c(0,1),legend.justification=c(0,1)) + extra.gg + ggplot2::ylab("number of calls")
+                                           legend.position=c(0,1),legend.justification=c(0,1)) + extra.gg + ggplot2::ylab("abnormal genome (Kb)")
                     if(input$col=="sample"){
                         gp = gp  + ggplot2::guides(fill=FALSE)
                     }
@@ -116,14 +117,14 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                 })
                 output$freq = shiny::renderPlot({
                     f.df = freq.df()
-                    f.df = dplyr::summarize(dplyr::group_by(f.df, chr, start, end), nb=sum(nb), prop=sum(prop))
+                    f.df = dplyr::summarize(dplyr::group_by(f.df, chr, start, end), nb=sum(nb), prop=sum(prop), gen.kb=sum((end-start)/1e3))
                     if(input$freq.rep=="nb"){
-                        ggp = ggplot2::ggplot(subset(f.df, nb>=input$nbMin), ggplot2::aes(x=nb, fill=chr)) + ggplot2::xlab("number of samples") 
+                        ggp = ggplot2::ggplot(dplyr::arrange(subset(f.df, nb>=input$nbMin), chr), ggplot2::aes(x=nb,  y=gen.kb, fill=chr)) + ggplot2::xlab("number of samples") 
                     } else {
-                        ggp = ggplot2::ggplot(subset(f.df, nb>=input$nbMin), ggplot2::aes(x=prop, fill=chr)) + ggplot2::xlab("proportion of samples") 
+                        ggp = ggplot2::ggplot(dplyr::arrange(subset(f.df, nb>=input$nbMin), chr), ggplot2::aes(x=prop, y=gen.kb, fill=chr)) + ggplot2::xlab("proportion of samples") 
                     }
-                    ggp + ggplot2::geom_bar() + ggplot2::theme_bw() +
-                        ggplot2::ylab("number of unique genomic region") +
+                    ggp + ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() +
+                        ggplot2::ylab("abnormal genome (Kb)") +
                             ggplot2::guides(fill=FALSE) +
                                 ggplot2::scale_fill_manual(values=rep(RColorBrewer::brewer.pal(9,"Set1"),3)) 
                 })
@@ -144,15 +145,15 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                     if(input$fchr.rep=="Stacked"){
                         if(input$freq.rep=="nb"){
                             ggp = ggplot2::ggplot(chr.df, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=0, ymax=nb, fill=type)) + ggplot2::ylab("number of samples")  +
-                                ggplot2::geom_segment(ggplot2::aes(x=(end+start)/2e6,xend=(end+start)/2e6, y=0, yend=nb, colour=type), data=subset(chr.df, end-start<max(chr.df$end/1e3)))
+                                ggplot2::geom_segment(ggplot2::aes(x=(end+start)/2e6,xend=(end+start)/2e6, y=0, yend=nb, colour=type), alpha=.2, data=subset(chr.df, end-start<max(chr.df$end/1e3)))
                         } else {
                             ggp = ggplot2::ggplot(chr.df, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=0, ymax=prop, fill=type)) + ggplot2::ylab("proportion of samples") +
-                                ggplot2::geom_segment(ggplot2::aes(x=(end+start)/2e6,xend=(end+start)/2e6, y=0, yend=prop, colour=type), data=subset(chr.df, end-start<max(chr.df$end/1e3)))
+                                ggplot2::geom_segment(ggplot2::aes(x=(end+start)/2e6,xend=(end+start)/2e6, y=0, yend=prop, colour=type), alpha=.2, data=subset(chr.df, end-start<max(chr.df$end/1e3)))
                         }
                         return(ggp +
                                ggplot2::scale_fill_brewer(palette="Set1") + 
                                ggplot2::scale_x_continuous(breaks=seq(0,max(chr.df$end)/1e6,20)) + 
-                               ggplot2::geom_rect(alpha=.6) + ggplot2::theme_bw() +
+                               ggplot2::geom_rect(alpha=.7) + ggplot2::theme_bw() +
                                ggplot2::theme(legend.position="top") + 
                                ggplot2::xlab("position (Mb)") + facet.o)
                     } else {
