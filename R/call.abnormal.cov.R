@@ -17,6 +17,8 @@
 ##' single bin calls are reported. If TRUE, reported bins are merged. 
 ##' @param fc the name of the file with the copy number estimates for all samples OR
 ##' or a data.frame with the copy number estimates for all samples. 
+##' @param norm.stats the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.
+##' @param d.max.max the maximum correlation of the last supporting bin. 
 ##' @return a data.frame with columns
 ##' \item{chr, start, end}{the genomic region definition}
 ##' \item{z}{the Z-score}
@@ -27,7 +29,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FALSE, fc=NULL){
+call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FALSE, fc=NULL, norm.stats=NULL, d.max.max=.5){
 
     ## load Z-scores and FC coefficients
     if(is.character(z) & length(z)==1){
@@ -55,6 +57,16 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FA
         } 
         res.df$fc = fc[,make.names(samp)]
         rm(fc)
+    }
+    if(!is.null(norm.stats)){
+        if(is.character(norm.stats) & length(norm.stats)==1){
+            headers = read.table(norm.stats,nrows=1,as.is=TRUE)
+            colC = ifelse(headers=="d.max","numeric","NULL")
+            d.max = read.table(norm.stats,header=TRUE,colClasses=colC)
+        } 
+        res.df$d.max = d.max$d.max
+        rm(d.max)
+        res.df = subset(res.df, !is.na(d.max) & d.max!=1 & d.max<d.max.max)
     }
     
     res.df = subset(res.df, !is.na(z) & !is.infinite(z))

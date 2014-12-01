@@ -4,7 +4,8 @@
 \title{Call abnormal bins}
 \usage{
 call.abnormal.cov(z, samp, out.pdf = NULL, FDR.th = 0.05,
-  merge.cons.bins = FALSE, fc = NULL)
+  merge.cons.bins = FALSE, fc = NULL, norm.stats = NULL,
+  d.max.max = 0.5)
 }
 \arguments{
 \item{z}{the name of the file with the Z-scores for all samples OR or a
@@ -22,6 +23,10 @@ single bin calls are reported. If TRUE, reported bins are merged.}
 
 \item{fc}{the name of the file with the copy number estimates for all samples OR
 or a data.frame with the copy number estimates for all samples.}
+
+\item{norm.stats}{the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.}
+
+\item{d.max.max}{the maximum correlation of the last supporting bin.}
 }
 \value{
 a data.frame with columns
