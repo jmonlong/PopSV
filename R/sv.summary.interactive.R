@@ -117,7 +117,7 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                 })
                 output$freq = shiny::renderPlot({
                     f.df = freq.df()
-                    f.df = dplyr::summarize(dplyr::group_by(f.df, chr, start, end), nb=sum(nb), prop=sum(prop), gen.kb=sum((end-start)/1e3))
+                    f.df = dplyr::summarize(dplyr::group_by(f.df, chr, start, end), nb=sum(nb), prop=sum(prop), gen.kb=head((end-start)/1e3, 1))
                     if(input$freq.rep=="nb"){
                         ggp = ggplot2::ggplot(dplyr::arrange(subset(f.df, nb>=input$nbMin), chr), ggplot2::aes(x=nb,  y=gen.kb, fill=chr)) + ggplot2::xlab("number of samples") 
                     } else {
