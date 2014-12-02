@@ -25,6 +25,9 @@ tn.norm.qc <- function(norm.stats, out.pdf="normStats-QC.pdf", bin.size=FALSE){
     print(ggplot2::ggplot(res.df, ggplot2::aes(x=m)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::xlab("average normalized coverage") + ggplot2::ylab("number of bins"))
     print(ggplot2::ggplot(res.df, ggplot2::aes(x=m+1)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::scale_x_log10() + ggplot2::xlab("average normalized coverage") + ggplot2::ylab("number of bins"))
     print(ggplot2::ggplot(res.df, ggplot2::aes(x=nb.remove)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::xlab("number of outlier samples removed") + ggplot2::ylab("number of bins"))
+    if(bin.size){
+        print(ggplot2::ggplot(res.df, ggplot2::aes(x=end-start)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::xlab("bin size (bp)") + ggplot2::ylab("number of bins"))
+    }
     ## Pairwise graphs
    print(ggplot2::ggplot(res.df, ggplot2::aes(x=d.max, y=m+1, fill=log10(..count..))) + ggplot2::stat_bin2d() + ggplot2::theme_bw() + ggplot2::xlab("correlation distance to last supporting bin") + ggplot2::ylab("average normalized coverage") + ggplot2::scale_y_log10() + ggplot2::scale_fill_gradient(name="log10(nb bins)",low="white", high="red"))
    print(ggplot2::ggplot(res.df, ggplot2::aes(x=d.max, y=nb.remove, fill=log10(..count..))) + ggplot2::stat_bin2d() + ggplot2::theme_bw() + ggplot2::xlab("correlation distance to last supporting bin") + ggplot2::ylab("number of outlier samples removed")  + ggplot2::scale_fill_gradient(name="log10(nb bins)",low="white", high="red"))
