@@ -1,2 +1,5 @@
 Add other segmentation option
 Homogenize other normalization outputs
+One test function for testing one "case" (once reference and
+   normalization is computed)
+
