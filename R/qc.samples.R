@@ -94,11 +94,13 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
         med.cov.df = plyr::ldply(bc.res, function(ee)ee$med.cov.df)
         bc.df = plyr::ldply(bc.res, function(ee)ee$bc.df)
     }
-    bc.df$chunk = NULL
 
     ## Select set of supporting bins
     med.cov.df = subset(med.cov.df, med.bc!=0)
-    bin.sup.i = which(order(med.cov.df$med.bc) %in% seq(1,nrow(med.cov.df), round(2*nrow(med.cov.df)/nb.bin.support)))
+    q.bk = quantile(med.cov.df$med.bc, c(0,.05,.1,.2,.8,.9,.95,1))
+    med.cov.cut = cut(med.cov.df$med.bc, breaks=q.bk)
+    cut.prop = c(.2,.15,.1,.1,.1,.15,.2)/2
+    bin.sup.i = unique(unlist(sapply(1:nlevels(med.cov.cut), function(ii)sample(which(as.numeric(med.cov.cut)==ii), nb.bin.support*cut.prop[ii], replace=TRUE))))
     bin.sup.i = c(bin.sup.i, sample(setdiff(1:nrow(med.cov.df), bin.sup.i), nb.bin.support-length(bin.sup.i)))
     bin.sup.df = med.cov.df[bin.sup.i, ]
     ##
