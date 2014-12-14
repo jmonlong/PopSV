@@ -30,7 +30,7 @@
 ##' \item{cor.pw}{a matrix with correlation for any pair of samples.}
 ##' @author Jean Monlong
 ##' @export
-qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.pdf=NULL, appendIndex.outfile=TRUE, chunk.size=1e5, col.bc="bc.gc.gz", nb.cores=1){
+qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.pdf=NULL, appendIndex.outfile=TRUE, chunk.size=1e5, col.bc="bc.gc.gz", nb.cores=1, nb.bin.support=1e4){
     if(nrow(bin.df)<1.3*chunk.size){
         bc.df = createEmptyDF(c("character",rep("integer",2), rep("numeric",nrow(files.df))), nrow(bin.df))
         colnames(bc.df) = c("chr","start","end", as.character(files.df$sample))
@@ -46,14 +46,20 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
                 read.bedix(fi, bin.df)[,4]
             })
         }
+        med.samp = lapply(bc.l,median, na.rm=TRUE) ## Normalization of the median coverage
+        med.med = median(unlist(med.samp), na.rm=TRUE)
         for(samp.i in 1:nrow(files.df)){
-            bc.df[,as.character(files.df$sample[samp.i])] = bc.l[[samp.i]]
+            bc.df[,as.character(files.df$sample[samp.i])] = bc.l[[samp.i]] * med.med / med.samp[[samp.i]]
         }
+        med.cov.df = data.frame(bc.df[,1:3], med.bc= apply(bc.df[,-(1:3)], 1, median, na.rm=TRUE))
         write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t")
     } else {
         nb.chunks = ceiling(nrow(bin.df)/chunk.size)
         bin.df$chunk = rep(1:nb.chunks,each=chunk.size)[1:nrow(bin.df)]
-        analyze.chunk <- function(df){
+        ## Median coverage
+        med.samp = rep(list(1),nrow(files.df)) ## Normalization of the median coverage
+        med.med = 1
+        analyze.chunk <- function(df, write.out=TRUE){
             ch.nb = as.numeric(df$chunk[1])
             bc.df = createEmptyDF(c("character",rep("integer",2), rep("numeric",nrow(files.df))), nrow(df))
             colnames(bc.df) = c("chr","start","end", as.character(files.df$sample))
@@ -70,21 +76,42 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
                 })
             }
             for(samp.i in 1:nrow(files.df)){
-                bc.df[,as.character(files.df$sample[samp.i])] = bc.l[[samp.i]]
+                bc.df[,as.character(files.df$sample[samp.i])] = bc.l[[samp.i]] * med.med / med.samp[[samp.i]]
             }
-            write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t", append=ch.nb>1, col.names=ch.nb==1)
-            return(bc.df[sample(1:nrow(bc.df),chunk.size/nb.chunks),])
+            med.cov.df = data.frame(bc.df[,1:3], med.bc= apply(bc.df[,-(1:3)], 1, median, na.rm=TRUE))
+            if(write.out){
+                write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t", append=ch.nb>1, col.names=ch.nb==1)
+            }
+            return(list(med.cov.df=med.cov.df, bc.df=bc.df[sample(1:nrow(bc.df),chunk.size/nb.chunks),]))
         }
-        bc.df = dplyr::do(dplyr::group_by(bin.df,chunk),analyze.chunk(.))
+        bc.rand = analyze.chunk(bin.df[sample(1:nrow(bin.df), 1e3),], write.out=FALSE)
+        med.samp = lapply(as.character(files.df$sample), function(samp.i)median(bc.rand[,samp.i], na.rm=TRUE)) ## Normalization of the median coverage
+        med.med = median(unlist(med.samp), na.rm=TRUE)
+        bc.res = lapply(unique(bin.df$chunk), function(chunk.i){
+            analyze.chunk(subset(bin.df, chunk==chunk.i))
+        })
+        med.cov.df = plyr::ldply(bc.res, function(ee)ee$med.cov.df)
+        bc.df = plyr::ldply(bc.res, function(ee)ee$bc.df)
     }
-    
+    bc.df$chunk = NULL
+
+    ## Select set of supporting bins
+    med.cov.df = subset(med.cov.df, med.bc!=0)
+    bin.sup.i = which(order(med.cov.df$med.bc) %in% seq(1,nrow(med.cov.df), round(2*nrow(med.cov.df)/nb.bin.support)))
+    bin.sup.i = c(bin.sup.i, sample(setdiff(1:nrow(med.cov.df), bin.sup.i), nb.bin.support-length(bin.sup.i)))
+    bin.sup.df = med.cov.df[bin.sup.i, ]
+    ##
+
+    ## Compress and index
     if(appendIndex.outfile){
         final.file = paste(outfile.prefix,".bgz",sep="")
         Rsamtools::bgzip(outfile.prefix, dest=final.file, overwrite=TRUE)
         file.remove(outfile.prefix)
         Rsamtools::indexTabix(final.file, format="bed")
     }
-
+    ##
+    
+    ## QC
     cor.bs <- function(x,nbsim=10,prop=.1,replace=FALSE){
         ni.sim = nrow(x)*prop
         cor.sim = sapply(1:nbsim,function(i)as.vector(cor(x[sample(1:nrow(x),ni.sim,replace=replace),],use="comp")))
@@ -92,8 +119,6 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
         colnames(res) = rownames(res) = colnames(x)
         return(res)
     }
-
-    bc.df$chunk = NULL
     all.samples = colnames(bc.df)[-(1:3)]
     bc.mv = medvar.norm.internal(bc.df[,all.samples])
     corbs = cor.bs(bc.mv)
@@ -119,5 +144,5 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
         bc.df = paste(outfile.prefix,".bgz",sep="")
     }
     return(list(bc=bc.df,dstat=data.frame(sample=ref.samples,Dstat=meanCor),
-                pc.1.3=pc$x[,1:3], cor.pw=corbs))
+                pc.1.3=pc$x[,1:3], cor.pw=corbs, bin.sup.df=bin.sup.df))
 }
