@@ -31,6 +31,7 @@
 ##' @author Jean Monlong
 ##' @export
 qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.pdf=NULL, appendIndex.outfile=TRUE, chunk.size=1e5, col.bc="bc.gc.gz", nb.cores=1, nb.bin.support=1e4){
+    if(is.null(ref.samples)) ref.samples = as.character(files.df$sample)
     if(nrow(bin.df)<1.3*chunk.size){
         bc.df = createEmptyDF(c("character",rep("integer",2), rep("numeric",nrow(files.df))), nrow(bin.df))
         colnames(bc.df) = c("chr","start","end", as.character(files.df$sample))
@@ -51,7 +52,7 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
         for(samp.i in 1:nrow(files.df)){
             bc.df[,as.character(files.df$sample[samp.i])] = bc.l[[samp.i]] * med.med / med.samp[[samp.i]]
         }
-        med.cov.df = data.frame(bc.df[,1:3], med.bc= apply(bc.df[,-(1:3)], 1, median, na.rm=TRUE))
+        med.cov.df = data.frame(bc.df[,1:3], med.bc= apply(bc.df[,ref.samples], 1, median, na.rm=TRUE))
         write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t")
     } else {
         nb.chunks = ceiling(nrow(bin.df)/chunk.size)
@@ -78,7 +79,7 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
             for(samp.i in 1:nrow(files.df)){
                 bc.df[,as.character(files.df$sample[samp.i])] = bc.l[[samp.i]] * med.med / med.samp[[samp.i]]
             }
-            med.cov.df = data.frame(bc.df[,1:3], med.bc= apply(bc.df[,-(1:3)], 1, median, na.rm=TRUE))
+            med.cov.df = data.frame(bc.df[,1:3], med.bc= apply(bc.df[,ref.samples], 1, median, na.rm=TRUE))
             if(write.out){
                 write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t", append=ch.nb>1, col.names=ch.nb==1)
             }
@@ -124,7 +125,6 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
     corbs = cor.bs(bc.mv)
     cor.pw = corbs
     diag(cor.pw) = NA
-    if(is.null(ref.samples)) ref.samples = colnames(cor.pw)
     meanCor = apply(cor.pw[ref.samples,ref.samples],1,function(e)mean(e,na.rm=TRUE))
     ## PCA
     pc = prcomp(t(na.exclude(bc.mv)))
