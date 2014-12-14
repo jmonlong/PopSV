@@ -60,33 +60,34 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
         ## Median coverage
         med.samp = rep(list(1),nrow(files.df)) ## Normalization of the median coverage
         med.med = 1
-        analyze.chunk <- function(df, write.out=TRUE){
-            ch.nb = as.numeric(df$chunk[1])
-            bc.df = createEmptyDF(c("character",rep("integer",2), rep("numeric",nrow(files.df))), nrow(df))
-            colnames(bc.df) = c("chr","start","end", as.character(files.df$sample))
-            bc.df$chr = df$chr
-            bc.df$start = df$start
-            bc.df$end = df$end
-            if(nb.cores>1){
-                bc.l = parallel::mclapply(files.df[,col.bc], function(fi){
-                    read.bedix(fi, df)[,4]
-                },mc.cores=nb.cores)
-            } else {
-                bc.l = lapply(files.df[,col.bc], function(fi){
-                    read.bedix(fi, df)[,4]
-                })
-            }
-            for(samp.i in 1:nrow(files.df)){
-                bc.df[,as.character(files.df$sample[samp.i])] = bc.l[[samp.i]] * med.med / med.samp[[samp.i]]
-            }
-            med.cov.df = data.frame(bc.df[,1:3], med.bc= apply(bc.df[,ref.samples], 1, median, na.rm=TRUE))
-            if(write.out){
-                write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t", append=ch.nb>1, col.names=ch.nb==1)
-            }
-            return(list(med.cov.df=med.cov.df, bc.df=bc.df[sample(1:nrow(bc.df),chunk.size/nb.chunks),]))
+        analyze.chunk <- function(df, write.out=TRUE, sub.bc=TRUE){
+          ch.nb = as.numeric(df$chunk[1])
+          bc.df = createEmptyDF(c("character",rep("integer",2), rep("numeric",nrow(files.df))), nrow(df))
+          colnames(bc.df) = c("chr","start","end", as.character(files.df$sample))
+          bc.df$chr = df$chr
+          bc.df$start = df$start
+          bc.df$end = df$end
+          if(nb.cores>1){
+            bc.l = parallel::mclapply(files.df[,col.bc], function(fi){
+              read.bedix(fi, df)[,4]
+            },mc.cores=nb.cores)
+          } else {
+            bc.l = lapply(files.df[,col.bc], function(fi){
+              read.bedix(fi, df)[,4]
+            })
+          }
+          for(samp.i in 1:nrow(files.df)){
+            bc.df[,as.character(files.df$sample[samp.i])] = bc.l[[samp.i]] * med.med / med.samp[[samp.i]]
+          }
+          med.cov.df = data.frame(bc.df[,1:3], med.bc= apply(bc.df[,ref.samples], 1, median, na.rm=TRUE))
+          if(write.out){
+            write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t", append=ch.nb>1, col.names=ch.nb==1)
+          }
+          if(sub.bc) bc.df=bc.df[sample(1:nrow(bc.df),chunk.size/nb.chunks),]
+          return(list(med.cov.df=med.cov.df, bc.df=bc.df))
         }
-        bc.rand = analyze.chunk(bin.df[sample(1:nrow(bin.df), 1e3),], write.out=FALSE)
-        med.samp = lapply(as.character(files.df$sample), function(samp.i)median(bc.rand[,samp.i], na.rm=TRUE)) ## Normalization of the median coverage
+        bc.rand = analyze.chunk(bin.df[sample(1:nrow(bin.df), 1e3),], write.out=FALSE, sub.bc=FALSE)
+        med.samp = lapply(as.character(files.df$sample), function(samp.i)median(bc.rand$bc.df[,samp.i], na.rm=TRUE)) ## Normalization of the median coverage
         med.med = median(unlist(med.samp), na.rm=TRUE)
         bc.res = lapply(unique(bin.df$chunk), function(chunk.i){
             analyze.chunk(subset(bin.df, chunk==chunk.i))
