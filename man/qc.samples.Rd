@@ -5,7 +5,7 @@
 \usage{
 qc.samples(files.df, bin.df, ref.samples = NULL, outfile.prefix,
   out.pdf = NULL, appendIndex.outfile = TRUE, chunk.size = 1e+05,
-  col.bc = "bc.gc.gz", nb.cores = 1)
+  col.bc = "bc.gc.gz", nb.cores = 1, nb.bin.support = 10000)
 }
 \arguments{
 \item{files.df}{a data.frame with the information about the files to
@@ -36,6 +36,8 @@ Default is 100 000. Reduce this number if memory problems arise.}
 
 \item{nb.cores}{number of cores to use. If higher than 1, \code{parallel}
 package is used to parallelized the counting.}
+
+\item{nb.bin.support}{the number of supporting bins to define for the future normalization.}
 }
 \value{
 a list with

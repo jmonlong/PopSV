@@ -21,6 +21,7 @@
 ##' @param col.bc the column from 'files.df' defining the bin count file names.
 ##' @param nb.cores number of cores to use. If higher than 1, \code{parallel}
 ##' package is used to parallelized the counting.
+##' @param nb.bin.support the number of supporting bins to define for the future normalization.
 ##' @return a list with
 ##' \item{bc}{the name of the file with the joined bin counts OR a data.frame with
 ##' these bin counts.}
