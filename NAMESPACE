@@ -3,6 +3,7 @@
 export(bin.bam)
 export(call.abnormal.cov)
 export(chunk.bin)
+export(comp.index.files)
 export(correct.GC)
 export(createBinBamRscripts)
 export(fragment.genome.hp19)
