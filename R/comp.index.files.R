@@ -8,7 +8,7 @@
 ##' @author Jean Monlong
 ##' @export
 comp.index.files <- function(files, outprefix=files, rm.input=TRUE, overwrite.out=TRUE){
-    sapply(files, function(file.ii){
+    sapply(1:length(files), function(file.ii){
         final.file = paste(outprefix[file.ii],".bgz",sep="")
         Rsamtools::bgzip(files[file.ii], dest=final.file, overwrite=TRUE)
         if(rm.input) file.remove(files[file.ii])
