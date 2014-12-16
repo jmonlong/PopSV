@@ -3,12 +3,14 @@
 \alias{tn.norm.qc}
 \title{QC graphs for Targeted Normalization}
 \usage{
-tn.norm.qc(norm.stats, out.pdf = "normStats-QC.pdf")
+tn.norm.qc(norm.stats, out.pdf = "normStats-QC.pdf", bin.size = FALSE)
 }
 \arguments{
 \item{norm.stats}{the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.}
 
 \item{out.pdf}{the name of the PDF file to create.}
+
+\item{bin.size}{Should the metrics be compared to the bin size. Default is FALSE. Useful if the bins are not of equal size.}
 }
 \value{
 the name of the created PDF file.

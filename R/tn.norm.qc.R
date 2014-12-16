@@ -2,6 +2,7 @@
 ##' @title QC graphs for Targeted Normalization
 ##' @param norm.stats the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.
 ##' @param out.pdf the name of the PDF file to create.
+##' @param bin.size Should the metrics be compared to the bin size. Default is FALSE. Useful if the bins are not of equal size.
 ##' @return the name of the created PDF file.
 ##' @author Jean Monlong
 ##' @export
