@@ -40,8 +40,12 @@ medvar.norm <- function(bc, ref.samples, bc.support=NULL, z.poisson=FALSE){
     bc.support = bc.support - med.c
     md = apply(bc.support,2,function(x)median(abs(x),na.rm=TRUE))
     md.c = median(abs(bc.support),na.rm=TRUE)
-    bc.norm[,-(1:3)] = t(t(bc[,all.samples]) * md.c / md) + med.c
-    msd = apply(bc.norm[,ref.samples], 1, function(ee)unlist(mean.sd.outlierR(ee), pv.max.ol=1e-6))
+    bc = bc[,all.samples]-med.c
+    bc.norm[,-(1:3)] = t(t(bc) * md.c / md) + med.c
+    if(any(bc.norm[,-(1:3)]<0)) {
+      bc.norm[,-(1:3)][bc.norm[,-(1:3)]<0] = 0
+    }
+    msd = apply(bc.norm[,ref.samples], 1, function(ee)unlist(mean.sd.outlierR(ee, pv.max.ol=1e-6)))
     norm.stats[,4:6]=cbind(msd[1,],msd[2,],msd[3,])
     z[,-(1:3)] = apply(bc.norm[,-(1:3)], 2, z.comp,mean.c=norm.stats$m,sd.c=norm.stats$sd)
     fc[,-(1:3)] = bc.norm[,-(1:3)]/norm.stats$m
