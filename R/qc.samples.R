@@ -63,6 +63,7 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
         med.med = 1
         analyze.chunk <- function(df, write.out=TRUE, sub.bc=TRUE){
           ch.nb = as.numeric(df$chunk[1])
+          df = read.bedix(files.df[1,col.bc], df)
           bc.df = createEmptyDF(c("character",rep("integer",2), rep("numeric",nrow(files.df))), nrow(df))
           colnames(bc.df) = c("chr","start","end", as.character(files.df$sample))
           bc.df$chr = df$chr
