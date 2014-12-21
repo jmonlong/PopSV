@@ -63,12 +63,12 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
         med.med = 1
         analyze.chunk <- function(df, write.out=TRUE, sub.bc=TRUE){
           ch.nb = as.numeric(df$chunk[1])
-          df = read.bedix(files.df[1,col.bc], df)
-          bc.df = createEmptyDF(c("character",rep("integer",2), rep("numeric",nrow(files.df))), nrow(df))
+          df.o = read.bedix(files.df[1,col.bc], df)
+          bc.df = createEmptyDF(c("character",rep("integer",2), rep("numeric",nrow(files.df))), nrow(df.o))
           colnames(bc.df) = c("chr","start","end", as.character(files.df$sample))
-          bc.df$chr = df$chr
-          bc.df$start = df$start
-          bc.df$end = df$end
+          bc.df$chr = df.o$chr
+          bc.df$start = df.o$start
+          bc.df$end = df.o$end
           if(nb.cores>1){
             bc.l = parallel::mclapply(files.df[,col.bc], function(fi){
               read.bedix(fi, df)[,4]
@@ -151,3 +151,5 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.p
     return(list(bc=bc.df,dstat=data.frame(sample=ref.samples,Dstat=meanCor),
                 pc.1.3=pc$x[,1:3], cor.pw=corbs, bin.sup.df=bin.sup.df))
 }
+
+# LocalWords:  df
