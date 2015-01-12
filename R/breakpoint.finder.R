@@ -56,11 +56,15 @@ breakpoint.finder <- function(bkpt.gr, files.df, test.sample, ref.samples, flank
         diff.v = sapply(seq(1,length(gr.frag)-slidW.size+1,slidW.step), function(sw.ii){
             comp.diff(cov[sw.ii:(sw.ii+slidW.size-1),])
         })
-        return(gr.frag[which.max(diff.v)*slidW.step+slidW.size/2])
+        if(all(is.na(diff.v))){
+            gr.frag[length(gr.frag)/2]
+        } else {
+            return(gr.frag[which.max(diff.v)*slidW.step+slidW.size/2])
+        }
     }
 
     bkpt.gr.n = lapply(bkpt.gr, function(gr.f){
-        ##print(gr.f)
+        print(gr.f)
         up.bp = find.bp(GenomicRanges::flank(gr.f, flank.size, both=TRUE))
         dw.bp = find.bp(GenomicRanges::flank(gr.f, flank.size, start=FALSE, both=TRUE))
         GenomicRanges::start(gr.f) = GenomicRanges::start(up.bp)
