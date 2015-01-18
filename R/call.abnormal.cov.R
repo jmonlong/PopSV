@@ -94,22 +94,23 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FA
     if(merge.cons.bins){
         res.df = mergeConsBin.z(res.df, fdr.th=FDR.th, sd.null=fdr$sigma.est)
 
-        print(ggplot2::ggplot(res.df,ggplot2::aes(x=factor(nb.bin.cons))) +
-              ggplot2::geom_histogram() +
-              ggplot2::ylab("number of bins") + 
-              ggplot2::xlab("number of consecutive abnormal bins") +
-              ggplot2::theme_bw())
+        if(!is.null(res.df)){
+            print(ggplot2::ggplot(res.df,ggplot2::aes(x=factor(nb.bin.cons))) +
+                      ggplot2::geom_histogram() +
+                          ggplot2::ylab("number of bins") + 
+                              ggplot2::xlab("number of consecutive abnormal bins") +
+                                  ggplot2::theme_bw())
 
-        if(any(colnames(res.df)=="fc") & any(res.df$nb.bin.cons>2)) {
-            print(ggplot2::ggplot(subset(res.df, nb.bin.cons>2),ggplot2::aes(x=2*fc)) +
-                  ggplot2::geom_histogram() + ggplot2::theme_bw() +
-                  ggplot2::ylab("number of bins") + 
-                  ggplot2::xlab("copy number estimate") +
-                  ggplot2::ggtitle("At least 3 consecutive abnormal bins") + 
-                  ggplot2::xlim(0,5))
+            if(any(colnames(res.df)=="fc") & any(res.df$nb.bin.cons>2)) {
+                print(ggplot2::ggplot(subset(res.df, nb.bin.cons>2),ggplot2::aes(x=2*fc)) +
+                          ggplot2::geom_histogram() + ggplot2::theme_bw() +
+                              ggplot2::ylab("number of bins") + 
+                                  ggplot2::xlab("copy number estimate") +
+                                      ggplot2::ggtitle("At least 3 consecutive abnormal bins") + 
+                                          ggplot2::xlim(0,5))
+            }
         }
     }
-
     if(!is.null(out.pdf)){
         dev.off()
     }
