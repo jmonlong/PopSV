@@ -48,7 +48,10 @@ read.bedix <- function(file,subset.reg, col.names=NULL, as.is=TRUE){
     }
     gc()
     col.classes = c("character",rep("integer",2), rep("numeric",ncol-3))
-    for(ii in 1:ncol(bed.df)) class(bed.df[,ii]) = col.classes[ii]
+    for(ii in 1:ncol(bed.df)){
+      class(bed.df[,ii]) = col.classes[ii]
+      gc()
+    }
     
     return(bed.df)
 }
