@@ -1,6 +1,10 @@
 ##' The median and deviation to the median is normalized across samples. 
 ##' @title Median-variance normalization of bin counts
 ##' @param bc a matrix or data.frame with the bin counts (bin x sample).
+##' @param ref.samples a vector with the names of the samples to be used as reference.
+##' @param bc.support TODO
+##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
+##' Details). Default is FALSE.
 ##' @return a matrix with the normalized bin counts (bin x sample).
 ##' @author Jean Monlong
 ##' @export

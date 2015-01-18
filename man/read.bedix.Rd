@@ -3,13 +3,13 @@
 \alias{read.bedix}
 \title{Retrieve a subset of an indexed BED file.}
 \usage{
-read.bedix(file, subset, col.names = NULL, as.is = TRUE)
+read.bedix(file, subset.reg, col.names = NULL, as.is = TRUE)
 }
 \arguments{
 \item{file}{the name of the file which the data are to be read from.
 Should be compressed with |code{bgzip} and indexed by tabix algorithm.}
 
-\item{subset}{a data.frame or GRanges object with the regions to subset from.
+\item{subset.reg}{a data.frame or GRanges object with the regions to subset from.
 If a data.frame, it must have columns named 'chr', 'start' and 'end'.}
 
 \item{col.names}{The header for the output object. Optional.}
