@@ -19,6 +19,7 @@
 ##' or a data.frame with the copy number estimates for all samples. 
 ##' @param norm.stats the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.
 ##' @param d.max.max the maximum correlation of the last supporting bin. 
+##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered.
 ##' @return a data.frame with columns
 ##' \item{chr, start, end}{the genomic region definition}
 ##' \item{z}{the Z-score}
@@ -29,7 +30,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FALSE, fc=NULL, norm.stats=NULL, d.max.max=.5){
+call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FALSE, fc=NULL, norm.stats=NULL, d.max.max=.5, min.normal.prop=.5){
 
     ## load Z-scores and FC coefficients
     if(is.character(z) & length(z)==1){
@@ -72,7 +73,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=FA
     res.df = subset(res.df, !is.na(z) & !is.infinite(z))
     ## Pvalue/Qvalue estimation
     if(all(is.na(res.df$z))) return(NULL)
-    fdr = fdrtool.quantile(res.df$z)
+    fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, 1, .02))
     res.df$pv = fdr$pval
     res.df$qv = fdr$qval
 
