@@ -21,8 +21,8 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
         freq.df$end = as.numeric(win.df$end)
         freq.df$prop = freq.df$nb / nb.samp
         freq.df
-    }
-
+      }
+        
     if(merge.cons.bin){
 ###
 ### MERGED BIN CALLS
@@ -65,7 +65,9 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
             
             server = function(input, output) {
                 plot.df <- shiny::reactive({
-                    subset(res.df, qv<as.numeric(input$fdr) & cn2.dev>=input$cnD)
+                  pdf = subset(res.df, qv<as.numeric(input$fdr) & cn2.dev>=input$cnD)
+                    pdf$sample = factor(pdf$sample, levels=names(sort(table(pdf$sample))))
+                  pdf
                 })
                 freq.df <- shiny::reactive({
                     rbind(data.frame(type="deletion",freq.chr.gr(subset(res.df, qv<as.numeric(input$fdr) & cn2.dev>=input$cnD & fc<1))),
@@ -74,7 +76,6 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                 
                 output$nb.calls = shiny::renderPlot({
                     pdf = plot.df()
-                    pdf$sample = factor(pdf$sample, levels=names(sort(table(pdf$sample))))
                     if(input$col=="event type"){
                         pdf$col = ifelse(pdf$fc>1, "duplication","deletion")
                         extra.gg = ggplot2::scale_fill_brewer(name=input$col,palette="Set1")
@@ -82,7 +83,7 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                         pdf$col = cut(pdf$nb.bin.cons, breaks=c(0,1,2,3,5,10,Inf))
                         extra.gg = ggplot2::scale_fill_brewer(name=input$col,palette="Set1")
                     } else if(input$col=="sample"){
-                        pdf$col = as.character(pdf$sample)
+                        pdf$col = pdf$sample
                         extra.gg = ggplot2::scale_fill_manual(values=rep(RColorBrewer::brewer.pal(9,"Set1"),ceiling(length(unique(pdf$sample))/9)))
                     }
                     pdf.s = dplyr::summarize(dplyr::group_by(pdf, sample, col), gen.kb=sum((end-start)/1e3))
@@ -104,11 +105,13 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                         pdf$col = cut(pdf$nb.bin.cons, breaks=c(0,1,2,3,5,10,Inf))
                         extra.gg = ggplot2::scale_fill_brewer(name=input$col,palette="Set1")
                     } else if(input$col=="sample"){
-                        pdf$col = as.character(pdf$sample)
+                        pdf$col = pdf$sample
                         extra.gg = ggplot2::scale_fill_manual(values=rep(RColorBrewer::brewer.pal(9,"Set1"),ceiling(length(unique(pdf$sample))/9)))
                     }
-                    gp = ggplot2::ggplot(pdf, ggplot2::aes(x=fc*2, fill=col)) +
-                        ggplot2::geom_bar() + ggplot2::theme_bw() + ggplot2::xlim(input$cnMin,input$cnMax)+
+                    pdf$cn = pdf$fc*2
+                    if(any(pdf$cn>input$cnMax)) pdf$cn[pdf$cn>input$cnMax] = input$cnMax
+                    gp = ggplot2::ggplot(pdf, ggplot2::aes(x=cn, fill=col)) +
+                        ggplot2::geom_bar() + ggplot2::theme_bw() + ggplot2::scale_x_continuous(breaks=seq(input$cnMin,input$cnMax,1), labels=c(seq(input$cnMin,input$cnMax-1,1), paste0(">",input$cnMax)), limits=c(input$cnMin,input$cnMax+.2)) + 
                             ggplot2::theme(legend.position=c(1,1),legend.justification=c(1,1)) + extra.gg + ggplot2::xlab("Copy Number estimates") + ggplot2::ylab("number of calls")
                     if(input$col=="sample"){
                         gp = gp  + ggplot2::guides(fill=FALSE)
