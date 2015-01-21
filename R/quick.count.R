@@ -32,12 +32,12 @@ quick.count <- function(files.df, bins.df, nb.cores=1,col.files=NULL,...){
   } else {
     if(nb.cores>1){
       bc.l = parallel::mclapply(files.df$sample, function(samp){
-        bc.s = read.bedix(files.df[files.df$sample==samp, col.file], bins.df)
+        bc.s = read.bedix(files.df[files.df$sample==samp, col.files], bins.df)
         bc.s[,4]
       },mc.cores=nb.cores)
     } else {
       bc.l = lapply(files.df$sample, function(samp){
-        bc.s = read.bedix(files.df[files.df$sample==samp, col.file], bins.df)
+        bc.s = read.bedix(files.df[files.df$sample==samp, col.files], bins.df)
         bc.s[,4]
       })
     }
