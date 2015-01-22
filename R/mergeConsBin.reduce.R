@@ -19,14 +19,16 @@ mergeConsBin.reduce <- function(df, col.mean=c("z","pv","qv","fc"), stitch.dist=
   }
   
   gr.f = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end), z=z))
+  gr.dup = with(subset(df, z>0), GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
+  gr.del = with(subset(df, z<0), GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
   df$red.i = NA
 
   ## Merge duplications 
-  gr.red.dup = GenomicRanges::reduce(GenomicRanges::subset(gr.f, z>0), min.gapwidth=stitch.dist)
+  gr.red.dup = GenomicRanges::reduce(dup.gr, min.gapwidth=stitch.dist)
   ol.dup = GenomicRanges::findOverlaps(gr.f, gr.red.dup)
   df$red.i[IRanges::queryHits(ol.dup)] = paste0("dup",IRanges::subjectHits(ol.dup))
   ## Merge deletions
-  gr.red.del = GenomicRanges::reduce(subset(gr.f, z<0), min.gapwidth=stitch.dist)
+  gr.red.del = GenomicRanges::reduce(del.gr, min.gapwidth=stitch.dist)
   ol.del = GenomicRanges::findOverlaps(gr.f, gr.red.del)
   df$red.i[IRanges::queryHits(ol.del)] = paste0("del",IRanges::subjectHits(ol.del))
 
