@@ -95,7 +95,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
     }
     
   } else if(z.th[1]=="consbins"){
-    res.df = z.thres.cons.bins(res.df, plot=!is.null(out.pdf), pvalues=TRUE)
+    res.df = z.thres.cons.bins(res.df, plot=!is.null(out.pdf), pvalues=TRUE)$z.df
   } else {
     stop("'z.th=': available thresholding approaches are : 'stitch', 'zscores'.")
   }
