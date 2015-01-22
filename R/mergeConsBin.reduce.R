@@ -19,8 +19,8 @@ mergeConsBin.reduce <- function(df, col.mean=c("z","pv","qv","fc"), stitch.dist=
   }
   
   gr.f = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end), z=z))
-  gr.dup = with(subset(df, z>0), GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
-  gr.del = with(subset(df, z<0), GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
+  dup.gr = with(subset(df, z>0), GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
+  del.gr = with(subset(df, z<0), GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
   df$red.i = NA
 
   ## Merge duplications 
