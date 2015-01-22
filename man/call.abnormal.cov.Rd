@@ -4,8 +4,9 @@
 \title{Call abnormal bins}
 \usage{
 call.abnormal.cov(z, samp, out.pdf = NULL, FDR.th = 0.05,
-  merge.cons.bins = FALSE, fc = NULL, norm.stats = NULL,
-  d.max.max = 0.5, min.normal.prop = 0.5)
+  merge.cons.bins = c("stitch", "zscores", "no"), z.th = c("sdest",
+  "consbins"), fc = NULL, norm.stats = NULL, d.max.max = 0.5,
+  min.normal.prop = 0.5)
 }
 \arguments{
 \item{z}{the name of the file with the Z-scores for all samples OR or a
@@ -18,8 +19,9 @@ data.frame with the Z-scores for all samples.}
 \item{FDR.th}{the False Discovery Rate to use for the calls. Further filtering
 can always be performed.}
 
-\item{merge.cons.bins}{Should consecutive abnormal bins be merged. If FALSE (default)
-single bin calls are reported. If TRUE, reported bins are merged.}
+\item{merge.cons.bins}{how the bins should be merged. Default is 'stitch'. 'zscores' is another approch (see Details), 'no' means no bin merging.}
+
+\item{z.th}{how the threshold for abnormal Z-score is chosen. Default is 'sdest' which will use 'FDR.th=' parameter as well. 'consbins' looks at the number of consecutive bins, see Details.}
 
 \item{fc}{the name of the file with the copy number estimates for all samples OR
 or a data.frame with the copy number estimates for all samples.}
@@ -37,7 +39,7 @@ a data.frame with columns
 \item{pv, qv}{the P-value and Q-value(~FDR)}
 \item{fc}{the copy number estimate (if 'fc' was not NULL).}
 \item{nb.bin.cons}{the number of consecutive bins (if the bins were merged;
-'merge.cons.bins=TRUE')}
+'merge.cons.bins!="no"')}
 \item{cn2.dev}{Copy number deviation from the reference }
 }
 \description{
@@ -49,7 +51,7 @@ with abnormal read counts can be merged.
 \details{
 DETAILS ON THE MERGING APPROACH
 
-DETAILS ON THE NORMAL FITTING
+DETAILS ON THE NORMAL FITTING AND Z THRESHOLDING
 }
 \author{
 Jean Monlong

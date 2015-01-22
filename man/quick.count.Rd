@@ -3,7 +3,7 @@
 \alias{quick.count}
 \title{Counts reads across samples in a small number of bins}
 \usage{
-quick.count(files.df, bins.df, nb.cores = 1, ...)
+quick.count(files.df, bins.df, nb.cores = 1, col.files = NULL, ...)
 }
 \arguments{
 \item{files.df}{a data.frame with the information about the files to
@@ -14,6 +14,8 @@ and 'end' are required.}
 
 \item{nb.cores}{number of cores to use. If higher than 1, \code{parallel}
 package is used to parallelized the counting.}
+
+\item{col.files}{if non-NULL, the name of the column in 'files.df' with the filenames where the information should be retrieved from.}
 
 \item{...}{extra paramaters for 'bin.bam' function}
 }
