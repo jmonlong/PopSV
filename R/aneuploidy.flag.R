@@ -19,12 +19,16 @@ aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.
     return(list(lM=d$x[max.id], h=d$y[max.id]/my))
   }
 
+  df = read.table(files.df[files.df$sample==samp,col.file], header=TRUE, as.is=TRUE)
+  
   df = dplyr::do(dplyr::group_by(subset(df, bc>0), chr), {.[sample.int(nb.bins),]})
   lm.o = localMax(df$bc)
   lm.o = lm.o$lM[which.max(lm.o$h)]
   core.chrs = df$chr[order(abs(lm.o-df$bc))[1:(nrow(df)*.3)]]
   cchrs.t = table(core.chrs)
-  aneu.chrs = names(cchrs.t)[which(cchrs.t > prop.aneu*nb.bins*.3)]
-
-  return(aneu.chrs)  
+  if(any(cchrs.t > prop.aneu*nb.bins*.3)){
+    return(names(cchrs.t)[which(cchrs.t > prop.aneu*nb.bins*.3)])
+  } else {
+    return(NULL)
+  }
 }

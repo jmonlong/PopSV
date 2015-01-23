@@ -30,7 +30,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c("stitch","zscores", "no"), z.th=c("sdest","consbins"), fc=NULL, norm.stats=NULL, d.max.max=.5, min.normal.prop=.5){
+call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c("stitch","zscores", "no"), z.th=c("sdest","consbins"), fc=NULL, norm.stats=NULL, d.max.max=.5, min.normal.prop=.5, aneu.chrs=NULL){
 
   ## load Z-scores and FC coefficients
   if(is.character(z) & length(z)==1){
@@ -68,6 +68,11 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
     res.df$d.max = d.max$d.max
     rm(d.max)
     res.df = subset(res.df, !is.na(d.max) & d.max!=1 & d.max<d.max.max)
+  }
+
+  ## Remove aneuploid chromosomes
+  if(!is.null(aneu.chrs)){
+    res.df = subset(res.df, !(chr %in% aneu.chrs))
   }
   
   if(!is.null(out.pdf)){
