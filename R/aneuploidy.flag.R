@@ -37,7 +37,7 @@ aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.
 
   if(plot){
     df$aneu.flag = df$chr %in% aneu.chrs
-    df$bc = winsor(df$bc, u=quantile(df$bc, probs=.99))
+    df$bc = winsor(df$bc, u=quantile(df$bc, probs=.99, na.rm=TRUE))
     p1 = ggplot2::ggplot(df, ggplot2::aes(x=bc, fill=aneu.flag)) + ggplot2::geom_density(alpha=.4) + ggplot2::theme_bw() + ggplot2::facet_grid(chr~., scales="free") + ggplot2::xlab("raw read coverage") + ggplot2::ylab("bin density") + ggplot2::theme(axis.text.y=ggplot2::element_blank()) + ggplot2::theme(legend.position="bottom")
     df$all = "all"
     p2 =  ggplot2::ggplot(df, ggplot2::aes(x=bc)) + ggplot2::geom_density(fill="grey70", alpha=.4) + ggplot2::theme_bw() + ggplot2::ylab("bin density") + ggplot2::xlab("raw read coverage") + ggplot2::theme(axis.text.y=ggplot2::element_blank())+ ggplot2::facet_grid(all~., scales="free") + ggplot2::ggtitle(samp)
