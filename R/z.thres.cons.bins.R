@@ -49,7 +49,7 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
     })
     z.th = c(min(localMax(subset(nbcc.df, nbc==1)$z.th, subset(nbcc.df, nbc==1)$p)$lM),
       sapply(2:3, function(nbc.i)min(localMax(subset(nbcc.df, nbc==nbc.i)$z.th, subset(nbcc.df, nbc==nbc.i)$p, loc.max=FALSE)$lM)))
-    mean(z.th, na.rm=TRUE)
+    max(z.th, na.rm=TRUE)
   }
 
   ## Split between duplication/deletion signal
