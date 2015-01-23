@@ -11,7 +11,7 @@
 ##' @export
 aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.aneu=.1, plot=FALSE){
   
-  localMax <- function(x,min.max.prop=.1,max=FALSE){
+  localMax <- function(x,min.max.prop=.1){
     d = density(x,na.rm=TRUE)
     im = 1+which(diff(sign(diff(d$y)))==-2)
     my = max(d$y)
