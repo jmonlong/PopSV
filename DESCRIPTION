@@ -28,6 +28,7 @@ Imports:
     ggdendro,
     shiny,
     RColorBrewer,
-    parallel
+    parallel,
+    grid
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19
