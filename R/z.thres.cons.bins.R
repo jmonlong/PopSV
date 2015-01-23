@@ -39,7 +39,7 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
     max.id.o = max.id[order(d$y[max.id],decreasing=TRUE)]
     return(list(lM=d$x[max.id.o], h=d$y[max.id.o]/my))
   }
-  find.th <- function(df, z.int=seq(2,20,.5)){
+  find.th <- function(df, z.int=seq(1,20,.2)){
     nbcc.df = plyr::ldply(z.int,function(z.th){
       df =  dplyr::do(dplyr::group_by(subset(df, abs(z)>z.th), chr), cons.dist.f(.))
       df =  dplyr::summarize(dplyr::group_by(df, nbc), n=n())
@@ -48,7 +48,7 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
       df
     })
     z.th = c(min(localMax(subset(nbcc.df, nbc==1)$z.th, subset(nbcc.df, nbc==1)$p)$lM),
-      sapply(2:6, function(nbc.i)min(localMax(subset(nbcc.df, nbc==nbc.i)$z.th, subset(nbcc.df, nbc==nbc.i)$p, loc.max=FALSE)$lM)))
+      sapply(2:3, function(nbc.i)min(localMax(subset(nbcc.df, nbc==nbc.i)$z.th, subset(nbcc.df, nbc==nbc.i)$p, loc.max=FALSE)$lM)))
     mean(z.th, na.rm=TRUE)
   }
 
@@ -58,10 +58,10 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
 
   ## Find threshold; second run scan with more resolution.
   dup.th = find.th(dup.df)
-  dup.th = find.th(dup.df, seq(dup.th-.5, dup.th+.5, .01))
+  ##dup.th = find.th(dup.df, seq(dup.th-.5, dup.th+.5, .01))
   ##dup.th = find.th(dup.df, seq(dup.th-.1, dup.th+.1, .005))
   del.th = find.th(del.df)
-  del.th = find.th(del.df, seq(del.th-.5, del.th+.5, .01))
+  ##del.th = find.th(del.df, seq(del.th-.5, del.th+.5, .01))
   ##del.th = find.th(del.df, seq(del.th-.1, del.th+.1, .005))
 
   ## P-value computation
