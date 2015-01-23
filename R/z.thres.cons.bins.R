@@ -13,13 +13,13 @@
 ##' @keywords internal
 z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
 
-  bin.w = round(median(z.df$end-z.df$start, na.rm=TRUE))
+  bin.w = round(median(z.df$end-z.df$start+1, na.rm=TRUE))
   cons.dist.f <- function(df){
     gr = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
     gr.r = GenomicRanges::reduce(gr, min.gapwidth=2)
     data.frame(nbc = round(GenomicRanges::width(gr.r)/bin.w))
   }
-  find.th <- function(df, z.int=seq(2,quantile(abs(df$z),probs=.99)*1.5,.2)){
+  find.th <- function(df, z.int=seq(2,quantile(abs(df$z),probs=.95)*1.5,.2)){
     nbcc.df = plyr::ldply(z.int,function(z.th){
       df =  dplyr::do(dplyr::group_by(subset(df, abs(z)>z.th), chr), cons.dist.f(.))
       df =  dplyr::summarize(dplyr::group_by(df, nbc), n=n())
