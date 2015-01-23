@@ -8,7 +8,7 @@
 ##' @return a vector with the names of the flagged(aneuploid) chromosomes.
 ##' @author Jean Monlong
 ##' @export
-aneuploidy.flag <- function(samp, files.df, col.file="bc.bg", nb.bins=1e3, prop.aneu=.1){
+aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.aneu=.1){
   
   localMax <- function(x,min.max.prop=.1,max=FALSE){
     d = density(x,na.rm=TRUE)
