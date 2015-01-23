@@ -58,11 +58,11 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
 
   ## Find threshold; second run scan with more resolution.
   dup.th = find.th(dup.df)
-  dup.th = find.th(dup.df, seq(dup.th-.5, dup.th+.5, .02))
-  dup.th = find.th(dup.df, seq(dup.th-.1, dup.th+.1, .005))
+  dup.th = find.th(dup.df, seq(dup.th-.5, dup.th+.5, .01))
+  ##dup.th = find.th(dup.df, seq(dup.th-.1, dup.th+.1, .005))
   del.th = find.th(del.df)
-  del.th = find.th(del.df, seq(del.th-.5, del.th+.5, .02))
-  del.th = find.th(del.df, seq(del.th-.1, del.th+.1, .005))
+  del.th = find.th(del.df, seq(del.th-.5, del.th+.5, .01))
+  ##del.th = find.th(del.df, seq(del.th-.1, del.th+.1, .005))
 
   ## P-value computation
   if(pvalues){
