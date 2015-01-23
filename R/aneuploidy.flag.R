@@ -26,8 +26,8 @@ aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.
   lm.o = lm.o$lM[which.max(lm.o$h)]
   core.chrs = df$chr[order(abs(lm.o-df$bc))[1:(nrow(df)*.3)]]
   cchrs.t = table(core.chrs)
-  if(any(cchrs.t > prop.aneu*nb.bins*.3)){
-    return(names(cchrs.t)[which(cchrs.t > prop.aneu*nb.bins*.3)])
+  if(any(cchrs.t < prop.aneu*nb.bins*.3)){
+    return(names(cchrs.t)[which(cchrs.t < prop.aneu*nb.bins*.3)])
   } else {
     return(NULL)
   }
