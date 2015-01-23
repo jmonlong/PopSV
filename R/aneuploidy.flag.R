@@ -21,18 +21,20 @@ aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.
   }
 
   df = read.table(files.df[files.df$sample==samp,col.file], header=TRUE, as.is=TRUE)
+  chrs = unique(df$chr)
   df = subset(df, bc>0)
-
- 
-  df = dplyr::do(dplyr::group_by(df, chr), {.[sample.int(nb.bins),]})
-  lm.o = localMax(df$bc)
+  
+  df.sub = dplyr::do(dplyr::group_by(df, chr), {.[sample.int(nrow(.),nb.bins),]})
+  lm.o = localMax(df.sub$bc)
   lm.o = lm.o$lM[which.max(lm.o$h)]
-  core.chrs = df$chr[order(abs(lm.o-df$bc))[1:(nrow(df)*.3)]]
+  core.chrs = df.sub$chr[order(abs(lm.o-df.sub$bc))[1:(nrow(df.sub)*.3)]]
   cchrs.t = table(core.chrs)
+  aneu.chrs = NULL
+  if(length(cchrs.t)<length(chrs)){
+    aneu.chrs = setdiff(chrs, names(cchrs.t))
+  }
   if(any(cchrs.t < prop.aneu*nb.bins*.3)){
-    aneu.chrs = names(cchrs.t)[which(cchrs.t < prop.aneu*nb.bins*.3)]
-  } else {
-    aneu.chrs = NULL
+    aneu.chrs = c(aneu.chrs, names(cchrs.t)[which(cchrs.t < prop.aneu*nb.bins*.3)])
   }
 
   if(plot){
