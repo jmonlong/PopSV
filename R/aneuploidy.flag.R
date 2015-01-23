@@ -5,10 +5,11 @@
 ##' @param col.file the name of the column in 'files.df' with the path information to use.
 ##' @param nb.bins the number of bins to use when subsampling each chromosome. Default is 1000.
 ##' @param prop.aneu the proportion of normal bins under which a chromosome is considered aneuploid.
+##' @param plot should the read coverage per chromosome be displayed. Default is FALSE.
 ##' @return a vector with the names of the flagged(aneuploid) chromosomes.
 ##' @author Jean Monlong
 ##' @export
-aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.aneu=.1){
+aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.aneu=.1, plot=FALSE){
   
   localMax <- function(x,min.max.prop=.1,max=FALSE){
     d = density(x,na.rm=TRUE)
@@ -20,15 +21,29 @@ aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.
   }
 
   df = read.table(files.df[files.df$sample==samp,col.file], header=TRUE, as.is=TRUE)
-  
-  df = dplyr::do(dplyr::group_by(subset(df, bc>0), chr), {.[sample.int(nb.bins),]})
+  df = subset(df, bc>0)
+
+ 
+  df = dplyr::do(dplyr::group_by(df, chr), {.[sample.int(nb.bins),]})
   lm.o = localMax(df$bc)
   lm.o = lm.o$lM[which.max(lm.o$h)]
   core.chrs = df$chr[order(abs(lm.o-df$bc))[1:(nrow(df)*.3)]]
   cchrs.t = table(core.chrs)
   if(any(cchrs.t < prop.aneu*nb.bins*.3)){
-    return(names(cchrs.t)[which(cchrs.t < prop.aneu*nb.bins*.3)])
+    aneu.chrs = names(cchrs.t)[which(cchrs.t < prop.aneu*nb.bins*.3)]
   } else {
-    return(NULL)
+    aneu.chrs = NULL
   }
+
+  if(plot){
+    df$aneu.flag = df$chr %in% aneu.chrs
+    p1 = ggplot2::ggplot(df, ggplot2::aes(x=winsor(bc, quantile(bc, probs=.999)), fill=aneu.flag)) + ggplot2::geom_density(alpha=.4) + ggplot2::theme_bw() + ggplot2::facet_grid(chr~., scales="free") + ggplot2::xlab("raw read coverage") + ggplot2::theme(axis.text.y=ggplot2::element_blank())
+    df$all = "all"
+    p2 =  ggplot2::ggplot(df, ggplot2::aes(x=winsor(bc, quantile(bc, probs=.999)))) + ggplot2::geom_density(fill="grey70", alpha=.4) + ggplot2::theme_bw() + ggplot2::xlab("raw read coverage") + ggplot2::theme(axis.text.y=ggplot2::element_blank())+ ggplot2::facet_grid(all~., scales="free") + ggplot2::ggtitle(samp)
+    grid::grid.newpage()
+    print(p1, vp=grid::viewport(1, 0.8, x=0.5, y=0.4))
+    print(p2, vp=grid::viewport(1, 0.2, x=0.5, y=0.9))
+  }
+
+  return(aneu.chrs)
 }

@@ -20,6 +20,7 @@
 ##' @param norm.stats the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.
 ##' @param d.max.max the maximum correlation of the last supporting bin. 
 ##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered.
+##' @param aneu.chrs the names of the chromosomes to remove because flagged as aneuploid. If NULL (default) all chromosomes are analyzed.
 ##' @return a data.frame with columns
 ##' \item{chr, start, end}{the genomic region definition}
 ##' \item{z}{the Z-score}

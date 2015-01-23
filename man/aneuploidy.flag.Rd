@@ -3,8 +3,8 @@
 \alias{aneuploidy.flag}
 \title{Flag chromosomal aneuploidy}
 \usage{
-aneuploidy.flag(samp, files.df, col.file = "bc.bg", nb.bins = 1000,
-  prop.aneu = 0.1)
+aneuploidy.flag(samp, files.df, col.file = "bc.gz", nb.bins = 1000,
+  prop.aneu = 0.1, plot = FALSE)
 }
 \arguments{
 \item{samp}{the name of the sample to analyze.}
@@ -16,6 +16,8 @@ aneuploidy.flag(samp, files.df, col.file = "bc.bg", nb.bins = 1000,
 \item{nb.bins}{the number of bins to use when subsampling each chromosome. Default is 1000.}
 
 \item{prop.aneu}{the proportion of normal bins under which a chromosome is considered aneuploid.}
+
+\item{plot}{should the read coverage per chromosome be displayed. Default is FALSE.}
 }
 \value{
 a vector with the names of the flagged(aneuploid) chromosomes.
