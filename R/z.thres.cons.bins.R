@@ -35,6 +35,9 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
     }
     cmax = rec.max(y)
     cmax.rle = rle(diff(cmax))
+    if(all(cmax.rle$values!=0)){
+      return(list(x=tail(x,1), y=tail(y,1)))
+    }
     rle.i = which(cmax.rle$values==0)[which.max(cmax.rle$lengths[cmax.rle$values==0])]-1
     x.i = sum(cmax.rle$lengths[1:rle.i]) + 1
     return(list(x=x[x.i], y=y[x.i]))
