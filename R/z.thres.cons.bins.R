@@ -38,8 +38,8 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
     if(all(cmax.rle$values!=0)){
       return(list(x=tail(x,1), y=tail(y,1)))
     }
-    rle.i = which(cmax.rle$values==0)[which.max(cmax.rle$lengths[cmax.rle$values==0])]-1
-    x.i = sum(cmax.rle$lengths[1:rle.i]) + 1
+  rle.i = which(cmax.rle$values==0)[which.max(cmax.rle$lengths[cmax.rle$values==0])]
+  x.i = sum(cmax.rle$lengths[1:rle.i]) - cmax.rle$lengths[rle.i] + 1
     return(list(x=x[x.i], y=y[x.i]))
   }
   localMax <- function(x,y=NULL,min.max.prop=.1, loc.max=TRUE){
@@ -65,9 +65,13 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
   find.th <- function(df, z.int=seq(1,20,.2)){
     nbcc.df = plyr::ldply(z.int,function(z.th){
       df.th = subset(df, abs(z)>z.th)
-      df.th =  cons.dist.f(df.th)
-      df.th$z.th=z.th
-      df.th
+      if(nrow(df.th)>0){
+        df.th =  cons.dist.f(df.th)
+        df.th$z.th=z.th
+        return(df.th)
+      } else {
+        return(data.frame())
+      }
     })
     ##ggplot(subset(nbcc.df, nbc<7), aes(x=z.th, y=p)) + geom_line() + facet_grid(nbc~., scales="free")
     ##z.th = c(min(localMax(subset(nbcc.df, nbc==1)$z.th, subset(nbcc.df, nbc==1)$p)$lM),
@@ -82,10 +86,10 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
   del.df = subset(z.df, z<0)
 
   ## Find threshold; second run scan with more resolution.
-  dup.th = find.th(dup.df)
+  dup.th = find.th(dup.df, z.int=seq(2,quantile(dup.df$z, probs=.999)*2,.5))
   ##dup.th = find.th(dup.df, seq(dup.th-.5, dup.th+.5, .01))
   ##dup.th = find.th(dup.df, seq(dup.th-.1, dup.th+.1, .005))
-  del.th = find.th(del.df)
+  del.th = find.th(del.df,z.int=seq(2,quantile(abs(del.df$z), probs=.999)*2,.5))
   ##del.th = find.th(del.df, seq(del.th-.5, del.th+.5, .01))
   ##del.th = find.th(del.df, seq(del.th-.1, del.th+.1, .005))
 

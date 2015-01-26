@@ -7,7 +7,7 @@
 ##' @author Jean Monlong
 ##' @export
 weight.ref.pca <- function(pca.mat, ref.samples, plot=FALSE){
-    if(mcol(pca.mat)>2){
+    if(ncol(pca.mat)>2){
         pca.mat = pca.mat[,1:2]
     }
 

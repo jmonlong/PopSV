@@ -97,11 +97,15 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
         if(nrow(aber.large)>0){
             aber.gr = with(aber.large, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
             res.gr = with(res.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
-            res.df = res.df[GenomicRanges::overlapsAny(res.gr, aber.gr), ]
+            res.aber.large = res.df[GenomicRanges::overlapsAny(res.gr, aber.gr), ]
+            res.df = res.df[!GenomicRanges::overlapsAny(res.gr, aber.gr), ]
         }
         fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, .98, .02), ref.dist.weight=ref.dist.weight)
         res.df$pv = fdr$pval
         res.df$qv = fdr$qval
+        if(nrow(aber.large)>0){
+          res.df = rbind(res.df, res.aber.large)
+        }
     }
     
     if(!is.null(out.pdf) & any(!is.na(res.df$pv))){
