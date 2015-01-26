@@ -21,6 +21,7 @@
 ##' @param d.max.max the maximum correlation of the last supporting bin. 
 ##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered.
 ##' @param ref.dist.weight the weight (value between 0 and 1) based on the distance to the reference samples.
+##' @param aneu.chrs the names of the chromosomes to remove because flagged as aneuploid. If NULL (default) all chromosomes are analyzed.
 ##' @return a data.frame with columns
 ##' \item{chr, start, end}{the genomic region definition}
 ##' \item{z}{the Z-score}
@@ -31,7 +32,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c("stitch","zscores", "no"), z.th=c("sdest","consbins"), fc=NULL, norm.stats=NULL, d.max.max=.5, min.normal.prop=.5, ref.dist.weight=NULL){
+call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c("stitch","zscores", "no"), z.th=c("sdest","consbins"), fc=NULL, norm.stats=NULL, d.max.max=.5, min.normal.prop=.5, aneu.chrs=NULL, ref.dist.weight=NULL){
 
   ## load Z-scores and FC coefficients
   if(is.character(z) & length(z)==1){
@@ -69,6 +70,11 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
     res.df$d.max = d.max$d.max
     rm(d.max)
     res.df = subset(res.df, !is.na(d.max) & d.max!=1 & d.max<d.max.max)
+  }
+
+  ## Remove aneuploid chromosomes
+  if(!is.null(aneu.chrs)){
+    res.df = subset(res.df, !(chr %in% aneu.chrs))
   }
   
   if(!is.null(out.pdf)){

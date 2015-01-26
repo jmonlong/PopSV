@@ -17,19 +17,64 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
   cons.dist.f <- function(df){
     gr = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
     gr.r = GenomicRanges::reduce(gr, min.gapwidth=2)
-    data.frame(nbc = round(GenomicRanges::width(gr.r)/bin.w))
+    nbc.t = table(round(GenomicRanges::width(gr.r)/bin.w))
+    data.frame(nbc=as.numeric(names(nbc.t)), n=as.numeric(nbc.t), p=as.numeric(nbc.t)/sum(nbc.t))
   }
-  find.th <- function(df, z.int=seq(2,quantile(abs(df$z),probs=.95)*1.5,.2)){
+  cumLocalMax <- function(x,y, min=FALSE){
+    rec.max <- function(xx){
+      if(length(xx)>1){
+        xx.p = rec.max(xx[-length(xx)])
+        if(min){
+          return(c(xx.p,min(c(tail(xx.p,1), xx[length(xx)]))))
+        } else {
+          return(c(xx.p,max(c(tail(xx.p,1), xx[length(xx)]))))
+        }
+      } else {
+        return(xx)
+      }
+    }
+    cmax = rec.max(y)
+    cmax.rle = rle(diff(cmax))
+    if(all(cmax.rle$values!=0)){
+      return(list(x=tail(x,1), y=tail(y,1)))
+    }
+    rle.i = which(cmax.rle$values==0)[which.max(cmax.rle$lengths[cmax.rle$values==0])]-1
+    x.i = sum(cmax.rle$lengths[1:rle.i]) + 1
+    return(list(x=x[x.i], y=y[x.i]))
+  }
+  localMax <- function(x,y=NULL,min.max.prop=.1, loc.max=TRUE){
+    if(is.null(y)){
+      d = density(x,na.rm=TRUE)
+    } else {
+      d = data.frame(x=x, y=y)
+      d = dplyr::arrange(d, x)
+    }
+    my = max(d$y)
+    if(!loc.max){
+      d$y = my-d$y
+      my = max(d$y)      
+    }
+    im = 1+which(diff(sign(diff(d$y)))==-2)
+    max.id = im[which(d$y[im] >= min.max.prop * my)]
+    if(length(max.id)==0){
+      return(list(lM=NA, h=NA))
+    }
+    max.id.o = max.id[order(d$y[max.id],decreasing=TRUE)]
+    return(list(lM=d$x[max.id.o], h=d$y[max.id.o]/my))
+  }
+  find.th <- function(df, z.int=seq(1,20,.2)){
     nbcc.df = plyr::ldply(z.int,function(z.th){
-      df =  dplyr::do(dplyr::group_by(subset(df, abs(z)>z.th), chr), cons.dist.f(.))
-      df =  dplyr::summarize(dplyr::group_by(df, nbc), n=n())
-      df$z.th=z.th
-      df$p=df$n/sum(df$n)
-      df
+      df.th = subset(df, abs(z)>z.th)
+      df.th =  cons.dist.f(df.th)
+      df.th$z.th=z.th
+      df.th
     })
-    z.th = unlist(dplyr::summarize(subset(nbcc.df, nbc==1), z.th=z.th[max(which(p==max(p)))]))
-    z.th.df = dplyr::summarize(dplyr::group_by(subset(nbcc.df, nbc>1 & nbc<7), nbc), z.th=z.th[which.min(p)])
-    max(c(z.th,z.th.df$z.th))
+    ##ggplot(subset(nbcc.df, nbc<7), aes(x=z.th, y=p)) + geom_line() + facet_grid(nbc~., scales="free")
+    ##z.th = c(min(localMax(subset(nbcc.df, nbc==1)$z.th, subset(nbcc.df, nbc==1)$p)$lM),
+    ##  sapply(2:3, function(nbc.i)min(localMax(subset(nbcc.df, nbc==nbc.i)$z.th, subset(nbcc.df, nbc==nbc.i)$p, loc.max=FALSE)$lM)))
+    z.th = c(cumLocalMax(subset(nbcc.df, nbc==1)$z.th, subset(nbcc.df, nbc==1)$p)$x,
+    cumLocalMax(subset(nbcc.df, nbc==2)$z.th, subset(nbcc.df, nbc==2)$p, min=TRUE)$x)
+    mean(z.th, na.rm=TRUE)
   }
 
   ## Split between duplication/deletion signal
@@ -38,9 +83,11 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
 
   ## Find threshold; second run scan with more resolution.
   dup.th = find.th(dup.df)
-  dup.th = find.th(dup.df, seq(dup.th-.2, dup.th+.2, .01))
+  ##dup.th = find.th(dup.df, seq(dup.th-.5, dup.th+.5, .01))
+  ##dup.th = find.th(dup.df, seq(dup.th-.1, dup.th+.1, .005))
   del.th = find.th(del.df)
-  del.th = find.th(del.df, seq(del.th-.2, del.th+.2, .01))
+  ##del.th = find.th(del.df, seq(del.th-.5, del.th+.5, .01))
+  ##del.th = find.th(del.df, seq(del.th-.1, del.th+.1, .005))
 
   ## P-value computation
   if(pvalues){
