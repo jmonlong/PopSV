@@ -6,7 +6,9 @@
 ##' @param nb.bins the number of bins to use when subsampling each chromosome. Default is 1000.
 ##' @param prop.aneu the proportion of normal bins under which a chromosome is considered aneuploid.
 ##' @param plot should the read coverage per chromosome be displayed. Default is FALSE.
-##' @return a vector with the names of the flagged(aneuploid) chromosomes.
+##' @return a list with:
+##' \item{aneu.chrs}{vector with the names of the flagged(aneuploid) chromosomes.}
+##' \item{aneu.chrs.fc}{the fold change in read count in the aneuploid chromosomes.}
 ##' @author Jean Monlong
 ##' @export
 aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.aneu=.1, plot=FALSE){
@@ -17,7 +19,7 @@ aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.
     my = max(d$y)
     max.id = im[which(d$y[im] >= min.max.prop * my)]
     max.id.o = max.id[order(d$y[max.id],decreasing=TRUE)]
-    return(list(lM=d$x[max.id], h=d$y[max.id]/my))
+    return(list(lM=d$x[max.id.o], h=d$y[max.id.o]/my))
   }
 
   df = read.table(files.df[files.df$sample==samp,col.file], header=TRUE, as.is=TRUE)
@@ -25,8 +27,7 @@ aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.
   df = subset(df, bc>0)
   
   df.sub = dplyr::do(dplyr::group_by(df, chr), {.[sample.int(nrow(.),nb.bins),]})
-  lm.o = localMax(df.sub$bc)
-  lm.o = lm.o$lM[which.max(lm.o$h)]
+  lm.o = localMax(df.sub$bc)$lM[1]
   core.chrs = df.sub$chr[order(abs(lm.o-df.sub$bc))[1:(nrow(df.sub)*.3)]]
   cchrs.t = table(core.chrs)
   aneu.chrs = NULL
@@ -37,6 +38,11 @@ aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.
     aneu.chrs = c(aneu.chrs, names(cchrs.t)[which(cchrs.t < prop.aneu*nb.bins*.3)])
   }
 
+  aneu.chrs.fc = NULL
+  if(!is.null(aneu.chrs)){
+    aneu.chrs.fc = sapply(aneu.chrs, function(chr.i)localMax(subset(df.sub, chr==chr.i)$bc)$lM[1]/lm.o)
+  }
+  
   if(plot){
     df$aneu.flag = df$chr %in% aneu.chrs
     df$bc = winsor(df$bc, u=quantile(df$bc, probs=.99, na.rm=TRUE))
@@ -48,5 +54,5 @@ aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.
     print(p2, vp=grid::viewport(1, 0.2, x=0.5, y=0.9))
   }
 
-  return(aneu.chrs)
+  return(list(aneu.chrs = aneu.chrs, aneu.chrs.fc = aneu.chrs.fc))
 }
