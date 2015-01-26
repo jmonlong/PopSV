@@ -7,7 +7,6 @@
 ##' @return a list with
 ##' \item{pval}{the vector of P-values}
 ##' \item{qval}{the vector of Q-values / FDR estimates}
-##' variance.}
 ##' \item{sigma.est}{the estimated null distribution variance}
 ##' @author Jean Monlong
 ##' @keywords internal

@@ -6,7 +6,7 @@
 call.abnormal.cov(z, samp, out.pdf = NULL, FDR.th = 0.05,
   merge.cons.bins = c("stitch", "zscores", "no"), z.th = c("sdest",
   "consbins"), fc = NULL, norm.stats = NULL, d.max.max = 0.5,
-  min.normal.prop = 0.5, aneu.chrs = NULL)
+  min.normal.prop = 0.5, aneu.chrs = NULL, ref.dist.weight = NULL)
 }
 \arguments{
 \item{z}{the name of the file with the Z-scores for all samples OR or a
@@ -33,6 +33,8 @@ or a data.frame with the copy number estimates for all samples.}
 \item{min.normal.prop}{the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered.}
 
 \item{aneu.chrs}{the names of the chromosomes to remove because flagged as aneuploid. If NULL (default) all chromosomes are analyzed.}
+
+\item{ref.dist.weight}{the weight (value between 0 and 1) based on the distance to the reference samples.}
 }
 \value{
 a data.frame with columns

@@ -3,20 +3,20 @@
 \alias{fdrtool.quantile}
 \title{P-values estimation}
 \usage{
-fdrtool.quantile(z, quant.int = seq(0.2, 1, 0.02))
+fdrtool.quantile(z, quant.int = seq(0.4, 1, 0.02), ref.dist.weight = NULL)
 }
 \arguments{
 \item{z}{a vector with the Z-scores}
 
 \item{quant.int}{a vector with the quantiles to test for the estimation of the
 null normal variance.}
+
+\item{ref.dist.weight}{the weight (value between 0 and 1) based on the distance to the reference samples.}
 }
 \value{
 a list with
 \item{pval}{the vector of P-values}
 \item{qval}{the vector of Q-values / FDR estimates}
-\item{quant.int}{the quantile used for the estimation of the null distribution
-variance.}
 \item{sigma.est}{the estimated null distribution variance}
 }
 \description{
