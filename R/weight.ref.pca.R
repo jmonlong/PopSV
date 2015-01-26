@@ -3,13 +3,14 @@
 ##' @param pca.mat a matrix with the principal components as columns and the sample names as row names. The first two components are used.
 ##' @param ref.samples the names of the samples used as reference.
 ##' @param plot should some graphs be displayed. Default is FALSE.
+##' @param output.dist should the distance to the reference sample centroid be outputed instead of the weights. Default is FALSE.
 ##' @return a vector with the weights for each sample.
 ##' @author Jean Monlong
 ##' @export
-weight.ref.pca <- function(pca.mat, ref.samples, plot=FALSE){
-    if(ncol(pca.mat)>2){
-        pca.mat = pca.mat[,1:2]
-    }
+weight.ref.pca <- function(pca.mat, ref.samples, plot=FALSE, output.dist=FALSE){
+  if(ncol(pca.mat)>2){
+    pca.mat = pca.mat[,1:2]
+  }
 
     weight.f <- function(x, min.x, max.x){
         w = (x-min.x)/(max.x-min.x)
@@ -22,7 +23,7 @@ weight.ref.pca <- function(pca.mat, ref.samples, plot=FALSE){
     }
     
     centroid.ref = apply(pca.mat[ref.samples,],2,median, na.rm=TRUE)
-    d.cent = sqrt(rowSums((pca.mat-matrix(centroid.ref, nrow(pca.mat),ncol=2, byrow=TRUE))^2))
+    d.cent = sqrt(rowSums((pca.mat-matrix(centroid.ref, nrow(pca.mat),ncol=ncol(pca.mat), byrow=TRUE))^2))
     d.cent.med = median(d.cent[ref.samples])
     w.pca = sapply(d.cent, weight.f, min.x=d.cent.med, max.x=2*d.cent.med)
 
@@ -35,5 +36,9 @@ weight.ref.pca <- function(pca.mat, ref.samples, plot=FALSE){
         print(ggplot2::ggplot(subset(pc.df, ref), ggplot2::aes(x=PC1, y=PC2, shape=ref, colour=factor(ceiling(d.cent/d.cent.med)))) + ggplot2::geom_point() + ggplot2::theme_bw() + ggplot2::theme(legend.position="bottom") + ggplot2::annotate(geom="point",x=centroid.ref[1],y=centroid.ref[2], size=3, shape=8) + ggplot2::scale_colour_hue(name="distance to the reference centroid relative to median distance"))
     }
 
-    return(w.pca)
+    if(output.dist){
+      return(d.cent)
+    } else {
+      return(w.pca)
+    }
 }
