@@ -119,7 +119,8 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
             ggplot2::ylab("number of bins") + 
             ggplot2::theme_bw())
     }
-    
+
+    res.df = subset(res.df, qv<FDR.th)
   } else if(z.th[1]=="consbins"){
     res.df = z.thres.cons.bins(res.df, plot=!is.null(out.pdf), pvalues=TRUE)$z.df
   } else {
