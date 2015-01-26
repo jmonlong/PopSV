@@ -20,6 +20,7 @@
 ##' @param norm.stats the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.
 ##' @param d.max.max the maximum correlation of the last supporting bin. 
 ##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered.
+##' @param ref.dist.weight the weight (value between 0 and 1) based on the distance to the reference samples.
 ##' @return a data.frame with columns
 ##' \item{chr, start, end}{the genomic region definition}
 ##' \item{z}{the Z-score}
@@ -30,7 +31,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c("stitch","zscores", "no"), z.th=c("sdest","consbins"), fc=NULL, norm.stats=NULL, d.max.max=.5, min.normal.prop=.5){
+call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c("stitch","zscores", "no"), z.th=c("sdest","consbins"), fc=NULL, norm.stats=NULL, d.max.max=.5, min.normal.prop=.5, ref.dist.weight=NULL){
 
   ## load Z-scores and FC coefficients
   if(is.character(z) & length(z)==1){
@@ -75,13 +76,28 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
   }
 
   res.df = subset(res.df, !is.na(z) & !is.infinite(z))
+  bin.width = median(round(res.df$end-res.df$start+1))
   ## Pvalue/Qvalue estimation
   if(all(is.na(res.df$z))) return(NULL)
   if(z.th[1]=="sdest"){
-    fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, 1, .02))
+    fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, .98, .02))
     res.df$pv = fdr$pval
     res.df$qv = fdr$qval
 
+    ## Remove large aberrations
+    aber.large = mergeConsBin.reduce(subset(res.df, qv<.05), stitch.dist=10*bin.width)
+    aber.large = subset(aber.large, end-start>1e7)
+    if(nrow(aber.large)>0 | !is.null(ref.dist.weight)){
+        if(nrow(aber.large)>0){
+            aber.gr = with(aber.large, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
+            res.gr = with(res.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
+            res.df = res.df[GenomicRanges::overlapsAny(res.gr, aber.gr), ]
+        }
+        fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, .98, .02), ref.dist.weight=ref.dist.weight)
+        res.df$pv = fdr$pval
+        res.df$qv = fdr$qval
+    }
+    
     if(!is.null(out.pdf) & any(!is.na(res.df$pv))){
       print(ggplot2::ggplot(subset(res.df,abs(z)<10),ggplot2::aes(x=z)) +
             ggplot2::geom_histogram() + 
@@ -103,7 +119,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
   if(merge.cons.bins[1]!="no"){
 
     if(merge.cons.bins[1]=="stitch"){
-      res.df = mergeConsBin.reduce(res.df)
+      res.df = mergeConsBin.reduce(res.df, stitch.dist=bin.width+1)
     } else if(merge.cons.bins[1]=="zscores"){
       res.df = mergeConsBin.z(res.df, fdr.th=FDR.th, sd.null=fdr$sigma.est)
     } else {
