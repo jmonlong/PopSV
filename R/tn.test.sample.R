@@ -30,10 +30,10 @@
 ##' @export
 tn.test.sample <- function(test.sample, cont.sample, files.df, norm.stat.f, z.poisson=FALSE, aberrant.cases=FALSE){
     chunk.size=1e3
-    test.bc = read.table(subset(files.df, sample=test.sample)$bc.gc.gz, colClasses=c("character","integer","integer","numeric"), header=TRUE)
+    test.bc = read.table(subset(files.df, sample==test.sample)$bc.gc.gz, colClasses=c("character","integer","integer","numeric"), header=TRUE)
     id.test = 1:nrow(test.bc)
     names(id.test) = paste(test.bc$chr, as.integer(test.bc$start), sep="-")
-    cont.bc = read.table(subset(files.df, sample=cont.sample)$bc.gc.gz, colClasses=c("character","integer","integer","numeric"), header=TRUE)
+    cont.bc = read.table(subset(files.df, sample==cont.sample)$bc.gc.gz, colClasses=c("character","integer","integer","numeric"), header=TRUE)
     id.cont = 1:nrow(cont.bc)
     names(id.cont) = paste(cont.bc$chr, as.integer(cont.bc$start), sep="-")
     
