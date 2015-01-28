@@ -21,7 +21,7 @@
 ##' or a data.frame with the copy number estimates for all samples. 
 ##' @param norm.stats the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.
 ##' @param d.max.max the maximum correlation of the last supporting bin. 
-##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered.
+##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered. Maximum value accepted is 0.98 . 
 ##' @param ref.dist.weight the weight (value between 0 and 1) based on the distance to the reference samples.
 ##' @param aneu.chrs the names of the chromosomes to remove because flagged as aneuploid. If NULL (default) all chromosomes are analyzed.
 ##' @return a data.frame with columns
@@ -88,7 +88,8 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
   ## Pvalue/Qvalue estimation
   if(all(is.na(res.df$z))) return(NULL)
   if(z.th[1]=="sdest"){
-    fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, .98, .02))
+    if(min.normal.prop>.98){ stop("Maximum value accepted for 'min.normal.prop' is 0.98.")}
+    fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, .99, .01))
     res.df$pv = fdr$pval
     res.df$qv = fdr$qval
 
@@ -102,7 +103,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
             res.aber.large = res.df[GenomicRanges::overlapsAny(res.gr, aber.gr), ]
             res.df = res.df[!GenomicRanges::overlapsAny(res.gr, aber.gr), ]
         }
-        fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, .98, .02), ref.dist.weight=ref.dist.weight)
+        fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, .99, .01), ref.dist.weight=ref.dist.weight)
         res.df$pv = fdr$pval
         res.df$qv = fdr$qval
         if(nrow(aber.large)>0){

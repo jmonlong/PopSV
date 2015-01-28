@@ -18,7 +18,8 @@ null normal variance.}
 a list with
 \item{pval}{the vector of P-values}
 \item{qval}{the vector of Q-values / FDR estimates}
-\item{sigma.est}{the estimated null distribution variance}
+\item{sigma.est.dup}{the estimated null distribution variance for positive Z-scores}
+\item{sigma.est.del}{the estimated null distribution variance for negative Z-scores}
 }
 \description{
 Compute P-values and Q-values from the Z-score distribution.

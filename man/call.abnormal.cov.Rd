@@ -31,7 +31,7 @@ or a data.frame with the copy number estimates for all samples.}
 
 \item{d.max.max}{the maximum correlation of the last supporting bin.}
 
-\item{min.normal.prop}{the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered.}
+\item{min.normal.prop}{the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered. Maximum value accepted is 0.98 .}
 
 \item{aneu.chrs}{the names of the chromosomes to remove because flagged as aneuploid. If NULL (default) all chromosomes are analyzed.}
 
