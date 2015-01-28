@@ -54,7 +54,7 @@ fdrtool.quantile <- function(z,quant.int = seq(.4,1,.02), ref.dist.weight=NULL){
     res$pval[non.na.i[z.non.na>0]] = 2*pnorm(-z.dup,0,res$sigma.est.dup)
     res$pval[non.na.i[z.non.na<0]] = 2*pnorm(z.del,0,res$sigma.est.del)
     if(any(res$pval==0))
-        res.$pval[res.$pval==0] = .Machine$double.xmin
-    res$qval = p.adjust(res.$pval,method="fdr")
+        res$pval[res$pval==0] = .Machine$double.xmin
+    res$qval = p.adjust(res$pval,method="fdr")
     return(res)
 }
