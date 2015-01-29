@@ -7,7 +7,8 @@
 ##' @author Jean Monlong
 ##' @export
 mergeConsBin.reduce <- function(df, col.mean=c("z","pv","qv","fc"), stitch.dist=1e4){
-
+  if(nrow(df)==0) return(df)
+  
   fun3 <- function(x, FUN=mean){
     if(length(x)>2){
       FUN(x[c(2,length(x))])
