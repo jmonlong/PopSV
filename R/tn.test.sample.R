@@ -56,15 +56,16 @@ tn.test.sample <- function(test.sample, cont.sample, files.df, norm.stat.f, z.po
     res.df$end = test.bc$end
 
     test.bin <- function(ns){
+        bin = paste(ns[1],as.integer(ns[2]), sep="-")
         if(aberrant.cases){
             norm.coeff = norm.tm.opt(test.bc[id.test[ns[-(1:7)]],"bc",drop=FALSE],ref.col=cont.bc[id.cont[ns[-(1:7)]],"bc"],bc.mean.norm=as.numeric(ns[4]),chrs=test.bc[id.test[ns[-(1:7)]],"chr"])
-            bc.n = test.bc[ns[8],"bc"] * norm.coeff
+            bc.n = test.bc[id.test[bin],"bc"] * norm.coeff
             return(c(bc = bc.n,
                      z = z.comp(bc.n,as.numeric(ns[4]),as.numeric(ns[5])),
                      fc = bc.n/as.numeric(ns[4])))
         } else {
             norm.coeff = norm.tm.opt(test.bc[id.test[ns[-(1:7)]],"bc",drop=FALSE],ref.col=cont.bc[id.cont[ns[-(1:7)]],"bc"])
-            bc.n = test.bc[ns[8],"bc"] * norm.coeff
+            bc.n = test.bc[id.test[bin],"bc"] * norm.coeff
             return(c(bc = bc.n,
                      z = z.comp(bc.n,as.numeric(ns[4]),as.numeric(ns[5])),
                      fc = bc.n/as.numeric(ns[4])))
