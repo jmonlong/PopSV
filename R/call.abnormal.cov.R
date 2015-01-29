@@ -147,7 +147,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
             ggplot2::xlab("number of consecutive abnormal bins") +
             ggplot2::theme_bw())
 
-      if(any(colnames(res.df)=="fc") & sum(res.df$nb.bin.cons>2)>3) {
+      if(any(colnames(res.df)=="fc") & sum(res.df$nb.bin.cons>2 & res.df$fc<2.5)>3) {
         print(ggplot2::ggplot(subset(res.df, nb.bin.cons>2),ggplot2::aes(x=2*fc)) +
               ggplot2::geom_histogram() + ggplot2::theme_bw() +
               ggplot2::ylab("number of bins") + 
