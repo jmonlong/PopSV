@@ -140,7 +140,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
       stop("'merge.cons.bins=' : available bin merging approaches are : 'stitch', 'zscores'.")
     }
 
-    if(!is.null(res.df) & !is.null(out.pdf)){
+    if(nrow(res.df)>0 & !is.null(out.pdf)){
       print(ggplot2::ggplot(res.df,ggplot2::aes(x=factor(nb.bin.cons))) +
             ggplot2::geom_histogram() +
             ggplot2::ylab("number of bins") + 
