@@ -11,6 +11,7 @@
 ##' @author Jean Monlong
 ##' @keywords internal
 fdrtool.quantile.2N <- function(z, plot=TRUE, min.prop.null=.95){
+
   localMax <- function(x,min.max.prop=.1){
     d = density(x,na.rm=TRUE)
     im = 1+which(diff(sign(diff(d$y)))==-2)
@@ -45,7 +46,7 @@ fdrtool.quantile.2N <- function(z, plot=TRUE, min.prop.null=.95){
     c(rnorm(pars["p"]*nb.sims, 0, pars["s1"]),
       rnorm((1-pars["p"])*nb.sims, 0, pars["s2"]))
   }
-  find.par <- function(z, z0.int=seq(quantile(abs(z), probs=min.prop.null),quantile(abs(z), probs=.95),.2)){
+  find.par <- function(z, z0.int=seq(quantile(abs(z), probs=min.prop.null),quantile(abs(z), probs=.99),.2)){
     p.df = plyr::ldply(z0.int, function(z0){
       p = fit2norm.sd.cens(z, z0=z0)
       zsim = sim2norm.sd(p$par)

@@ -34,7 +34,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c("stitch","zscores", "no"), z.th=c("sdest","consbins", "sdest2N"), fc=NULL, norm.stats=NULL, d.max.max=.5, min.normal.prop=.5, aneu.chrs=NULL, ref.dist.weight=NULL){
+call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c("stitch","zscores", "no"), z.th=c("sdest","consbins", "sdest2N"), fc=NULL, norm.stats=NULL, d.max.max=.5, min.normal.prop=.9, aneu.chrs=NULL, ref.dist.weight=NULL){
 
   ## load Z-scores and FC coefficients
   if(is.character(z) & length(z)==1){
