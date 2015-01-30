@@ -23,7 +23,7 @@ fdrtool.quantile.2N <- function(z, plot=TRUE, min.prop.null=.95){
     z = z[abs(z)<z0]
     mix.obj<-function(p,x){
       e<-p[1]*dnorm(x/p[2])/((pnorm(z0,0,p[2])-pnorm(-z0,0,p[2]))*p[2]) + (1-p[1])*dnorm(x/p[3])/((pnorm(z0,0,p[3])-pnorm(-z0,0,p[3]))*p[3])
-      if (any(e<=0) | p[1]<0 | p[1]>1) Inf
+      if (any(e<=0, na.rm=TRUE) | p[1]<0 | p[1]>1) Inf
       else -sum(log(e))
     }
     lmix2a<-deriv(~ -log(p*dnorm(x/s1)/((pnorm(z0,0,s1)-pnorm(-z0,0,s1))*s1) + (1-p)*dnorm(x/s2)/((pnorm(z0,0,s2)-pnorm(-z0,0,s2))*s2)), c("p","s1","s2"), function(x,p,s1,s2) NULL)
