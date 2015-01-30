@@ -34,7 +34,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c("stitch","zscores", "no"), z.th=c("sdest","consbins"), fc=NULL, norm.stats=NULL, d.max.max=.5, min.normal.prop=.5, aneu.chrs=NULL, ref.dist.weight=NULL){
+call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c("stitch","zscores", "no"), z.th=c("sdest","consbins", "sdest2N"), fc=NULL, norm.stats=NULL, d.max.max=.5, min.normal.prop=.5, aneu.chrs=NULL, ref.dist.weight=NULL){
 
   ## load Z-scores and FC coefficients
   if(is.character(z) & length(z)==1){
@@ -89,7 +89,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
   if(all(is.na(res.df$z))) return(NULL)
   if(z.th[1]=="sdest"){
     if(min.normal.prop>.98){ stop("Maximum value accepted for 'min.normal.prop' is 0.98.")}
-    fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, .99, .01))
+    fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, .99, .01), plot=!is.null(out.pdf))
     res.df$pv = fdr$pval
     res.df$qv = fdr$qval
 
@@ -103,29 +103,22 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
             res.aber.large = res.df[GenomicRanges::overlapsAny(res.gr, aber.gr), ]
             res.df = res.df[!GenomicRanges::overlapsAny(res.gr, aber.gr), ]
         }
-        fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, .99, .01), ref.dist.weight=ref.dist.weight)
+        fdr = fdrtool.quantile(res.df$z, quant.int=seq(min.normal.prop, .99, .01), ref.dist.weight=ref.dist.weight, plot=FALSE)
         res.df$pv = fdr$pval
         res.df$qv = fdr$qval
         if(nrow(aber.large)>0){
           res.df = rbind(res.df, res.aber.large)
         }
     }
-    
-    if(!is.null(out.pdf) & any(!is.na(res.df$pv))){
-      print(ggplot2::ggplot(subset(res.df,abs(z)<10),ggplot2::aes(x=z)) +
-            ggplot2::geom_histogram() + 
-            ggplot2::xlab("Z-score") + 
-            ggplot2::ylab("number of bins") + 
-            ggplot2::theme_bw())
-      print(ggplot2::ggplot(res.df,ggplot2::aes(x=pv)) + ggplot2::geom_histogram() +
-            ggplot2::xlab("P-value") + ggplot2::xlim(0,1) + 
-            ggplot2::ylab("number of bins") + 
-            ggplot2::theme_bw())
-    }
-
     res.df = subset(res.df, qv<FDR.th)
   } else if(z.th[1]=="consbins"){
     res.df = z.thres.cons.bins(res.df, plot=!is.null(out.pdf), pvalues=TRUE)$z.df
+  } else if(z.th[1]=="sdest2N"){
+    if(min.normal.prop>.98){ stop("Maximum value accepted for 'min.normal.prop' is 0.98.")}
+    fdr = fdrtool.quantile.2N(res.df$z, plot=!is.null(out.pdf), min.prop.null=min.normal.prop)
+    res.df$pv = fdr$pval
+    res.df$qv = fdr$qval
+    res.df = subset(res.df, qv<FDR.th)
   } else {
     stop("'z.th=': available thresholding approaches are : 'stitch', 'zscores'.")
   }

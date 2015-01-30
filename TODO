@@ -1,3 +1,5 @@
+Reduce unecessary decimal accuracy to limit file size
+   (e.g. qc.samples, tn.norm)
 Add other segmentation option
 Homogenize other normalization outputs
 One test function for testing one "case" (once reference and

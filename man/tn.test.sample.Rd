@@ -4,20 +4,22 @@
 \alias{tn.test.sample}
 \title{Single sample targeted normalization and test}
 \usage{
-tn.test.sample(test.sample, cont.sample, files.df, norm.stat.f,
+tn.test.sample(test.sample, files.df, cont.sample, bc.ref.f, norm.stats.f,
   z.poisson = FALSE, aberrant.cases = FALSE)
 }
 \arguments{
 \item{test.sample}{the name of the sample to test.}
-
-\item{cont.sample}{the name of the sample used as control for the normalization.}
 
 \item{files.df}{a data.frame with the information about the files to
 use. Columns 'sample' and 'bc.gc.bg' are required and should be
 present  after running 'initFileNames' function. Files should exist if
 'correct.GC' was run.}
 
-\item{norm.stat.f}{the name of the file with the statistic of the targeted normalization run.}
+\item{cont.sample}{the name of the sample used as control for the normalization.}
+
+\item{bc.ref.f}{the path to the input file used for targeted normalization ('tn.norm').}
+
+\item{norm.stats.f}{the name of the file with the statistic of the targeted normalization run.}
 
 \item{z.poisson}{Should the Z-score be computed as an normal-poisson hybrid (see
 Details). Default is FALSE.}

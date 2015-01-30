@@ -6,7 +6,7 @@
 \usage{
 call.abnormal.cov(z, samp, out.pdf = NULL, FDR.th = 0.05,
   merge.cons.bins = c("stitch", "zscores", "no"), z.th = c("sdest",
-  "consbins"), fc = NULL, norm.stats = NULL, d.max.max = 0.5,
+  "consbins", "sdest2N"), fc = NULL, norm.stats = NULL, d.max.max = 0.5,
   min.normal.prop = 0.5, aneu.chrs = NULL, ref.dist.weight = NULL)
 }
 \arguments{

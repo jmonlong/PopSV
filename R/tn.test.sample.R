@@ -9,12 +9,13 @@
 ##' coverage where it is more robust to use Poisson assumptions.
 ##' @title Single sample targeted normalization and test
 ##' @param test.sample the name of the sample to test.
-##' @param cont.sample the name of the sample used as control for the normalization.
 ##' @param files.df a data.frame with the information about the files to
 ##' use. Columns 'sample' and 'bc.gc.bg' are required and should be
 ##' present  after running 'initFileNames' function. Files should exist if
 ##' 'correct.GC' was run.
-##' @param norm.stat.f the name of the file with the statistic of the targeted normalization run.
+##' @param cont.sample the name of the sample used as control for the normalization.
+##' @param bc.ref.f the path to the input file used for targeted normalization ('tn.norm').
+##' @param norm.stats.f the name of the file with the statistic of the targeted normalization run.
 ##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
 ##' Details). Default is FALSE.
 ##' @param aberrant.cases if TRUE (default) a more robust (but sligthly longer) normalization
@@ -28,12 +29,12 @@
 ##' \item{fc}{the fold-change compared to the average bin count in the reference samples}
 ##' @author Jean Monlong
 ##' @export
-tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.stat.f, z.poisson=FALSE, aberrant.cases=FALSE){
+tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.stats.f, z.poisson=FALSE, aberrant.cases=FALSE){
     chunk.size=1e3
     test.bc = read.table(subset(files.df, sample==test.sample)$bc.gc.gz, colClasses=c("character","integer","integer","numeric"), header=TRUE)
     id.test = 1:nrow(test.bc)
     names(id.test) = paste(test.bc$chr, as.integer(test.bc$start), sep="-")
-    ref.headers = read.table(bc.ref.f, nrow=1, as.is=TRUE)
+    ref.headers = read.table(bc.ref.f, nrows=1, as.is=TRUE)
     colC = ifelse(ref.headers==cont.sample, "numeric","NULL")
     colC[1:3] = c("character","integer","integer")
     cont.bc = read.table(bc.ref.f, colClasses=colC, header=TRUE)
@@ -72,7 +73,7 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
                fc = bc.n/as.numeric(ns[5])))
     }
     
-    con = file(norm.stat.f,"r")
+    con = file(norm.stats.f,"r")
     headers = unlist(strsplit(readLines(con,n=1),"\t"))
     while(length((lines = readLines(con,n=chunk.size)))>0){
         norm.chunk = matrix(unlist(strsplit(lines, "\t")), ncol=length(headers), byrow=TRUE)
