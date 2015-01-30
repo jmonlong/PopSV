@@ -90,7 +90,7 @@ fdrtool.quantile.2N <- function(z, plot=TRUE, min.prop.null=.95){
   res$qval = p.adjust(res$pval,method="fdr")
 
   if(plot & any(!is.na(res$pval))){
-    plot.df = data.frame(z=z, pv=pval, qv=qval)
+    plot.df = data.frame(z=z, pv=res$pval, qv=res$qval)
     print(ggplot2::ggplot(subset(plot.df,abs(z)<quantile(abs(z), probs=.95)+1),ggplot2::aes(x=z)) +
           ggplot2::geom_histogram() + 
           ggplot2::xlab("Z-score") + 
