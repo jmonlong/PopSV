@@ -11,6 +11,7 @@
 ##' @param plot should some graphs be outputed ? Default FALSE.
 ##' @return a named vector with the normalized bin count.
 ##' @author Jean Monlong
+##' @export
 tnK.norm <- function(bc.ref, samp, bc.to.norm=NULL, cont.sample, pca.weights=TRUE, max.size=1000, plot=FALSE){
   nb.pcs = 2
   k=2
