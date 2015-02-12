@@ -4,7 +4,7 @@
 \alias{tnK.norm}
 \title{Weighted targeted normalization using K-mean optimization.}
 \usage{
-tnK.norm(bc.ref, samp, bc.to.norm = NULL, cont.sample, pca.weights = TRUE,
+tnK.norm(bc.ref, samp, bc.to.norm = NULL, cont.sample, pca.weights = FALSE,
   max.size = 1000, plot = FALSE)
 }
 \arguments{
@@ -23,7 +23,7 @@ tnK.norm(bc.ref, samp, bc.to.norm = NULL, cont.sample, pca.weights = TRUE,
 \item{plot}{should some graphs be outputed ? Default FALSE.}
 }
 \value{
-a named vector with the normalized bin count.
+a data.frame with the normalized bin counts. columns: chr, start, end, bc.
 }
 \description{
 Bin count targeted normalization using K-mean clustering to group bins with similar coverage profile across the samples. For outlier bins, i.e. showing unique profile, the set of most similar bins is computed for each bin. Eventually the importance of each sample in the definition of the coverage profile can be weighted using principal components.

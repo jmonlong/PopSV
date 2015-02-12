@@ -9,10 +9,10 @@
 ##' @param pca.weights should the samples be weighted using principal components.
 ##' @param max.size the maximum size of a cluster of bins.
 ##' @param plot should some graphs be outputed ? Default FALSE.
-##' @return a named vector with the normalized bin count.
+##' @return a data.frame with the normalized bin counts. columns: chr, start, end, bc.
 ##' @author Jean Monlong
 ##' @export
-tnK.norm <- function(bc.ref, samp, bc.to.norm=NULL, cont.sample, pca.weights=TRUE, max.size=1000, plot=FALSE){
+tnK.norm <- function(bc.ref, samp, bc.to.norm=NULL, cont.sample, pca.weights=FALSE, max.size=1000, plot=FALSE){
   nb.pcs = 2
   k=2
 
@@ -51,15 +51,18 @@ tnK.norm <- function(bc.ref, samp, bc.to.norm=NULL, cont.sample, pca.weights=TRU
 
   bc.rn = with(bc.ref, paste(chr, as.integer(start), as.integer(end), sep="-"))
   samples = setdiff(colnames(bc.ref), c("chr","start","end"))
+  bc.out = bc.ref[,c("chr","start","end")]
   if(all(samp != colnames(bc.ref)) & !is.null(bc.to.norm)){
     id.bins = 1:nrow(bc.to.norm)
     names(id.bins) = with(bc.to.norm, paste(chr, as.integer(start), as.integer(end), sep="-"))
-    bc.ref = cbind(bc.to.norm[id.bins[bc.rn],4], bc.ref[,samples])
+    med.bc = median(apply(bc.ref[,samples], 2, median, na.rm=TRUE))
+    med.samp = median(bc.to.norm[,4], na.rm=TRUE)
+    bc.ref = cbind(bc.to.norm[id.bins[bc.rn],4]*med.bc/med.samp, bc.ref[,samples])
     colnames(bc.ref)[1] = samp
   } else {
     bc.ref = bc.ref[,samples]
   }
-    
+
   bc.ref = as.matrix(bc.ref)
   id.bins = 1:nrow(bc.ref)
   names(id.bins) = row.names(bc.ref) = bc.rn
@@ -78,11 +81,11 @@ tnK.norm <- function(bc.ref, samp, bc.to.norm=NULL, cont.sample, pca.weights=TRU
   w.i[samples==samp] = 0
 
   ## Transform BC for geometric distance computation
-  med.c = apply(bc.ref, 1, median)
-  bc.n = (bc.ref / med.c) %*% diag(w.i)
+  quant.c = apply(bc.ref, 1, quantile, probs=.75)
+  bc.n = (bc.ref / quant.c) %*% diag(w.i)
   colnames(bc.n) = samples
-  med.c.non.null = which(med.c>0)
-  bc.n = bc.n[med.c.non.null,]
+  quant.c.non.null = which(quant.c>0)
+  bc.n = bc.n[quant.c.non.null,]
   
   ## Rec kmeans
   bins.km = rec.kmeans(bc.n, k=k, max.size=max.size)
@@ -100,8 +103,7 @@ tnK.norm <- function(bc.ref, samp, bc.to.norm=NULL, cont.sample, pca.weights=TRU
     }
   }))
 
-  bc.o = rep(NA, nrow(bc.ref))
-  names(bc.o) = bc.rn
-  bc.o[id.bins[names(bc.samp.n)]] = bc.samp.n
+  bc.out$bc = rep(NA, nrow(bc.ref))
+  bc.out$bc[id.bins[names(bc.samp.n)]] = bc.samp.n
   return(bc.o)
 }
