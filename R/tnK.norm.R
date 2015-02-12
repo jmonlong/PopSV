@@ -105,5 +105,5 @@ tnK.norm <- function(bc.ref, samp, bc.to.norm=NULL, cont.sample, pca.weights=FAL
 
   bc.out$bc = rep(NA, nrow(bc.ref))
   bc.out$bc[id.bins[names(bc.samp.n)]] = bc.samp.n
-  return(bc.o)
+  return(bc.out)
 }
