@@ -4,7 +4,8 @@
 \alias{z.comp}
 \title{Z-score computation}
 \usage{
-z.comp(files.df, samples, z.poisson = FALSE, col = "bc.gc.tnk")
+z.comp(files.df, samples, z.poisson = FALSE, col = "bc.gc.tnk",
+  nb.cores = 1)
 }
 \arguments{
 \item{files.df}{a data.frame with the file paths.}
@@ -15,6 +16,8 @@ z.comp(files.df, samples, z.poisson = FALSE, col = "bc.gc.tnk")
 Details). Default is FALSE.}
 
 \item{col}{the column in 'files.df' that define the bin count file path.}
+
+\item{nb.cores}{the number of cores to use.}
 }
 \value{
 a list with

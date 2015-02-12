@@ -11,7 +11,8 @@
 ##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
 ##' Details). Default is FALSE.
 ##' @param col the column in 'files.df' that define the bin count file path.
-z.comp <- function(files.df, samples, z.poisson=FALSE, col="bc.gc.tnk"){
+##' @param nb.cores the number of cores to use.
+z.comp <- function(files.df, samples, z.poisson=FALSE, col="bc.gc.tnk", nb.cores=1){
   if(z.poisson){
     z.comp.f <- function(x, mean.c, sd.c){
       z.n = (x-mean.c)/sd.c
@@ -35,11 +36,11 @@ z.comp <- function(files.df, samples, z.poisson=FALSE, col="bc.gc.tnk"){
   bc.df$end = z.df$end = fc.df$end = bc.df$end
   bc.df[,samples[1]] = bc.1[,4]
   if(nb.cores>1){
-    bc.l = parallel::mclapply(subset(files.df, sample%in%samples[-1])[,col.bc], function(fi){
+    bc.l = parallel::mclapply(subset(files.df, sample%in%samples[-1])[,col], function(fi){
       read.table(fi,header=TRUE, as.is=TRUE)[,4]
     },mc.cores=nb.cores)
   } else {
-    bc.l = lapply(subset(files.df, sample%in%samples[-1])[,col.bc], function(fi){
+    bc.l = lapply(subset(files.df, sample%in%samples[-1])[,col], function(fi){
       read.table(fi,header=TRUE, as.is=TRUE)[,4]
     })
   }
