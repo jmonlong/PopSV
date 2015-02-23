@@ -34,12 +34,10 @@ tn.norm <- function(bc,cont.sample,nb.support.bins=1e3,bins=NULL,save.support.bi
         colnames(norm.stats) = c("chr", "start","end","m","sd","nb.remove","d.max")
     }
     bc.norm = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
-    z = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
-    fc = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
-    colnames(bc.norm) = colnames(z) = colnames(fc) = c("chr", "start","end",all.samples)
-    norm.stats$chr = bc.norm$chr = z$chr = fc$chr = bc[bins,"chr"]
-    norm.stats$start = bc.norm$start = z$start = fc$start = bc[bins,"start"]
-    norm.stats$end = bc.norm$end = z$end = fc$end = bc[bins,"end"]
+    colnames(bc.norm) = c("chr", "start","end",all.samples)
+    norm.stats$chr = bc.norm$chr = bc[bins,"chr"]
+    norm.stats$start = bc.norm$start = bc[bins,"start"]
+    norm.stats$end = bc.norm$end = bc[bins,"end"]
 
     bc = t(as.matrix(bc[,all.samples]))
     for(bin.ii in 1:length(bins)){

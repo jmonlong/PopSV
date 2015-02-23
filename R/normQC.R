@@ -35,90 +35,83 @@
 ##' @param n.subset number of bins to use for the analysis. Default is 10 000. Bins are selected randomly.
 ##' @author Jean Monlong
 ##' @export
-normQC <- function(bc.df, n.subset=1e4){
+normQC <- function(bc.df, n.subset=1e4, nb.cores=1){
     ## Order by genomic location.
     bc.df = arrange(bc.df, chr, start)
     samples = setdiff(colnames(bc.df), c("chr","start","end"))
 
-    n.subset = min(nrow(bc.mat), n.subset)
+    n.subset = min(nrow(bc.df), n.subset)
 
     chrs.t = table(sample(bc.df$chr,n.subset))
 
     test.chr.f <- function(df, win.size=100){
         sub.ii = sample.int(nrow(df)-win.size+1, chrs.t[df$chr[1]])
-        res.df = df[, c("chr","start","end")]
+        res.df = df[sub.ii, c("chr","start","end")]
         df = as.matrix(df[,samples])
         ## Bin count normality
-        res.df$pv.normal = as.numeric(apply(df[sub.ii,], 1, function(bc.i){
-            if(length(unique(bc.i))==1) return(1)
-            return(shapiro.test(bc.i)$p.value)
-        }))
-        
+        res.df$pv.normal = as.numeric(parallel::mclapply(sub.ii, function(bc.i){
+          bc.i = df[bc.i,]
+          if(length(unique(bc.i))==1) return(1)
+          return(shapiro.test(bc.i)$p.value)
+        },mc.cores=nb.cores))
         ## Bin count Poisson
-        res.df$pv.poisson = as.numeric(apply(df[sub.ii,], 1, function(bc.i){
-            return(as.numeric(summary(vcd::goodfit(bc.i, type="poisson"))[1,3]))
-        }))
-
+        res.df$pv.poisson = as.numeric(parallel::mclapply(sub.ii, function(bc.i){
+          bc.i = df[bc.i,]
+          dump = capture.output({res = as.numeric(summary(vcd::goodfit(bc.i, type="poisson"))[1,3])})
+          return(res)
+        },mc.cores=nb.cores))
         ## Ranks randomness
-        res.df$pv.rank = sapply(sub.ii, function(ii){
-            rank.mat = apply(df[ii:(ii+win.size-1),], 1, function(bc.i){
-                if(any(!is.na(bc.i))){
-                    rank(bc.i,ties.method="random")
-                } else {
-                    rep(NA,length(bc.i))
-                }
-            })
-            rk.t = apply(rank.mat, 1, function(rks){
-                table(factor(rks,levels=1:nrow(rank.mat)))
-            })
-            return(suppressWarnings(chisq.test(rk.t)$p.value))
-        })
-
+        res.df$nb.rank = as.numeric(parallel::mclapply(sub.ii, function(ii){
+          med.r = apply(df[ii:(ii+win.size-1),], 1, median, na.rm=TRUE)
+          med.bin = colSums(df[ii:(ii+win.size-1),] > med.r)
+          pv.bin = pbinom(ifelse(med.bin>.5*length(med.r),length(med.r)-med.bin,med.bin), size=length(med.r), .5)
+          return(sum(pv.bin<.05))
+        },mc.cores=nb.cores))
         res.df
     }
 
-    res.df = bc.df %>% group_by(chr) %>% do(test.chr.f)
+    res.df = bc.df %>% group_by(chr) %>% do(test.chr.f(.))
     
     sub.ii = sample.int(nrow(bc.df), n.subset)
-    bc.mat = as.matrix(bc.df[,samples])
+    bc.mat = as.matrix(bc.df[sub.ii,samples])
     ## Z-score distribution
     n.dens = 1000
-    z = apply(bc.mat,1,function(bc.i){
-        if(any(is.na(bc.i))){
-            return(rep(NA, length(bc.i)))
-        }
-        bc.i <- as.numeric(bc.i)
-        (bc.i-mean(bc.i,na.rm=TRUE))/sd(bc.i,na.rm=TRUE)
-    })
+    z = matrix(as.numeric(unlist(parallel::mclapply(1:nrow(bc.mat),function(bc.i){
+      bc.i = bc.mat[bc.i,]
+      if(any(is.na(bc.i))){
+        return(rep(NA, length(bc.i)))
+      }
+      bc.i <- as.numeric(bc.i)
+      (bc.i-mean(bc.i,na.rm=TRUE))/sd(bc.i,na.rm=TRUE)
+    },mc.cores=nb.cores))), ncol(bc.mat))
     rownames(z) = colnames(bc.mat)
-    non.norm.z = apply(z, 1, function(z.samp){
-        z.samp = as.numeric(na.omit(z.samp))
-        z.norm.est = MASS::fitdistr(z.samp,"normal")$estimate
-        f = density(z.samp,n=n.dens,from=min(z.samp),to=max(z.samp))
-        fn = dnorm(seq(min(z.samp),max(z.samp),length.out=n.dens),z.norm.est[1],z.norm.est[2])
-        dis.prop = sum(abs(f$y-fn)) / (2 * sum(fn))
+    non.norm.z = as.numeric(parallel::mclapply(1:nrow(z), function(z.samp){
+      z.samp = as.numeric(na.omit(z[z.samp,]))
+      z.norm.est = MASS::fitdistr(z.samp,"normal")$estimate
+      f = density(z.samp,n=n.dens,from=min(z.samp),to=max(z.samp))
+      fn = dnorm(seq(min(z.samp),max(z.samp),length.out=n.dens),z.norm.est[1],z.norm.est[2])
+      dis.prop = sum(abs(f$y-fn)) / (2 * sum(fn))
         return(dis.prop)
-    })
+    },mc.cores=nb.cores))
 
-    ## PCA entropy
+    ## PCA dispersion
     pca.o = prcomp(t(bc.mat))
     pca.d = as.matrix(dist(pca.o$x[,1:2]))
     pca.dmm = mean(pca.d) / median(pca.d)
-    bc.shuf = apply(bc.mat, 1, sample)
-    pca.s = prcomp(bc.shuf)
-    pca.d.s = as.matrix(dist(pca.s$x[,1:2]))
-    pca.dmm.s = mean(pca.d.s) / median(pca.d.s)
     
     qv.normal = qvalue::qvalue(res.df$pv.normal)    
-    qv.poissson = qvalue::qvalue(res.df$pv.poisson)    
+    if(mean(res.df$pv.poisson<.05)>.9){
+      qv.poisson = list(pi0=0)
+    } else {
+      qv.poissson = qvalue::qvalue(res.df$pv.poisson)
+    }
     ## 
     return(list(prop.non.normal.bin = 1-qv.normal$pi0,
                 prop.non.poisson.bin = 1-qv.poisson$pi0,
-                prop.nonRand.rank = mean(res.df$pv.rank<=.05),
+                nb.nonRand.rank = mean(res.df$nb.rank),
                 prop.nonNorm.z.mean = mean(non.norm.z),
                 prop.nonNorm.z.max = max(non.norm.z),
                 prop.nonNorm.z = non.norm.z,
                 pca.dmm = pca.dmm,
-                pca.dmm.s = pca.dmm.s,
                 n.subset = n.subset))
 }
