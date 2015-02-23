@@ -31,80 +31,94 @@
 ##' \item{prop.non.norm.z.max}{maximum (i.e for worst sample) proportion of bins with non-random Z-scores.}
 ##' \item{prop.non.norm.z}{proportion of bins with non-random Z-scores, for each sample.}
 ##' \item{n.subset}{number of bins used for the analysis.}
-##' @param bc.mat matrix with bin counts (bins x samples). 
+##' @param bc.df matrix with bin counts (bins x samples). 
 ##' @param n.subset number of bins to use for the analysis. Default is 10 000. Bins are selected randomly.
 ##' @author Jean Monlong
 ##' @export
-normQC <- function(bc.mat, n.subset=1e4){
-    ## library(MASS)
-    ## library(vcd)
-    ## library(qvalue)
+normQC <- function(bc.df, n.subset=1e4){
+    ## Order by genomic location.
+    bc.df = arrange(bc.df, chr, start)
+    samples = setdiff(colnames(bc.df), c("chr","start","end"))
+
+    n.subset = min(nrow(bc.mat), n.subset)
+
+    chrs.t = table(sample(bc.df$chr,n.subset))
+
+    test.chr.f <- function(df, win.size=100){
+        sub.ii = sample.int(nrow(df)-win.size+1, chrs.t[df$chr[1]])
+        res.df = df[, c("chr","start","end")]
+        df = as.matrix(df[,samples])
+        ## Bin count normality
+        res.df$pv.normal = as.numeric(apply(df[sub.ii,], 1, function(bc.i){
+            if(length(unique(bc.i))==1) return(1)
+            return(shapiro.test(bc.i)$p.value)
+        }))
+        
+        ## Bin count Poisson
+        res.df$pv.poisson = as.numeric(apply(df[sub.ii,], 1, function(bc.i){
+            return(as.numeric(summary(vcd::goodfit(bc.i, type="poisson"))[1,3]))
+        }))
+
+        ## Ranks randomness
+        res.df$pv.rank = sapply(sub.ii, function(ii){
+            rank.mat = apply(df[ii:(ii+win.size-1),], 1, function(bc.i){
+                if(any(!is.na(bc.i))){
+                    rank(bc.i,ties.method="random")
+                } else {
+                    rep(NA,length(bc.i))
+                }
+            })
+            rk.t = apply(rank.mat, 1, function(rks){
+                table(factor(rks,levels=1:nrow(rank.mat)))
+            })
+            return(suppressWarnings(chisq.test(rk.t)$p.value))
+        })
+
+        res.df
+    }
+
+    res.df = bc.df %>% group_by(chr) %>% do(test.chr.f)
     
-  if(!is.null(n.subset) & n.subset<nrow(bc.mat)){
-    bc.mat = bc.mat[sample(1:nrow(bc.mat), n.subset),]
-  }
-  
-  ## Bin count normality
-  pv.normal = apply(bc.mat, 1, function(bc.i){
-    if(length(unique(bc.i))==1) return(1)
-    return(shapiro.test(bc.i)$p.value)
-  })
-  pv.normal = as.numeric(na.omit(pv.normal))
-  qv.normal = qvalue::qvalue(pv.normal)
+    sub.ii = sample.int(nrow(bc.df), n.subset)
+    bc.mat = as.matrix(bc.df[,samples])
+    ## Z-score distribution
+    n.dens = 1000
+    z = apply(bc.mat,1,function(bc.i){
+        if(any(is.na(bc.i))){
+            return(rep(NA, length(bc.i)))
+        }
+        bc.i <- as.numeric(bc.i)
+        (bc.i-mean(bc.i,na.rm=TRUE))/sd(bc.i,na.rm=TRUE)
+    })
+    rownames(z) = colnames(bc.mat)
+    non.norm.z = apply(z, 1, function(z.samp){
+        z.samp = as.numeric(na.omit(z.samp))
+        z.norm.est = MASS::fitdistr(z.samp,"normal")$estimate
+        f = density(z.samp,n=n.dens,from=min(z.samp),to=max(z.samp))
+        fn = dnorm(seq(min(z.samp),max(z.samp),length.out=n.dens),z.norm.est[1],z.norm.est[2])
+        dis.prop = sum(abs(f$y-fn)) / (2 * sum(fn))
+        return(dis.prop)
+    })
 
-  ## Bin count Poisson
-  pv.poisson = apply(bc.mat, 1, function(bc.i){
-    return(as.numeric(summary(vcd::goodfit(bc.i, type="poisson"))[1,3]))
-  })
-  pv.poisson = as.numeric(na.omit(pv.poisson))
-  qv.poisson = qvalue::qvalue(pv.poisson)
-
-  ## Ranks randomness
-  win.size = 100
-  rank.mat = apply(bc.mat, 1, function(bc.i){
-    if(any(!is.na(bc.i))){
-      rank(bc.i,ties.method="random")
-    } else {
-      rep(NA,length(bc.i))
-    }
-  })
-  group.bins = rep(1:ceiling(nrow(bc.mat)/win.size),each=win.size)[1:nrow(bc.mat)]
-  pv.rank = tapply(1:nrow(bc.mat), group.bins, function(bin.id){
-    rk = rank.mat[,bin.id]
-    if(length((noNA = which(!is.na(rk[1,]))))>1){
-      rk = rk[,noNA] ## Remove NA
-      rk.t = apply(rk,1,function(e)table(factor(e,levels=1:nrow(rk))))
-      return(suppressWarnings(chisq.test(rk.t)$p.value))
-    } else {
-      return(NA)
-    }
-  })
-  
-  ## Z-score distribution
-  n.dens = 1000
-  z = apply(bc.mat,1,function(bc.i){
-    if(any(is.na(bc.i))){
-      return(rep(NA, length(bc.i)))
-    }
-    bc.i <- as.numeric(bc.i)
-    (bc.i-mean(bc.i,na.rm=TRUE))/sd(bc.i,na.rm=TRUE)
-  })
-  rownames(z) = colnames(bc.mat)
-  non.norm.z = apply(z, 1, function(z.samp){
-    z.samp = as.numeric(na.omit(z.samp))
-    z.norm.est = MASS::fitdistr(z.samp,"normal")$estimate
-    f = density(z.samp,n=n.dens,from=min(z.samp),to=max(z.samp))
-    fn = dnorm(seq(min(z.samp),max(z.samp),length.out=n.dens),z.norm.est[1],z.norm.est[2])
-    dis.prop = sum(abs(f$y-fn)) / (2 * sum(fn))
-    return(dis.prop)
-  })
-  
-  ## 
-  return(list(prop.non.normal.bin = 1-qv.normal$pi0,
-              prop.non.poisson.bin = 1-qv.poisson$pi0,
-              prop.nonRand.rank = mean(pv.rank<=.05),
-              prop.non.norm.z.mean = mean(non.norm.z),
-              prop.non.norm.z.max = max(non.norm.z),
-              prop.non.norm.z = non.norm.z,
-              n.subset = n.subset))
+    ## PCA entropy
+    pca.o = prcomp(t(bc.mat))
+    pca.d = as.matrix(dist(pca.o$x[,1:2]))
+    pca.dmm = mean(pca.d) / median(pca.d)
+    bc.shuf = apply(bc.mat, 1, sample)
+    pca.s = prcomp(bc.shuf)
+    pca.d.s = as.matrix(dist(pca.s$x[,1:2]))
+    pca.dmm.s = mean(pca.d.s) / median(pca.d.s)
+    
+    qv.normal = qvalue::qvalue(res.df$pv.normal)    
+    qv.poissson = qvalue::qvalue(res.df$pv.poisson)    
+    ## 
+    return(list(prop.non.normal.bin = 1-qv.normal$pi0,
+                prop.non.poisson.bin = 1-qv.poisson$pi0,
+                prop.nonRand.rank = mean(res.df$pv.rank<=.05),
+                prop.nonNorm.z.mean = mean(non.norm.z),
+                prop.nonNorm.z.max = max(non.norm.z),
+                prop.nonNorm.z = non.norm.z,
+                pca.dmm = pca.dmm,
+                pca.dmm.s = pca.dmm.s,
+                n.subset = n.subset))
 }
