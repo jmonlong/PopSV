@@ -7,7 +7,7 @@
 ##' @return the merged data.frame
 ##' @author Jean Monlong
 ##' @export
-merge.samples <- function(files.df, samples, files.col, nb.cores=1){
+samples.merge <- function(files.df, samples, files.col, nb.cores=1){
   
   res.1 = fread(subset(files.df, sample==samples[1])[,files.col],header=TRUE)
   res.l = parallel::mclapply(subset(files.df, sample%in%samples)[,files.col], function(fi){
