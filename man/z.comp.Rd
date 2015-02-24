@@ -4,13 +4,15 @@
 \alias{z.comp}
 \title{Z-score computation}
 \usage{
-z.comp(files.df, samples, z.poisson = FALSE, col = "bc.gc.tnk",
-  nb.cores = 1)
+z.comp(files.df, samples, msd.f = NULL, z.poisson = FALSE,
+  col = "bc.gc.norm.gz", nb.cores = 1)
 }
 \arguments{
 \item{files.df}{a data.frame with the file paths.}
 
 \item{samples}{the samples to analyze.}
+
+\item{msd.f}{the path to the file with mean/sd bin count on reference samples.}
 
 \item{z.poisson}{Should the Z-score be computed as an normal-poisson hybrid (see
 Details). Default is FALSE.}
@@ -27,7 +29,7 @@ the reference samples for each bin and sample (bin x sample).}
 \item{msd}{the mean, standard deviation and number of removed outlier samples in each bin.}
 }
 \description{
-Z-score computation
+Z-score computation from bin count and/or mean/sd metrics on the reference samples
 }
 \author{
 Jean Monlong

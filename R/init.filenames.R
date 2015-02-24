@@ -62,10 +62,17 @@ init.filenames <- function(files.df, dest.folder=".", sample.folder=TRUE, code=N
     if(!is.null(code)){
         code = paste0("-",code)
     }
-    files.df$bc = paste0(sample.destf,.Platform$file.sep,files.df$sample,code,"-bc.tsv")
+    file.prefix = paste0(sample.destf,.Platform$file.sep,files.df$sample,code)
+    files.df$bc = paste0(file.prefix,"-bc.tsv")
     files.df$bc.gz = paste0(files.df$bc,".bgz")
-    files.df$bc.gc = paste0(sample.destf,.Platform$file.sep,files.df$sample,code,"-bc-gcCor.tsv")
+    files.df$bc.gc = paste0(file.prefix,"-bc-gcCor.tsv")
     files.df$bc.gc.gz = paste0(files.df$bc.gc,".bgz")
-
+    files.df$bc.gc.norm = paste0(file.prefix,"-bc-gcCor-norm.tsv")
+    files.df$bc.gc.norm.gz = paste0(files.df$bc.gc.norm,".bgz")
+    files.df$z = paste0(file.prefix,"-z.tsv")
+    files.df$z.gz = paste0(files.df$z,".bgz")
+    files.df$fc = paste0(file.prefix,"-fc.tsv")
+    files.df$fc.gz = paste0(files.df$fc,".bgz")
+    
     return(files.df)
 }

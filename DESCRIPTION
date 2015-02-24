@@ -11,20 +11,18 @@ Description: Detect abnormal read coverage using a set of samples as
     each bin, is the read counts are different between a sample of interest and
     a set of reference samples. Functions for pre/post-processing are also
     provided.
-License: What license is it under? Good question
+License: GPL-2
+Depends: GenomicRanges, Rsamtools, ggplot2, data.table
 Imports:
     MASS,
+    dplyr,
     vcd,
     qvalue,
-    GenomicRanges,
     IRanges,
-    Rsamtools,
     outliers,
-    dplyr,
     plyr,
     Biostrings,
     fdrtool,
-    ggplot2,
     ggdendro,
     shiny,
     RColorBrewer,
