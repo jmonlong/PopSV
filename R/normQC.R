@@ -14,10 +14,7 @@
 ##' distribution. Again Pi0 estimate from \code{qvalue} package is used to compute the proportion
 ##' of bin that don't follow Poisson distribution.
 ##'
-##' The randomness of the sample ranks are tested using a Chi-Square test. To have an
-##' idea of the proportion of the bins with abnormal ranking, bins are randomly divided
-##' into groups and the test performed in each group. The proportion of bin with non-random
-##' ranks is approximated by the proportion of groups which failed the Chi-Square test.
+##' The randomness of the sample ranks in genomic windows is computed by comparing the position of each sample to the median. If the ranks are random this position should follow a Binomial distribution. For each window we report the number of samples that fail this assumption (Bonferroni corrected P-value<.05). The outputed estimate is the average across all analyzed windows, i.e. the average number of samples with non-random ranks.
 ##'
 ##' Z-scores normality is computed by comparing their density distribution and a fitted
 ##' normal distribution. The estimate represents the proportion of the area under the curve
@@ -33,6 +30,7 @@
 ##' \item{n.subset}{number of bins used for the analysis.}
 ##' @param bc.df matrix with bin counts (bins x samples). 
 ##' @param n.subset number of bins to use for the analysis. Default is 10 000. Bins are selected randomly.
+##' @param nb.cores the number of cores to use. Default is 1.
 ##' @author Jean Monlong
 ##' @export
 normQC <- function(bc.df, n.subset=1e4, nb.cores=1){
@@ -65,7 +63,7 @@ normQC <- function(bc.df, n.subset=1e4, nb.cores=1){
           med.r = apply(df[ii:(ii+win.size-1),], 1, median, na.rm=TRUE)
           med.bin = colSums(df[ii:(ii+win.size-1),] > med.r)
           pv.bin = pbinom(ifelse(med.bin>.5*length(med.r),length(med.r)-med.bin,med.bin), size=length(med.r), .5)
-          return(sum(pv.bin<.05))
+          return(sum(p.adjust(pv.bin, method="bonf")<.05))
         },mc.cores=nb.cores))
         res.df
     }
