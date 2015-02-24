@@ -10,7 +10,7 @@
 ##' @author Jean Monlong
 ##' @export
 med.norm <- function(bc.df, nb.cores=1, norm.stats.comp=TRUE){
-    all.samples = setdiff(colnames(bc.df),c("chr","start","end"))
+  all.samples = setdiff(colnames(bc.df),c("chr","start","end"))
   rownames(bc.df) = bins = paste(bc.df$chr, as.integer(bc.df$start), as.integer(bc.df$end), sep="-")
   
   norm.stats = createEmptyDF(c("character", rep("integer",2),rep("numeric",3)), length(bins))

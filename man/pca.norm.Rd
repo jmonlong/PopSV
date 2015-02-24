@@ -4,7 +4,7 @@
 \alias{pca.norm}
 \title{PCA-based normalization of bin counts}
 \usage{
-pca.norm(bc.df, nb.pcs = 3, nb.cores = 1)
+pca.norm(bc.df, nb.pcs = 3, nb.cores = 1, norm.stats.comp = TRUE)
 }
 \arguments{
 \item{bc.df}{a data.frame with 'chr', 'start', 'end' columns and then one column per sample with its bin counts.}
@@ -12,6 +12,8 @@ pca.norm(bc.df, nb.pcs = 3, nb.cores = 1)
 \item{nb.pcs}{the number of Principal Components to include in the regression model.}
 
 \item{nb.cores}{the number of cores to use. Default is 1.}
+
+\item{norm.stats.comp}{Should some statistics on the normalized bin count be computed (mean, sd, outliers). Default is TRUE.}
 }
 \value{
 a list with

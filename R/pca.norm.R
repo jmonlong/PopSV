@@ -5,13 +5,14 @@
 ##' @param bc.df a data.frame with 'chr', 'start', 'end' columns and then one column per sample with its bin counts.
 ##' @param nb.pcs the number of Principal Components to include in the regression model.
 ##' @param nb.cores the number of cores to use. Default is 1.
+##' @param norm.stats.comp Should some statistics on the normalized bin count be computed (mean, sd, outliers). Default is TRUE.
 ##' @return a list with
 ##' \item{norm.stats}{a data.frame witht some metrics about the normalization of each
 ##' bin (row) : coverage average and standard deviation; number of outlier reference samples; principal components}
 ##' \item{bc.norm}{a data.frame, similar to the input 'bc.df', with the normalized bin counts.}
 ##' @author Jean Monlong
 ##' @export
-pca.norm <- function(bc.df, nb.pcs=3, nb.cores=1){
+pca.norm <- function(bc.df, nb.pcs=3, nb.cores=1, norm.stats.comp=TRUE){
   
   all.samples = setdiff(colnames(bc.df),c("chr","start","end"))
   rownames(bc.df) = bins = paste(bc.df$chr, as.integer(bc.df$start), as.integer(bc.df$end), sep="-")
@@ -40,11 +41,15 @@ pca.norm <- function(bc.df, nb.pcs=3, nb.cores=1){
     return(bc.s*lm.o$coefficients[1]/predict(lm.o))
   },mc.cores=nb.cores))), nrow(bc))
 
-  norm.stats[,4:6] = matrix(as.numeric(unlist(parallel::mclapply(1:nrow(bc.norm), function(rr){
-    msd = mean.sd.outlierR(as.numeric(bc.norm[rr,all.samples]),1e-6)
-    return(c(msd$m,msd$sd,msd$nb.remove))
-  },mc.cores=nb.cores))), nrow(bc.norm))
-  norm.stats[,-(1:6)] = pca.o
-
+  if(norm.stats.comp){
+    norm.stats[,4:6] = matrix(as.numeric(unlist(parallel::mclapply(1:nrow(bc.norm), function(rr){
+      msd = mean.sd.outlierR(as.numeric(bc.norm[rr,all.samples]),1e-6)
+      return(c(msd$m,msd$sd,msd$nb.remove))
+    },mc.cores=nb.cores))), nrow(bc.norm))
+    norm.stats[,-(1:6)] = pca.o
+  } else {
+    norm.stats = NULL
+  }
+  
   return(list(norm.stats=norm.stats, bc.norm=bc.norm))
 }
