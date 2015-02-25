@@ -15,56 +15,61 @@
 ##' \item{msd}{the mean, standard deviation and number of removed outlier samples in each bin.}
 ##' @author Jean Monlong
 ##' @export
-z.comp <- function(files.df, samples, msd.f=NULL, z.poisson=FALSE, col="bc.gc.norm.gz", nb.cores=1){
-
-    if(z.poisson){
-        z.comp.f <- function(x, mean.c, sd.c){
-            z.n = (x-mean.c)/sd.c
+z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc.gc.norm.gz", 
+    nb.cores = 1) {
+    
+    if (z.poisson) {
+        z.comp.f <- function(x, mean.c, sd.c) {
+            z.n = (x - mean.c)/sd.c
             z.p = qnorm(ppois(x, mean.c))
             n.ii = abs(z.n) < abs(z.p)
             z.p[n.ii] = z.n[n.ii]
             z.p
         }
     } else {
-        z.comp.f <- function(x, mean.c, sd.c){(x-mean.c)/sd.c}
-    }
-
-    if(!is.null(msd.f)){
-        msd.all = data.table::fread(msd.f, select=1:5, header=TRUE)
-        msd.col.ids = 1:nrow(msd.all)
-        names(msd.col.ids) = paste(msd.all$chr, as.integer(msd.all$start), as.integer(msd.all$end), sep="-")
-        msd.all = t(as.matrix(msd.all[,-(1:3), with=FALSE]))
+        z.comp.f <- function(x, mean.c, sd.c) {
+            (x - mean.c)/sd.c
+        }
     }
     
-    if(is.data.frame(files.df)){
-        bc.1 = data.table::fread(subset(files.df, sample==samples[1])[,col],header=TRUE)
-        bc.l = parallel::mclapply(subset(files.df, sample%in%samples)[,col], function(fi){
-          data.table::fread(fi,header=TRUE)[,4, with=FALSE]
-        },mc.cores=nb.cores)
+    if (!is.null(msd.f)) {
+        msd.all = data.table::fread(msd.f, select = 1:5, header = TRUE)
+        msd.col.ids = 1:nrow(msd.all)
+        names(msd.col.ids) = paste(msd.all$chr, as.integer(msd.all$start), as.integer(msd.all$end), 
+            sep = "-")
+        msd.all = t(as.matrix(msd.all[, -(1:3), with = FALSE]))
+    }
+    
+    if (is.data.frame(files.df)) {
+        bc.1 = data.table::fread(subset(files.df, sample == samples[1])[, col], header = TRUE)
+        bc.l = parallel::mclapply(subset(files.df, sample %in% samples)[, col], function(fi) {
+            data.table::fread(fi, header = TRUE)[, 4, with = FALSE]
+        }, mc.cores = nb.cores)
         bc.l = matrix(unlist(bc.l), length(bc.l[[1]]))
     } else {
-        bc.l = data.table::fread(files.df,header=TRUE)
-        bc.1 = bc.l[,1:3, with=FALSE]
-        bc.l = as.matrix(bc.l[,samples, with=FALSE])
+        bc.l = data.table::fread(files.df, header = TRUE)
+        bc.1 = bc.l[, 1:3, with = FALSE]
+        bc.l = as.matrix(bc.l[, samples, with = FALSE])
     }
     
-    if(is.null(msd.f)){
-        msd = apply(bc.l, 1, function(ee)unlist(mean.sd.outlierR(ee, pv.max.ol=1e-6)))
+    if (is.null(msd.f)) {
+        msd = apply(bc.l, 1, function(ee) unlist(mean.sd.outlierR(ee, pv.max.ol = 1e-06)))
     } else {
-        msd = msd.all[,msd.col.ids[paste(bc.1$chr, as.integer(bc.1$start),as.integer(bc.1$end), sep="-")]]
+        msd = msd.all[, msd.col.ids[paste(bc.1$chr, as.integer(bc.1$start), as.integer(bc.1$end), 
+            sep = "-")]]
     }
     
-    z = apply(bc.l, 2, z.comp.f, mean.c=msd[1,], sd.c=msd[2,])
-    fc = bc.l/msd[1,]
+    z = apply(bc.l, 2, z.comp.f, mean.c = msd[1, ], sd.c = msd[2, ])
+    fc = bc.l/msd[1, ]
     colnames(z) = colnames(fc) = samples
-    z = data.frame(bc.1[,1:3, with=FALSE],z)
-    fc = data.frame(bc.1[,1:3, with=FALSE],fc)
-    if(is.null(msd.f)){
-        msd = data.frame(bc.1[,1:3],t(msd))
+    z = data.frame(bc.1[, 1:3, with = FALSE], z)
+    fc = data.frame(bc.1[, 1:3, with = FALSE], fc)
+    if (is.null(msd.f)) {
+        msd = data.frame(bc.1[, 1:3], t(msd))
     } else {
         msd = NULL
     }
-    return(list(z=z, fc=fc, msd=msd, z.poisson=z.poisson))
+    return(list(z = z, fc = fc, msd = msd, z.poisson = z.poisson))
 }
 
-## To test: one sample only; chunks; msd input or not
+## To test: one sample only; chunks; msd input or not 

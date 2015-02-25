@@ -24,73 +24,75 @@
 ##' \item{nb.reads}{the number of reads counted.}
 ##' @author Jean Monlong
 ##' @export
-bin.bam <- function(bam.file,bin.df,outfile.prefix=NULL, appendIndex.outfile=TRUE,proper=TRUE,map.quality=30, chunk.size=1e4, check.chr.name=TRUE){
-    if(is.null(outfile.prefix) & appendIndex.outfile){
+bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile = TRUE, 
+    proper = TRUE, map.quality = 30, chunk.size = 10000, check.chr.name = TRUE) {
+    if (is.null(outfile.prefix) & appendIndex.outfile) {
         stop("If 'appendIndex.outfile' is TRUE, please provide 'outfile.prefix'.")
     }
     
     bin.df = with(bin.df, dplyr::arrange(bin.df, chr, start))
-    bin.df$chunk = rep(1:ceiling(nrow(bin.df)/chunk.size),each=chunk.size)[1:nrow(bin.df)]
-
-    bai.file = sub("bam$","bai",bam.file,perl=TRUE)
-    if(!file.exists(bai.file)){
-        bai.file = paste0(bam.file,".bai")
-        if(!file.exists(bai.file)){
+    bin.df$chunk = rep(1:ceiling(nrow(bin.df)/chunk.size), each = chunk.size)[1:nrow(bin.df)]
+    
+    bai.file = sub("bam$", "bai", bam.file, perl = TRUE)
+    if (!file.exists(bai.file)) {
+        bai.file = paste0(bam.file, ".bai")
+        if (!file.exists(bai.file)) {
             stop("Index file is missing (neither '.bai' nor '.bam.bai').")
         }
     }
-
-    binBam.single <- function(df){
-        gr.o = with(df,GenomicRanges::GRanges(chr,IRanges::IRanges(start=start,end=end)))
-        param = Rsamtools::ScanBamParam(which=gr.o,
-            what = c("mapq"),
-            flag = Rsamtools::scanBamFlag(isProperPair=proper,isDuplicate=FALSE,isNotPassingQualityControls=FALSE,isUnmappedQuery=FALSE)
-                                        )
-        bam = Rsamtools::scanBam(bam.file, index=bai.file,param=param)
-        unlist(lapply(bam,function(e)sum(unlist(e)>map.quality)))
+    
+    binBam.single <- function(df) {
+        gr.o = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start = start, 
+            end = end)))
+        param = Rsamtools::ScanBamParam(which = gr.o, what = c("mapq"), flag = Rsamtools::scanBamFlag(isProperPair = proper, 
+            isDuplicate = FALSE, isNotPassingQualityControls = FALSE, isUnmappedQuery = FALSE))
+        bam = Rsamtools::scanBam(bam.file, index = bai.file, param = param)
+        unlist(lapply(bam, function(e) sum(unlist(e) > map.quality)))
     }
-
-    if(check.chr.name){
-        ## Is it "chr1" or "1": try with 10 random bins; if no read try with other
-        bc.chrTest = binBam.single(bin.df[sample(1:nrow(bin.df),min(nrow(bin.df),10)),])
-        if(all(bc.chrTest==0)){
-            if(!grepl("chr",bin.df$chr[1])){
-                bin.df$chr = paste("chr",bin.df$chr,sep="")
+    
+    if (check.chr.name) {
+        ## Is it 'chr1' or '1': try with 10 random bins; if no read try with other
+        bc.chrTest = binBam.single(bin.df[sample(1:nrow(bin.df), min(nrow(bin.df), 
+            10)), ])
+        if (all(bc.chrTest == 0)) {
+            if (!grepl("chr", bin.df$chr[1])) {
+                bin.df$chr = paste("chr", bin.df$chr, sep = "")
             } else {
-                bin.df$chr = gsub("chr","",bin.df$chr)
+                bin.df$chr = gsub("chr", "", bin.df$chr)
             }
-            bc.chrTest = binBam.single(bin.df[sample(1:nrow(bin.df),min(nrow(bin.df),10)),])
-            if(all(bc.chrTest==0)){
-                stop("Couldn't guess if chr 1 is defined as '1' or 'chr1'.
-Check manually and/or switch off option 'check.chr.name'.")
+            bc.chrTest = binBam.single(bin.df[sample(1:nrow(bin.df), min(nrow(bin.df), 
+                10)), ])
+            if (all(bc.chrTest == 0)) {
+                stop("Couldn't guess if chr 1 is defined as '1' or 'chr1'.\nCheck manually and/or switch off option 'check.chr.name'.")
             }
         }
     }
-
-    binBam.chunk <- function(df){
+    
+    binBam.chunk <- function(df) {
         ch.nb = as.numeric(df$chunk[1])
-        df = df[,c("chr","start","end")]
+        df = df[, c("chr", "start", "end")]
         df$bc = binBam.single(df)
-        if(appendIndex.outfile & !is.null(outfile.prefix)){
+        if (appendIndex.outfile & !is.null(outfile.prefix)) {
             df$chunk = NULL
-            write.table(df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t", append=ch.nb>1, col.names=ch.nb==1)
-            return(data.frame(chunk=ch.nb, nb.reads=sum(df$bc, na.rm=TRUE)))
+            write.table(df, file = outfile.prefix, quote = FALSE, row.names = FALSE, 
+                sep = "\t", append = ch.nb > 1, col.names = ch.nb == 1)
+            return(data.frame(chunk = ch.nb, nb.reads = sum(df$bc, na.rm = TRUE)))
         } else {
             return(df)
         }
     }
-
-    . = chunk = NULL ## Uglyly appease R checks
-    bc.df = dplyr::do(dplyr::group_by(bin.df,chunk),binBam.chunk(.))
-
-    if(appendIndex.outfile & !is.null(outfile.prefix)){
-        final.file = paste(outfile.prefix,".bgz",sep="")
-        Rsamtools::bgzip(outfile.prefix, dest=final.file, overwrite=TRUE)
+    
+    . = chunk = NULL  ## Uglyly appease R checks
+    bc.df = dplyr::do(dplyr::group_by(bin.df, chunk), binBam.chunk(.))
+    
+    if (appendIndex.outfile & !is.null(outfile.prefix)) {
+        final.file = paste(outfile.prefix, ".bgz", sep = "")
+        Rsamtools::bgzip(outfile.prefix, dest = final.file, overwrite = TRUE)
         file.remove(outfile.prefix)
-        Rsamtools::indexTabix(final.file, format="bed")
-        return(list(bc=final.file, nb.reads=sum(bc.df$nb.reads, na.rm=TRUE)))
+        Rsamtools::indexTabix(final.file, format = "bed")
+        return(list(bc = final.file, nb.reads = sum(bc.df$nb.reads, na.rm = TRUE)))
     } else {
         bc.df$chunk = NULL
-        return(list(bc=bc.df, nb.reads=sum(bc.df$bc, na.rm=TRUE)))
-    }    
-}
+        return(list(bc = bc.df, nb.reads = sum(bc.df$bc, na.rm = TRUE)))
+    }
+} 

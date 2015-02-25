@@ -5,8 +5,8 @@
 ##' @return a data.frame with 'NA' but of the specified types
 ##' @author Jean Monlong
 ##' @keywords internal
-createEmptyDF <- function(colClasses, nrows){
-    df = as.data.frame(matrix(NA, nrows,length(colClasses)))
-    for(ii in 1:length(colClasses)) class(df[,ii]) = colClasses[ii]
+createEmptyDF <- function(colClasses, nrows) {
+    df = as.data.frame(matrix(NA, nrows, length(colClasses)))
+    for (ii in 1:length(colClasses)) class(df[, ii]) = colClasses[ii]
     df
-}
+} 

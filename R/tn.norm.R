@@ -20,54 +20,61 @@
 ##' \item{cont.sample}{the name of the sample used to normalize all samples.}
 ##' @author Jean Monlong
 ##' @export
-tn.norm <- function(bc,cont.sample,nb.support.bins=1e3,bins=NULL,save.support.bins=TRUE){
+tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.support.bins = TRUE) {
     
-    all.samples = setdiff(colnames(bc),c("chr","start","end"))
-    rownames(bc) = paste(bc$chr, as.integer(bc$start), sep="-")
-    if(is.null(bins)) bins = rownames(bc)
-
-    if(save.support.bins) {
-        norm.stats = createEmptyDF(c("character", rep("integer",2),rep("numeric",4),rep("character",nb.support.bins)), length(bins))
-        colnames(norm.stats) = c("chr", "start","end","m","sd","nb.remove","d.max",paste("b",1:nb.support.bins,sep=""))
+    all.samples = setdiff(colnames(bc), c("chr", "start", "end"))
+    rownames(bc) = paste(bc$chr, as.integer(bc$start), sep = "-")
+    if (is.null(bins)) 
+        bins = rownames(bc)
+    
+    if (save.support.bins) {
+        norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 
+            4), rep("character", nb.support.bins)), length(bins))
+        colnames(norm.stats) = c("chr", "start", "end", "m", "sd", "nb.remove", "d.max", 
+            paste("b", 1:nb.support.bins, sep = ""))
     } else {
-        norm.stats = createEmptyDF(c("character", rep("integer",2),rep("numeric",4)), length(bins))
-        colnames(norm.stats) = c("chr", "start","end","m","sd","nb.remove","d.max")
+        norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 
+            4)), length(bins))
+        colnames(norm.stats) = c("chr", "start", "end", "m", "sd", "nb.remove", "d.max")
     }
-    bc.norm = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
-    colnames(bc.norm) = c("chr", "start","end",all.samples)
-    norm.stats$chr = bc.norm$chr = bc[bins,"chr"]
-    norm.stats$start = bc.norm$start = bc[bins,"start"]
-    norm.stats$end = bc.norm$end = bc[bins,"end"]
-
-    bc = t(as.matrix(bc[,all.samples]))
-    for(bin.ii in 1:length(bins)){
-
+    bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))), 
+        length(bins))
+    colnames(bc.norm) = c("chr", "start", "end", all.samples)
+    norm.stats$chr = bc.norm$chr = bc[bins, "chr"]
+    norm.stats$start = bc.norm$start = bc[bins, "start"]
+    norm.stats$end = bc.norm$end = bc[bins, "end"]
+    
+    bc = t(as.matrix(bc[, all.samples]))
+    for (bin.ii in 1:length(bins)) {
+        
         bin = bins[bin.ii]
-        bc.i = bc[,bin]
-        if(any(!is.na(bc.i) & bc.i!=0)) {
-            if(sum(as.numeric(bc.i)>0)<5){
+        bc.i = bc[, bin]
+        if (any(!is.na(bc.i) & bc.i != 0)) {
+            if (sum(as.numeric(bc.i) > 0) < 5) {
                 d.o.i = sample(1:ncol(bc), nb.support.bins)
-                d.max=-1
+                d.max = -1
             } else {
-                d.i = 1-as.numeric(cor(as.numeric(bc.i),bc,use="pairwise.complete.obs"))
+                d.i = 1 - as.numeric(cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs"))
                 d.o.i = order(d.i)[1:nb.support.bins]
                 d.max = as.numeric(d.i[d.o.i[nb.support.bins]])
             }
-            if(!is.infinite(d.max) & !is.na(d.max)) {
-                bc.g = t(bc[,d.o.i])
+            if (!is.infinite(d.max) & !is.na(d.max)) {
+                bc.g = t(bc[, d.o.i])
                 bin.for.norm = colnames(bc)[d.o.i]
-                norm.coeff = norm.tm.opt(bc.g,ref.col=bc.g[,cont.sample])
+                norm.coeff = norm.tm.opt(bc.g, ref.col = bc.g[, cont.sample])
                 bc.t = bc.i * norm.coeff
-                msd = mean.sd.outlierR(bc.t,1e-6)
-                if(any(!is.na(bc.t))){
-                    norm.stats[bin.ii,4:7]=c(msd$m,msd$sd,msd$nb.remove, d.max)
-                    if(save.support.bins) norm.stats[bin.ii,8:ncol(norm.stats)] = bin.for.norm
-                    bc.norm[bin.ii,-(1:3)] = bc.t
+                msd = mean.sd.outlierR(bc.t, 1e-06)
+                if (any(!is.na(bc.t))) {
+                  norm.stats[bin.ii, 4:7] = c(msd$m, msd$sd, msd$nb.remove, d.max)
+                  if (save.support.bins) 
+                    norm.stats[bin.ii, 8:ncol(norm.stats)] = bin.for.norm
+                  bc.norm[bin.ii, -(1:3)] = bc.t
                 }
             }
         }
-
+        
     }
     
-    return(list(norm.stats=norm.stats, bc.norm=bc.norm, nb.support.bins=nb.support.bins, cont.sample=cont.sample))
-}
+    return(list(norm.stats = norm.stats, bc.norm = bc.norm, nb.support.bins = nb.support.bins, 
+        cont.sample = cont.sample))
+} 

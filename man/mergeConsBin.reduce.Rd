@@ -18,7 +18,7 @@ mergeConsBin.reduce(df, col.mean = c("z", "pv", "qv", "fc"),
 a data.frame, similar to the input but with merged rows.
 }
 \description{
-Merge nearby bins using a user-defined "stitching" distance. Duplication and deletions are stitched separately.
+Merge nearby bins using a user-defined 'stitching' distance. Duplication and deletions are stitched separately.
 }
 \author{
 Jean Monlong

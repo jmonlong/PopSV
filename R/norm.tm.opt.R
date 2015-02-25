@@ -12,35 +12,37 @@
 ##' @return a vector with the normalization coefficients for each column (sample).
 ##' @author Jean Monlong
 ##' @keywords internal
-norm.tm.opt <- function(df,ref.col,lm.min.prop=0.1,bc.mean.norm=NULL, chrs=NULL){
-    trimmed.mean.TN.best <- function(a,b,lm.min.prop=0.1,bc.mean.norm=NULL){
-        localMax <- function(x,min.max.prop=.1,max=FALSE){
-            d = density(x,na.rm=TRUE)
-            im = 1+which(diff(sign(diff(d$y)))==-2)
+norm.tm.opt <- function(df, ref.col, lm.min.prop = 0.1, bc.mean.norm = NULL, chrs = NULL) {
+    trimmed.mean.TN.best <- function(a, b, lm.min.prop = 0.1, bc.mean.norm = NULL) {
+        localMax <- function(x, min.max.prop = 0.1, max = FALSE) {
+            d = density(x, na.rm = TRUE)
+            im = 1 + which(diff(sign(diff(d$y))) == -2)
             my = max(d$y)
             max.id = im[which(d$y[im] >= min.max.prop * my)]
-            max.id.o = max.id[order(d$y[max.id],decreasing=TRUE)]
-            return(list(lM=d$x[max.id], h=d$y[max.id]/my))
+            max.id.o = max.id[order(d$y[max.id], decreasing = TRUE)]
+            return(list(lM = d$x[max.id], h = d$y[max.id]/my))
         }
-        if(sum(a!=0 & b!=0)>10){
-            r = log(a/b)[a!=0 & b!=0]
-            if(!is.null(bc.mean.norm) & !is.null(chrs)){
-                chrs = chrs[a!=0 & b!=0]
-                lM.o = localMax(r,lm.min.prop)
-                r.mean.norm = ifelse(b[1]==0 | bc.mean.norm==0, max(r), log(bc.mean.norm/b[1]))
-                s.mn = 1 - abs(lM.o$lM-r.mean.norm)/max(abs(r-r.mean.norm),na.rm=TRUE) ## Score for distance to average in normals
-                s.h = lM.o$h / max(lM.o$h)
-                s.c = sapply(lM.o$lM, function(rr)max(table(chrs[order(abs(rr-r))[1:100]])))
-                s.c = 1 - s.c / max(s.c)
-                ##return(lM.o$lM[which.max(s.mn+s.h+s.c)])
-                return(lM.o$lM[which.max(s.mn+s.h)])
+        if (sum(a != 0 & b != 0) > 10) {
+            r = log(a/b)[a != 0 & b != 0]
+            if (!is.null(bc.mean.norm) & !is.null(chrs)) {
+                chrs = chrs[a != 0 & b != 0]
+                lM.o = localMax(r, lm.min.prop)
+                r.mean.norm = ifelse(b[1] == 0 | bc.mean.norm == 0, max(r), log(bc.mean.norm/b[1]))
+                s.mn = 1 - abs(lM.o$lM - r.mean.norm)/max(abs(r - r.mean.norm), na.rm = TRUE)  ## Score for distance to average in normals
+                s.h = lM.o$h/max(lM.o$h)
+                s.c = sapply(lM.o$lM, function(rr) max(table(chrs[order(abs(rr - 
+                  r))[1:100]])))
+                s.c = 1 - s.c/max(s.c)
+                ## return(lM.o$lM[which.max(s.mn+s.h+s.c)])
+                return(lM.o$lM[which.max(s.mn + s.h)])
             } else {
-                return(median(r,na.rm=TRUE))
+                return(median(r, na.rm = TRUE))
             }
         } else {
             return(0)
         }
     }
-    tm.all = apply(df,2,function(c)trimmed.mean.TN.best(ref.col,c,lm.min.prop,bc.mean.norm=bc.mean.norm))
+    tm.all = apply(df, 2, function(c) trimmed.mean.TN.best(ref.col, c, lm.min.prop, 
+        bc.mean.norm = bc.mean.norm))
     return(exp(tm.all))
-}
+} 

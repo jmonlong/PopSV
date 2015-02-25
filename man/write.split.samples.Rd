@@ -21,7 +21,7 @@ write.split.samples(res, files.df, samples, res.n = c("z", "fc"),
 \item{compress.index}{should the output be compressed and indexed. Default is TRUE.}
 }
 \value{
-"Done" if everything worked fine.
+'Done' if everything worked fine.
 }
 \description{
 Split join results into one file per sample per feature. For example to split and write the Z-scores of reference samples after joined computation.

@@ -29,7 +29,7 @@ normal (or Poisson) distribution across samples, in each bin. Then, the randomne
 of sample ranks are tested. Finally, Z-scores are computed for a subset of the bins
 and their normality is tested. The second and third test are the most important.
 Indeed, consistent rankings supports sample-specific technical bias, hence reduced
-power to detect "true" abnormal read counts. Non-normal Z-scores will lead to
+power to detect 'true' abnormal read counts. Non-normal Z-scores will lead to
 inappropriate fit for the null distribution.
 }
 \details{

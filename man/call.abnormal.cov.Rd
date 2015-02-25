@@ -44,7 +44,7 @@ a data.frame with columns
 \item{pv, qv}{the P-value and Q-value(~FDR)}
 \item{fc}{the copy number estimate (if 'fc' was not NULL).}
 \item{nb.bin.cons}{the number of consecutive bins (if the bins were merged;
-'merge.cons.bins!="no"')}
+'merge.cons.bins!='no'')}
 \item{cn2.dev}{Copy number deviation from the reference }
 }
 \description{

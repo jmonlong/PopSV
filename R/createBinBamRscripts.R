@@ -19,21 +19,19 @@
 ##' to run for each sample.
 ##' @author Jean Monlong
 ##' @export
-createBinBamRscripts <- function(files.df, bin.df, dest.folder=".", proper=TRUE, map.quality=30){
-  binf = paste(dest.folder, "binDef.RData",sep=.Platform$file.sep)
-  save(bin.df, file=binf)
-  create.script.samp <- function(samp, bamf, bcf){
-    scriptf = paste(dest.folder, .Platform$file.sep,"rscript-binBam-", samp, ".R",sep="")
-    cat(paste0("library(PopSV)
-load(\"",binf,"\")
-binBam(\"",bamf,"\", bin.df, \"",bcf,"\", proper=",proper,", map.quality=",map.quality,")
-"), file=scriptf)
-    return(scriptf)
-  }
-  files.df$binBamRscripts = sapply(1:nrow(files.df), function(samp.i){
-    create.script.samp(files.df$sample[samp.i],
-                       files.df$bam[samp.i],
-                       files.df$bc[samp.i])
-  })
-  return(files.df)
-}
+createBinBamRscripts <- function(files.df, bin.df, dest.folder = ".", proper = TRUE, 
+    map.quality = 30) {
+    binf = paste(dest.folder, "binDef.RData", sep = .Platform$file.sep)
+    save(bin.df, file = binf)
+    create.script.samp <- function(samp, bamf, bcf) {
+        scriptf = paste(dest.folder, .Platform$file.sep, "rscript-binBam-", samp, 
+            ".R", sep = "")
+        cat(paste0("library(PopSV)\nload(\"", binf, "\")\nbinBam(\"", bamf, "\", bin.df, \"", 
+            bcf, "\", proper=", proper, ", map.quality=", map.quality, ")\n"), file = scriptf)
+        return(scriptf)
+    }
+    files.df$binBamRscripts = sapply(1:nrow(files.df), function(samp.i) {
+        create.script.samp(files.df$sample[samp.i], files.df$bam[samp.i], files.df$bc[samp.i])
+    })
+    return(files.df)
+} 

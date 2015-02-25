@@ -8,14 +8,16 @@
 ##' @return the merged data.frame
 ##' @author Jean Monlong
 ##' @export
-samples.merge <- function(files.df, samples, files.col, nb.cores=1, sig.digits=6){
-  
-  res.1 = as.data.frame(data.table::fread(subset(files.df, sample==samples[1])[,files.col],header=TRUE))
-  res.l = parallel::mclapply(subset(files.df, sample%in%samples)[,files.col], function(fi){
-    unlist(data.table::fread(fi,header=TRUE)[,4, with=FALSE])
-  },mc.cores=nb.cores)
-  res.l = matrix(signif(unlist(res.l),sig.digits), length(res.l[[1]]))
-  colnames(res.l) = samples
-  
-  return(cbind(res.1[,c("chr","start","end")],res.l))
-}
+samples.merge <- function(files.df, samples, files.col, nb.cores = 1, sig.digits = 6) {
+    
+    res.1 = as.data.frame(data.table::fread(subset(files.df, sample == samples[1])[, 
+        files.col], header = TRUE))
+    res.l = parallel::mclapply(subset(files.df, sample %in% samples)[, files.col], 
+        function(fi) {
+            unlist(data.table::fread(fi, header = TRUE)[, 4, with = FALSE])
+        }, mc.cores = nb.cores)
+    res.l = matrix(signif(unlist(res.l), sig.digits), length(res.l[[1]]))
+    colnames(res.l) = samples
+    
+    return(cbind(res.1[, c("chr", "start", "end")], res.l))
+} 
