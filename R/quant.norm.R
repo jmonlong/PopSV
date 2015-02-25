@@ -25,8 +25,8 @@ quant.norm <- function(bc.df, nb.cores=1, norm.stats.comp=TRUE){
   bc.cov = as.numeric(parallel::mclapply(1:ncol(bc.mat), function(cc) median(bc.mat[,cc], na.rm=TRUE), mc.cores=nb.cores))
   bc.mat = (bc.mat*median(bc.cov)) %*% diag(1/bc.cov)
   bc.sorted = matrix(as.numeric(unlist(parallel::mclapply(1:ncol(bc.mat),function(cc)sort(bc.mat[,cc]),mc.cores=nb.cores))),nrow(bc.mat))
-  med = as.numeric(mclapply(1:nrow(bc.sorted), function(rr)median(bc.sorted[rr,], na.rm=TRUE), mc.cores=nb.cores))
-  bc.norm[,-(1:3)] = matrix(round(as.numeric(unlist(parallel::mclapply(1:ncol(bc.mat), function(cc)med[rank(bc.mat[,cc])],mc.cores=nb.cores))),2),nrow(bc.mat))
+  med = round(as.numeric(mclapply(1:nrow(bc.sorted), function(rr)median(bc.sorted[rr,], na.rm=TRUE), mc.cores=nb.cores)),2)
+  bc.norm[,-(1:3)] = matrix(as.numeric(unlist(parallel::mclapply(1:ncol(bc.mat), function(cc)med[rank(bc.mat[,cc])],mc.cores=nb.cores))),nrow(bc.mat))
 
   if(norm.stats.comp){
     norm.stats[,4:6] = matrix(as.numeric(unlist(parallel::mclapply(1:nrow(bc.norm), function(rr){
