@@ -9,7 +9,7 @@
 ##' \item{bc.norm}{a data.frame, similar to the input 'bc.df', with the normalized bin counts.}
 ##' @author Jean Monlong
 ##' @export
-quantile.norm <- function(bc.df, nb.cores=1, norm.stats.comp=TRUE){
+quant.norm <- function(bc.df, nb.cores=1, norm.stats.comp=TRUE){
   all.samples = setdiff(colnames(bc.df),c("chr","start","end"))
   rownames(bc.df) = bins = paste(bc.df$chr, as.integer(bc.df$start), as.integer(bc.df$end), sep="-")
   
@@ -26,7 +26,7 @@ quantile.norm <- function(bc.df, nb.cores=1, norm.stats.comp=TRUE){
   bc.mat = (bc.mat*median(bc.cov)) %*% diag(1/bc.cov)
   bc.sorted = matrix(as.numeric(unlist(parallel::mclapply(1:ncol(bc.mat),function(cc)sort(bc.mat[,cc]),mc.cores=nb.cores))),nrow(bc.mat))
   med = as.numeric(mclapply(1:nrow(bc.sorted), function(rr)median(bc.sorted[rr,], na.rm=TRUE), mc.cores=nb.cores))
-  bc.norm[,-(1:3)] = matrix(as.numeric(unlist(parallel::mclapply(1:ncol(bc.mat), function(cc)med[rank(bc.mat[,cc])],mc.cores=nb.cores))),nrow(bc.mat))
+  bc.norm[,-(1:3)] = matrix(round(as.numeric(unlist(parallel::mclapply(1:ncol(bc.mat), function(cc)med[rank(bc.mat[,cc])],mc.cores=nb.cores))),2),nrow(bc.mat))
 
   if(norm.stats.comp){
     norm.stats[,4:6] = matrix(as.numeric(unlist(parallel::mclapply(1:nrow(bc.norm), function(rr){

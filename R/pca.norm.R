@@ -38,7 +38,7 @@ pca.norm <- function(bc.df, nb.pcs=3, nb.cores=1, norm.stats.comp=TRUE){
   reg.form = paste("bc.s ~ pc", paste(1:nb.pcs, collapse=" + pc"),sep="")
   bc.norm[, all.samples] = matrix(as.numeric(unlist(parallel::mclapply(1:ncol(bc), function(cc){
     lm.o = glm(reg.form, data=data.frame(bc.s=bc[,cc], pca.o)) ##, family=poisson)
-    return(bc.s*lm.o$coefficients[1]/predict(lm.o))
+    return(round(bc.s*lm.o$coefficients[1]/predict(lm.o), 2))
   },mc.cores=nb.cores))), nrow(bc))
 
   if(norm.stats.comp){

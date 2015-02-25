@@ -23,7 +23,7 @@ med.norm <- function(bc.df, nb.cores=1, norm.stats.comp=TRUE){
   
   bc.mat = as.matrix(bc.df[,all.samples])
   bc.cov = as.numeric(parallel::mclapply(1:ncol(bc.mat), function(cc) median(bc.mat[,cc], na.rm=TRUE), mc.cores=nb.cores))
-  bc.norm[,-(1:3)] = (bc.mat*median(bc.cov)) %*% diag(1/bc.cov)
+  bc.norm[,-(1:3)] = round((bc.mat*median(bc.cov)) %*% diag(1/bc.cov),2)
 
   if(norm.stats.comp){
     norm.stats[,4:6] = matrix(as.numeric(unlist(parallel::mclapply(1:nrow(bc.norm), function(rr){

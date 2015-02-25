@@ -11,7 +11,7 @@ samples.merge <- function(files.df, samples, files.col, nb.cores=1){
   
   res.1 = fread(subset(files.df, sample==samples[1])[,files.col],header=TRUE)
   res.l = parallel::mclapply(subset(files.df, sample%in%samples)[,files.col], function(fi){
-    fread(fi,header=TRUE)[,4]
+    fread(fi,header=TRUE)[,4, with=FALSE]
   },mc.cores=nb.cores)
   res.l = matrix(unlist(res.l), length(res.l[[1]]))
   colnames(res.l) = samples

@@ -39,7 +39,7 @@ z.comp <- function(files.df, samples, msd.f=NULL, z.poisson=FALSE, col="bc.gc.no
     if(is.data.frame(files.df)){
         bc.1 = fread(subset(files.df, sample==samples[1])[,col],header=TRUE)
         bc.l = parallel::mclapply(subset(files.df, sample%in%samples)[,col], function(fi){
-            fread(fi,header=TRUE)[,4]
+          fread(fi,header=TRUE)[,4, with=FALSE]
         },mc.cores=nb.cores)
         bc.l = matrix(unlist(bc.l), length(bc.l[[1]]))
     } else {
