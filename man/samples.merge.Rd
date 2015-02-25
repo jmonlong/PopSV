@@ -4,7 +4,7 @@
 \alias{samples.merge}
 \title{Merge data.frame across samples}
 \usage{
-samples.merge(files.df, samples, files.col, nb.cores = 1)
+samples.merge(files.df, samples, files.col, nb.cores = 1, sig.digits = 6)
 }
 \arguments{
 \item{files.df}{a data.frame with information about each output file.}
@@ -14,6 +14,8 @@ samples.merge(files.df, samples, files.col, nb.cores = 1)
 \item{files.col}{the name of 'files.df' to use for each 'res' element.}
 
 \item{nb.cores}{the number of cores to use.}
+
+\item{sig.digits}{the number of significant digits. Default is 6.}
 }
 \value{
 the merged data.frame
