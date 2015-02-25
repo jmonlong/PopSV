@@ -95,12 +95,15 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, nb.ref.samples=NULL, 
         pc.all.df$sample = ref.samples
         sp.o = sparse.pts(pc.all$x[,1:2],nb.ref.samples)
         pc.all.df$reference = pc.all.df$sample %in% rownames(sp.o)
-        if(plot) print(ggplot(pc.all.df, aes(x=PC1, y=PC2, size=reference)) + geom_point(alpha=.8) + theme_bw() + scale_size_manual(values=2:3))
+        if(plot){
+          PC1 = PC2 = reference = NULL ## Uglily appease R checks
+          print(ggplot2::ggplot(pc.all.df, ggplot2::aes(x=PC1, y=PC2, size=reference)) + ggplot2::geom_point(alpha=.8) + ggplot2::theme_bw() + ggplot2::scale_size_manual(values=2:3))
+        }
         ref.samples = rownames(sp.o)
         bc.rand = bc.rand[,c("chr","start","end",ref.samples)]
     }
 
-    files.df = subset(files.df, sample%in%ref.samples)
+    files.df = files.df[which(files.df$sample%in%ref.samples),]
     if(nrow(bin.df)<1.3*chunk.size){
         bc.df = read.bc.samples(bin.df, files.df, nb.cores)
         write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t")
@@ -118,7 +121,7 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, nb.ref.samples=NULL, 
         med.samp = lapply(as.character(files.df$sample), function(samp.i)median(bc.rand[,samp.i], na.rm=TRUE)) ## Normalization of the median coverage
         med.med = median(unlist(med.samp), na.rm=TRUE)
         bc.res = lapply(unique(bin.df$chunk), function(chunk.i){
-            analyze.chunk(subset(bin.df, chunk==chunk.i))
+            analyze.chunk(bin.df[which(bin.df$chunk==chunk.i),])
         })
         bc.df = plyr::ldply(bc.res, identity)
     }
@@ -138,7 +141,10 @@ qc.samples <- function(files.df, bin.df, ref.samples=NULL, nb.ref.samples=NULL, 
     pc.ref = prcomp(t(na.exclude(bc.mv)))
     pc.ref.df = data.frame(pc.ref$x[,1:3])
     pc.ref.df$sample = ref.samples
-    if(plot) print(ggplot(pc.ref.df, aes(x=PC1, y=PC2)) + geom_point(alpha=.8) + theme_bw())
+    if(plot){
+      PC1 = PC2 = NULL ## Uglily appease R checks
+      print(ggplot2::ggplot(pc.ref.df, ggplot2::aes(x=PC1, y=PC2)) + ggplot2::geom_point(alpha=.8) + ggplot2::theme_bw())
+    }
     cont.sample = center.pt(pc.ref$x[,1:2])
     bc.df = outfile.prefix
     return(list(bc=bc.df,ref.samples=ref.samples, cont.sample=cont.sample,pca.all.df=pc.all.df, pca.ref.df=pc.ref.df))

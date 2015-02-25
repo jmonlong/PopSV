@@ -64,7 +64,7 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
   }
   find.th <- function(df, z.int=seq(1,20,.2)){
     nbcc.df = plyr::ldply(z.int,function(z.th){
-      df.th = subset(df, abs(z)>z.th)
+      df.th = df[which(abs(df$z)>z.th),]
       if(nrow(df.th)>0){
         df.th =  cons.dist.f(df.th)
         df.th$z.th=z.th
@@ -76,14 +76,14 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
     ##ggplot(subset(nbcc.df, nbc<7), aes(x=z.th, y=p)) + geom_line() + facet_grid(nbc~., scales="free")
     ##z.th = c(min(localMax(subset(nbcc.df, nbc==1)$z.th, subset(nbcc.df, nbc==1)$p)$lM),
     ##  sapply(2:3, function(nbc.i)min(localMax(subset(nbcc.df, nbc==nbc.i)$z.th, subset(nbcc.df, nbc==nbc.i)$p, loc.max=FALSE)$lM)))
-    z.th = c(cumLocalMax(subset(nbcc.df, nbc==1)$z.th, subset(nbcc.df, nbc==1)$p)$x,
-    cumLocalMax(subset(nbcc.df, nbc==2)$z.th, subset(nbcc.df, nbc==2)$p, min=TRUE)$x)
+    z.th = c(cumLocalMax(nbcc.df$z.th[which(nbcc.df$nbc==1)], nbcc.df$p[which(nbcc.df$nbc==1)])$x,
+    cumLocalMax(nbcc.df$z.th[which(nbcc.df$nbc==2)], nbcc.df$p[which(nbcc.df$nbc==2)], min=TRUE)$x)
     mean(z.th, na.rm=TRUE)
   }
 
   ## Split between duplication/deletion signal
-  dup.df = subset(z.df, z>0)
-  del.df = subset(z.df, z<0)
+  dup.df = z.df[which(z.df$z>0),]
+  del.df = z.df[which(z.df$z<0),]
 
   ## Find threshold; second run scan with more resolution.
   dup.th = find.th(dup.df, z.int=seq(2,quantile(dup.df$z, probs=.999)*2,.5))
@@ -123,6 +123,7 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
 
   ## Z-score distribution with thresholds
   if(plot){
+    z = pv = qv = NULL ## Uglily appease R checks
     print(ggplot2::ggplot(z.df, ggplot2::aes(x=z)) + ggplot2::geom_histogram() + ggplot2::xlim(-20,20) + ggplot2::geom_vline(xintercept=c(-del.th, dup.th), linetype=2) + ggplot2::theme_bw())
     if(pvalues){
       print(ggplot2::ggplot(z.df, ggplot2::aes(x=pv)) + ggplot2::geom_histogram() + ggplot2::xlim(0,1) + ggplot2::theme_bw())
@@ -131,5 +132,5 @@ z.thres.cons.bins <- function(z.df, plot=FALSE, pvalues=FALSE){
   }
   
   return(list(dup.th=dup.th, del.th=del.th,nb.ab.bins=nb.ab.bins, prop.ab.bins=prop.ab.bins,
-              z.df=subset(z.df,abnormal)))
+              z.df=z.df[which(z.df$abnormal),]))
 }

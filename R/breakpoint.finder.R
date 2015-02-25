@@ -30,7 +30,7 @@ breakpoint.finder <- function(bkpt.gr, files.df, test.sample, ref.samples, flank
             )
         bam = Rsamtools::scanBam(bam.file, index=bai.file,param=param)
         bam.df = plyr::ldply(bam, as.data.frame, .id="bin")
-        bam.df = subset(bam.df, mapq>= map.quality)
+        bam.df = bam.df[which(bam.df$mapq>= map.quality),]
         return(with(bam.df, GenomicRanges::GRanges(rname, IRanges::IRanges(pos, width=qwidth), bin=bin)))
     }
 

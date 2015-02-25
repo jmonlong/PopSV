@@ -19,8 +19,9 @@ tn.norm.qc <- function(norm.stats, out.pdf="normStats-QC.pdf", bin.size=FALSE){
         rm(norm.stats)
     }
 
-    res.df = subset(res.df, d.max!=-1 & !is.na(d.max))
-    
+    res.df = res.df[which(res.df$d.max!=-1 & !is.na(res.df$d.max)),]
+
+    d.max = m = nb.remove = ..count.. = NULL ## Uglily appease R checks
     pdf(out.pdf, 8,6)
     print(ggplot2::ggplot(res.df, ggplot2::aes(x=d.max)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::xlab("correlation distance to last supporting bin") + ggplot2::ylab("number of bins"))
     print(ggplot2::ggplot(res.df, ggplot2::aes(x=m)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::xlab("average normalized coverage") + ggplot2::ylab("number of bins"))

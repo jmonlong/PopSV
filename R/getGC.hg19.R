@@ -24,9 +24,10 @@ getGC.hg19 <- function(bins.df){
         seq.l = Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, chrs, df$start, df$end)
         lf = Biostrings::letterFrequency(seq.l,letters=c("G","C"))
         df$GCcontent = rowSums(lf) / (df$end-df$start)
-        subset(df, !is.na(GCcontent))
+        df[which(!is.na(df$GCcontent)),]
     }
     ##bins.df = dplyr::do(dplyr::group_by(bins.df,chunk),addGC(.))
+    chunk = . = NULL ## Uglily appease R checks
     bins.df = dplyr::do(dplyr::group_by(bins.df, chunk), addGC(.))
     bins.df$chunk = NULL
     return(as.data.frame(bins.df))

@@ -35,7 +35,7 @@ fdrtool.quantile <- function(z,quant.int = seq(.4,1,.02), ref.dist.weight=NULL, 
   })
   sd.e = localMax(sd.df$sd.est)$lM[1]
   if(!is.null(ref.dist.weight)){
-    sd.df = dplyr::arrange(sd.df, abs(sd.est-sd.e))
+    sd.df = with(sd.df, dplyr::arrange(sd.df, abs(sd.est-sd.e)))
     sd.e = sd.e + ref.dist.weight*10*sd(sd.df$sd.est[1:20])
   }
   res$sigma.est.dup = sd.e
@@ -47,7 +47,7 @@ fdrtool.quantile <- function(z,quant.int = seq(.4,1,.02), ref.dist.weight=NULL, 
   })
   sd.e = localMax(sd.df$sd.est)$lM[1]
   if(!is.null(ref.dist.weight)){
-    sd.df = dplyr::arrange(sd.df, abs(sd.est-sd.e))
+    sd.df = with(sd.df,dplyr::arrange(sd.df, abs(sd.est-sd.e)))
     sd.e = sd.e + ref.dist.weight*10*sd(sd.df$sd.est[1:20])
   }
   res$sigma.est.del = sd.e
@@ -59,8 +59,9 @@ fdrtool.quantile <- function(z,quant.int = seq(.4,1,.02), ref.dist.weight=NULL, 
   res$qval = p.adjust(res$pval,method="fdr")
 
   if(plot & any(!is.na(res$pval))){
-    plot.df = data.frame(z=z, pv=pval, qv=qval)
-    print(ggplot2::ggplot(subset(plot.df,abs(z)<quantile(abs(z), probs=.95)+1),ggplot2::aes(x=z)) +
+    pv = qv = NULL ## Uglily appease R checks
+    plot.df = data.frame(z=z, pv=res$pval, qv=res$qval)
+    print(ggplot2::ggplot(plot.df[which(abs(plot.df$z)<quantile(abs(plot.df$z), probs=.95)+1),],ggplot2::aes(x=z)) +
           ggplot2::geom_histogram() + 
           ggplot2::xlab("Z-score") + 
           ggplot2::ylab("number of bins") + 
@@ -69,7 +70,7 @@ fdrtool.quantile <- function(z,quant.int = seq(.4,1,.02), ref.dist.weight=NULL, 
           ggplot2::xlab("P-value") + ggplot2::xlim(0,1) + 
           ggplot2::ylab("number of bins") + 
           ggplot2::theme_bw())
-    print(ggplot2::ggplot(subset(plot.df,qv<.1),ggplot2::aes(x=cut(qv, breaks=c(-Inf,.001,.01,.5,.1)))) + ggplot2::geom_bar() +
+    print(ggplot2::ggplot(plot.df[which(plot.df$qv<.1),],ggplot2::aes(x=cut(qv, breaks=c(-Inf,.001,.01,.5,.1)))) + ggplot2::geom_bar() +
           ggplot2::xlab("Q-value") + 
           ggplot2::ylab("number of bins") + 
           ggplot2::theme_bw())

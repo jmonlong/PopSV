@@ -17,13 +17,13 @@ write.split.samples <- function(res, files.df, samples, res.n=c("z","fc"), files
         for(ii in 1:length(files.col)){
             res.f = res[[res.n[ii]]][,c("chr","start","end",samp)]
             colnames(res.f)[4] = res.n[ii]
-            res.f = dplyr::arrange(res.f, chr, start)
-            write.table(res.f, file=subset(files.df, sample==samp)[,files.col[ii]], row.names=FALSE, quote=FALSE,sep="\t")
+            res.f = with(res.f, dplyr::arrange(res.f, chr, start))
+            write.table(res.f, file=files.df[which(files.df$sample==samp),files.col[ii]], row.names=FALSE, quote=FALSE,sep="\t")
         }
     })
 
     if(compress.index){
-        files.tc = as.character(unlist(subset(files.df, sample %in% samples)[,files.col]))
+        files.tc = as.character(unlist(files.df[which(files.df$sample %in% samples),files.col]))
         comp.index.files(files.tc)
     }
     

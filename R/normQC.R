@@ -33,6 +33,7 @@
 ##' @param nb.cores the number of cores to use. Default is 1.
 ##' @author Jean Monlong
 ##' @export
+##' @import magrittr
 normQC <- function(bc.df, n.subset=1e4, nb.cores=1){
     ## Order by genomic location.
     bc.df = dplyr::arrange(bc.df, chr, start)
@@ -68,7 +69,8 @@ normQC <- function(bc.df, n.subset=1e4, nb.cores=1){
         res.df
     }
 
-    res.df = bc.df %>% group_by(chr) %>% do(test.chr.f(.))
+    chr = . = NULL ## Uglily appease R checks
+    res.df = bc.df %>% dplyr::group_by(chr) %>% dplyr::do(test.chr.f(.))
     
     sub.ii = sample.int(nrow(bc.df), n.subset)
     bc.mat = as.matrix(bc.df[sub.ii,samples])

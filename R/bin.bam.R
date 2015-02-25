@@ -29,7 +29,7 @@ bin.bam <- function(bam.file,bin.df,outfile.prefix=NULL, appendIndex.outfile=TRU
         stop("If 'appendIndex.outfile' is TRUE, please provide 'outfile.prefix'.")
     }
     
-    bin.df = dplyr::arrange(bin.df, chr, start)
+    bin.df = with(bin.df, dplyr::arrange(bin.df, chr, start))
     bin.df$chunk = rep(1:ceiling(nrow(bin.df)/chunk.size),each=chunk.size)[1:nrow(bin.df)]
 
     bai.file = sub("bam$","bai",bam.file,perl=TRUE)
@@ -80,6 +80,7 @@ Check manually and/or switch off option 'check.chr.name'.")
         }
     }
 
+    . = chunk = NULL ## Uglyly appease R checks
     bc.df = dplyr::do(dplyr::group_by(bin.df,chunk),binBam.chunk(.))
 
     if(appendIndex.outfile & !is.null(outfile.prefix)){

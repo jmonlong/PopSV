@@ -12,6 +12,7 @@
 ##' @author Jean Monlong
 ##' @export
 aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.aneu=.1, plot=FALSE){
+  bc = aneu.flag = chr = . = NULL ## Appease R checks
   
   localMax <- function(x,min.max.prop=.1){
     d = density(x,na.rm=TRUE)
@@ -24,7 +25,7 @@ aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.
 
   df = read.table(files.df[files.df$sample==samp,col.file], header=TRUE, as.is=TRUE)
   chrs = unique(df$chr)
-  df = subset(df, bc>0)
+  df = df[which(df$bc>0),]
   
   df.sub = dplyr::do(dplyr::group_by(df, chr), {.[sample.int(nrow(.),nb.bins),]})
   lm.o = localMax(df.sub$bc)$lM[1]
@@ -40,7 +41,7 @@ aneuploidy.flag <- function(samp, files.df, col.file="bc.gz", nb.bins=1e3, prop.
 
   aneu.chrs.fc = NULL
   if(!is.null(aneu.chrs)){
-    aneu.chrs.fc = sapply(aneu.chrs, function(chr.i)localMax(subset(df.sub, chr==chr.i)$bc)$lM[1]/lm.o)
+    aneu.chrs.fc = sapply(aneu.chrs, function(chr.i)localMax(df.sub$bc[which(df.sub$chr==chr.i)])$lM[1]/lm.o)
   }
   
   if(plot){

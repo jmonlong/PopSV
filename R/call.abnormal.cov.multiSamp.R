@@ -22,13 +22,13 @@ call.abnormal.cov.multiSamp <- function(z,samples,out.pdf=NULL,FDR.th=.05, chunk
         rm(z)
     }
     
-    res.df = subset(res.df, !is.na(chi))
+    res.df = res.df[which(!is.na(res.df$chi)),]
     ## Pvalue/Qvalue estimation
     if(all(is.na(res.df$chi))) return(NULL)
     res.df$pv = pchisq(res.df$chi^2, df=length(samples), lower.tail=FALSE)
     if(any(res.df$pv<1e-50)) res.df$pv[res.df$pv==0] = 1e-50
     ft = fdrtool::fdrtool(res.df$pv,statistic="pvalue",plot=FALSE,verbose=FALSE)
-    if(any(ft$qval<.05,na.rm=TRUE) | !any(pv<1e-10)){
+    if(any(ft$qval<.05,na.rm=TRUE) | !any(res.df$pv<1e-10)){
         res.df$qv = ft$qval
     } else {
         res.df$qv = p.adjust(res.df$pv,method="fdr")
@@ -38,6 +38,7 @@ call.abnormal.cov.multiSamp <- function(z,samples,out.pdf=NULL,FDR.th=.05, chunk
         pdf(out.pdf,13,10)
     }
     if(!is.null(out.pdf) & any(!is.na(res.df$pv))){
+      pv = NULL ## Uglily appease R checks
         print(ggplot2::ggplot(res.df,ggplot2::aes(x=pv)) + ggplot2::geom_histogram() +
               ggplot2::xlab("P-value") + ggplot2::xlim(0,1) + 
               ggplot2::ylab("number of bins") + 

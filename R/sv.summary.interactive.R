@@ -8,7 +8,9 @@
 ##' @author Jean Monlong
 ##' @export
 sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
-    nb.samp = length(unique(res.df$sample))
+  sample = gen.kb = col = cn = chr = nb = fc = type = start = end = prop = . = freq.n = NULL ## Uglily appease R checks
+
+  nb.samp = length(unique(res.df$sample))
     freq.chr.gr <- function(cnv.o){
         gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
         gr.d = GenomicRanges::disjoin(gr)
@@ -65,13 +67,13 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
             
             server = function(input, output) {
                 plot.df <- shiny::reactive({
-                  pdf = subset(res.df, qv<as.numeric(input$fdr) & cn2.dev>=input$cnD)
+                  pdf = res.df[which(res.df$qv<as.numeric(input$fdr) & res.df$cn2.dev>=input$cnD),]
                     pdf$sample = factor(pdf$sample, levels=names(sort(table(pdf$sample))))
                   pdf
                 })
                 freq.df <- shiny::reactive({
-                    rbind(data.frame(type="deletion",freq.chr.gr(subset(res.df, qv<as.numeric(input$fdr) & cn2.dev>=input$cnD & fc<1))),
-                          data.frame(type="duplication",freq.chr.gr(subset(res.df, qv<as.numeric(input$fdr) & cn2.dev>=input$cnD & fc>1))))
+                    rbind(data.frame(type="deletion",freq.chr.gr(res.df[which(res.df$qv<as.numeric(input$fdr) & res.df$cn2.dev>=input$cnD & fc<1),])),
+                          data.frame(type="duplication",freq.chr.gr(res.df[which(res.df$qv<as.numeric(input$fdr) & res.df$cn2.dev>=input$cnD & fc>1),])))
                 })
                 
                 output$nb.calls = shiny::renderPlot({
@@ -97,7 +99,8 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                     gp
                 })
                 output$cn = shiny::renderPlot({
-                    pdf = subset(plot.df(), nb.bin.cons>=input$nbc)
+                    pdf = plot.df()
+                    pdf = pdf[which(pdf$nb.bin.cons>=input$nbc),]
                     if(input$col=="event type"){
                         pdf$col = ifelse(pdf$fc>1, "duplication","deletion")
                         extra.gg = ggplot2::scale_fill_brewer(name=input$col,palette="Set1")
@@ -122,9 +125,9 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                     f.df = freq.df()
                     f.df = dplyr::summarize(dplyr::group_by(f.df, chr, start, end), nb=sum(nb), prop=sum(prop), gen.kb=head((end-start)/1e3, 1))
                     if(input$freq.rep=="nb"){
-                        ggp = ggplot2::ggplot(dplyr::arrange(subset(f.df, nb>=input$nbMin), chr), ggplot2::aes(x=nb,  y=gen.kb, fill=chr)) + ggplot2::xlab("number of samples") 
+                        ggp = ggplot2::ggplot(dplyr::arrange(f.df[which(f.df$nb>=input$nbMin),], chr), ggplot2::aes(x=nb,  y=gen.kb, fill=chr)) + ggplot2::xlab("number of samples") 
                     } else {
-                        ggp = ggplot2::ggplot(dplyr::arrange(subset(f.df, nb>=input$nbMin), chr), ggplot2::aes(x=prop, y=gen.kb, fill=chr)) + ggplot2::xlab("proportion of samples") 
+                        ggp = ggplot2::ggplot(dplyr::arrange(f.df[which(f.df$nb>=input$nbMin),], chr), ggplot2::aes(x=prop, y=gen.kb, fill=chr)) + ggplot2::xlab("proportion of samples") 
                     }
                     ggp + ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() +
                         ggplot2::ylab("abnormal genome (Kb)") +
@@ -139,8 +142,10 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                         pdf$chr = factor(pdf$chr, levels=1:22)
                         facet.o = ggplot2::facet_wrap(~chr,scales="free")
                     } else {
-                        chr.df = subset(freq.df(), chr==input$chr)
-                        pdf = subset(plot.df(), chr==input$chr)
+                        chr.df = freq.df()
+                        chr.df = chr.df[which(chr.df$chr==input$chr),]
+                        pdf = plot.df()
+                        pdf = pdf[which(pdf$chr==input$chr),]
                         facet.o = NULL
                     }
                     pdf$type = ifelse(pdf$fc>1, "duplication","deletion")
@@ -148,10 +153,10 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                     if(input$fchr.rep=="Stacked"){
                         if(input$freq.rep=="nb"){
                             ggp = ggplot2::ggplot(chr.df, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=0, ymax=nb, fill=type)) + ggplot2::ylab("number of samples")  +
-                                ggplot2::geom_segment(ggplot2::aes(x=(end+start)/2e6,xend=(end+start)/2e6, y=0, yend=nb, colour=type), alpha=.2, data=subset(chr.df, end-start<max(chr.df$end/1e3)))
+                                ggplot2::geom_segment(ggplot2::aes(x=(end+start)/2e6,xend=(end+start)/2e6, y=0, yend=nb, colour=type), alpha=.2, data=chr.df[which(chr.df$end-chr.df$start<max(chr.df$end/1e3)),])
                         } else {
                             ggp = ggplot2::ggplot(chr.df, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=0, ymax=prop, fill=type)) + ggplot2::ylab("proportion of samples") +
-                                ggplot2::geom_segment(ggplot2::aes(x=(end+start)/2e6,xend=(end+start)/2e6, y=0, yend=prop, colour=type), alpha=.2, data=subset(chr.df, end-start<max(chr.df$end/1e3)))
+                                ggplot2::geom_segment(ggplot2::aes(x=(end+start)/2e6,xend=(end+start)/2e6, y=0, yend=prop, colour=type), alpha=.2, data=chr.df[which(chr.df$end-chr.df$start<max(chr.df$end/1e3)),])
                         }
                         return(ggp +
                                ggplot2::scale_fill_brewer(palette="Set1") + 
@@ -203,7 +208,7 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
 
             server = function(input, output) {
                 plot.df <- shiny::reactive({
-                    subset(res.df, qv<as.numeric(input$fdr))
+                    res.df[which(res.df$qv<as.numeric(input$fdr)),]
                 })
 
                 res.m <- shiny::reactive({
@@ -217,7 +222,8 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE,height="500px"){
                             ggplot2::theme(axis.text.x=ggplot2::element_text(angle=90))
                 })
                 output$cn = shiny::renderPlot({
-                    ggplot2::ggplot(subset(res.m(), nb.bin.cons>input$nbc), ggplot2::aes(x=fc*2)) +
+                  pdf = res.m()
+                    ggplot2::ggplot(pdf[which(pdf$nb.bin.cons>input$nbc),], ggplot2::aes(x=fc*2)) +
                         ggplot2::geom_bar() + ggplot2::theme_bw() + ggplot2::xlim(0,5)
                 })
                 output$freq = shiny::renderPlot({

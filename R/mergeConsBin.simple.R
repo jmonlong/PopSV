@@ -25,6 +25,7 @@ mergeConsBin.simple <- function(res.df,col.mean=c("z","pv","qv","fc")){
         return(df)
     }
     
+    link = chr = . = NULL ## Uglily appease R checks
     res.df = dplyr::do(dplyr::group_by(res.df,chr),link.annotate.f(.))
     merge.bin.f <- function(df){
         if(nrow(df)<3) return(data.frame())

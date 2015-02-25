@@ -30,20 +30,20 @@ z.comp <- function(files.df, samples, msd.f=NULL, z.poisson=FALSE, col="bc.gc.no
     }
 
     if(!is.null(msd.f)){
-        msd.all = fread(msd.f, select=1:5, header=TRUE)
+        msd.all = data.table::fread(msd.f, select=1:5, header=TRUE)
         msd.col.ids = 1:nrow(msd.all)
         names(msd.col.ids) = paste(msd.all$chr, as.integer(msd.all$start), as.integer(msd.all$end), sep="-")
         msd.all = t(as.matrix(msd.all[,-(1:3), with=FALSE]))
     }
     
     if(is.data.frame(files.df)){
-        bc.1 = fread(subset(files.df, sample==samples[1])[,col],header=TRUE)
+        bc.1 = data.table::fread(subset(files.df, sample==samples[1])[,col],header=TRUE)
         bc.l = parallel::mclapply(subset(files.df, sample%in%samples)[,col], function(fi){
-          fread(fi,header=TRUE)[,4, with=FALSE]
+          data.table::fread(fi,header=TRUE)[,4, with=FALSE]
         },mc.cores=nb.cores)
         bc.l = matrix(unlist(bc.l), length(bc.l[[1]]))
     } else {
-        bc.l = fread(files.df,header=TRUE)
+        bc.l = data.table::fread(files.df,header=TRUE)
         bc.1 = bc.l[,1:3, with=FALSE]
         bc.l = as.matrix(bc.l[,samples, with=FALSE])
     }

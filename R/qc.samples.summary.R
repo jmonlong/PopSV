@@ -6,7 +6,9 @@
 ##' @author Jean Monlong
 ##' @export
 qc.samples.summary <- function(qc.res){
-    shiny::runApp(list(
+  PC1 = PC2 = Dstat = reference = x= y = xend = yend = sample = NULL ## Uglily appease R checks
+
+  shiny::runApp(list(
         
         ui = shiny::fluidPage(
             shiny::titlePanel("PopSV - Sample QC"),
@@ -36,7 +38,7 @@ qc.samples.summary <- function(qc.res){
             
         server = function(input, output) {
             samples.ref <- shiny::reactive({
-                sr = as.character(subset(qc.res$dstat, Dstat >= as.numeric(input$d))$sample)
+                sr = as.character(qc.res$dstat$sample[which(qc.res$dstat$Dstat >= as.numeric(input$d))])
                 if(input$ols != ""){
                     ols = unlist(strsplit(input$ols,","))
                     return(setdiff(sr, ols))
@@ -78,7 +80,7 @@ qc.samples.summary <- function(qc.res){
             output$pca = shiny::renderPlot({
                 plot.df = data.frame(sample=rownames(qc.res$pc.1.3), qc.res$pc.1.3, stringsAsFactors=FALSE)
                 plot.df$reference = factor(plot.df$sample %in% samples.ref(), levels=c("TRUE","FALSE"))
-                if(input$samp.set=="Reference") plot.df = subset(plot.df, reference=="TRUE")
+                if(input$samp.set=="Reference") plot.df = plot.df[which(plot.df$reference=="TRUE"),]
                 xlims = c(min(plot.df$PC1,na.rm=TRUE),max(plot.df$PC1,na.rm=TRUE))
                 xlims = c(xlims[1]-.07*diff(xlims),xlims[2]+.07*diff(xlims))
                 gpl = ggplot2::ggplot(plot.df, ggplot2::aes(x=PC1, y=PC2, colour=reference)) + 

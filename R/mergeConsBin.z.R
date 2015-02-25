@@ -45,12 +45,13 @@ mergeConsBin.z <- function(res.df,fdr.th=.05,col.mean=c("z","pv","qv","fc"),sd.n
     ## Simulate the empirical null distribution
     z.null = apply(rbind(rnorm(nb.sim,0,sd.null),rnorm(nb.sim,0,sd.null)),2,sort)
     ## Compute P-values
-    res.df = dplyr::arrange(res.df, chr, start)
+    res.df = with(res.df, dplyr::arrange(res.df, chr, start))
     pvLink.f <- function(df){
         z.link = apply(rbind(df$z[-1],df$z[-nrow(df)]),2,sort)
         data.frame(pv.dup = compute.pv(z.link[1,],z.null=z.null[1,]),
                    pv.del = compute.pv(z.link[2,],z.null=z.null[2,],alt.greater=FALSE))
     }
+    chr = . = link = NULL ## Uglily appease R checks
     link.df = dplyr::do(dplyr::group_by(res.df,chr),pvLink.f(.))
     ## Multiple test correction
     link.df$qv.dup = fdrtool::fdrtool(link.df$pv.dup, statistic="pvalue",plot=FALSE,verbose=FALSE)$qval
@@ -58,7 +59,7 @@ mergeConsBin.z <- function(res.df,fdr.th=.05,col.mean=c("z","pv","qv","fc"),sd.n
     ## Annotate and merge bins
     link.annotate.f <- function(df){
       cat(df$chr[1],"\n")
-      link.df = subset(link.df, chr==df$chr[1])
+      link.df = link.df[which(link.df$chr==df$chr[1]),]
         link.v = rep("none", nrow(df))
         link.v[c(FALSE,link.df$qv.dup<=fdr.th) | c(link.df$qv.dup<=fdr.th,FALSE) | (df$qv<=fdr.th & df$z>0)] = "dup"
         link.v[c(FALSE,link.df$qv.del<=fdr.th) | c(link.df$qv.del<=fdr.th,FALSE) | (df$qv<=fdr.th & df$z<0)] = "del"
@@ -69,7 +70,7 @@ mergeConsBin.z <- function(res.df,fdr.th=.05,col.mean=c("z","pv","qv","fc"),sd.n
         return(df)
     }
     res.df = dplyr::do(dplyr::group_by(res.df,chr),link.annotate.f(.))
-    res.df = subset(res.df, link!="none")
+    res.df = res.df[which(res.df$link!="none"),]
     if(nrow(res.df)>0){
         merge.bin.f <- function(df){
             res = data.frame(chr=df$chr[1],

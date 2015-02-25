@@ -76,7 +76,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
 
   ## Remove aneuploid chromosomes
   if(!is.null(aneu.chrs)){
-    res.df = subset(res.df, !(chr %in% aneu.chrs))
+    res.df = res.df[which(!(res.df$chr %in% aneu.chrs)),]
   }
   
   if(!is.null(out.pdf)){
@@ -94,7 +94,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
     res.df$qv = fdr$qval
 
     ## Remove large aberrations
-    aber.large = mergeConsBin.reduce(subset(res.df, qv<.05), stitch.dist=10*bin.width)
+    aber.large = mergeConsBin.reduce(res.df[which(res.df$qv<.05),], stitch.dist=10*bin.width)
     aber.large = subset(aber.large, end-start>1e7)
     if(nrow(aber.large)>0 | !is.null(ref.dist.weight)){
         if(nrow(aber.large)>0){
@@ -110,7 +110,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
           res.df = rbind(res.df, res.aber.large)
         }
     }
-    res.df = subset(res.df, qv<FDR.th)
+    res.df = res.df[which(res.df$qv<FDR.th),]
   } else if(z.th[1]=="consbins"){
     res.df = z.thres.cons.bins(res.df, plot=!is.null(out.pdf), pvalues=TRUE)$z.df
   } else if(z.th[1]=="sdest2N"){
@@ -118,7 +118,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
     fdr = fdrtool.quantile.2N(res.df$z, plot=!is.null(out.pdf), min.prop.null=min.normal.prop)
     res.df$pv = fdr$pval
     res.df$qv = fdr$qval
-    res.df = subset(res.df, qv<FDR.th)
+    res.df = res.df[which(res.df$qv<FDR.th),]
   } else {
     stop("'z.th=': available thresholding approaches are : 'stitch', 'zscores'.")
   }
@@ -134,6 +134,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
     }
 
     if(nrow(res.df)>0 & !is.null(out.pdf)){
+      nb.bin.cons = NULL ## Uglily appease R checks
       print(ggplot2::ggplot(res.df,ggplot2::aes(x=factor(nb.bin.cons))) +
             ggplot2::geom_histogram() +
             ggplot2::ylab("number of bins") + 
@@ -160,7 +161,7 @@ call.abnormal.cov <- function(z,samp,out.pdf=NULL,FDR.th=.05, merge.cons.bins=c(
   if(nrow(res.df)>0 & merge.cons.bins[1]!="no"){
     return(data.frame(sample=samp,res.df, stringsAsFactors=FALSE))
   } else if(any(res.df$qv <= FDR.th, na.rm=TRUE)){
-    return(data.frame(sample=samp,subset(res.df, qv<=FDR.th), stringsAsFactors=FALSE))
+    return(data.frame(sample=samp,res.df[which(res.df$qv<=FDR.th),], stringsAsFactors=FALSE))
   } else {
     return(NULL)
   }

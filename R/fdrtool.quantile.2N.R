@@ -91,8 +91,9 @@ fdrtool.quantile.2N <- function(z, plot=TRUE, min.prop.null=.95){
   res$qval = p.adjust(res$pval,method="fdr")
 
   if(plot & any(!is.na(res$pval))){
+    pv = qv = NULL ## Uglily appease R checks
     plot.df = data.frame(z=z, pv=res$pval, qv=res$qval)
-    print(ggplot2::ggplot(subset(plot.df,abs(z)<quantile(abs(z), probs=.95)+1),ggplot2::aes(x=z)) +
+    print(ggplot2::ggplot(plot.df[which(abs(plot.df$z)<quantile(abs(plot.df$z), probs=.95)+1),],ggplot2::aes(x=z)) +
           ggplot2::geom_histogram() + 
           ggplot2::xlab("Z-score") + 
           ggplot2::ylab("number of bins") + 
@@ -101,7 +102,7 @@ fdrtool.quantile.2N <- function(z, plot=TRUE, min.prop.null=.95){
           ggplot2::xlab("P-value") + ggplot2::xlim(0,1) + 
           ggplot2::ylab("number of bins") + 
           ggplot2::theme_bw())
-    print(ggplot2::ggplot(subset(plot.df,qv<.1),ggplot2::aes(x=cut(qv, breaks=c(-Inf,.001,.01,.5,.1)))) + ggplot2::geom_bar() +
+    print(ggplot2::ggplot(plot.df[which(plot.df$qv<.1),],ggplot2::aes(x=cut(qv, breaks=c(-Inf,.001,.01,.5,.1)))) + ggplot2::geom_bar() +
           ggplot2::xlab("Q-value") + 
           ggplot2::ylab("number of bins") + 
           ggplot2::theme_bw())
