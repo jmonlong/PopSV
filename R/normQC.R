@@ -35,7 +35,7 @@
 ##' @export
 normQC <- function(bc.df, n.subset=1e4, nb.cores=1){
     ## Order by genomic location.
-    bc.df = arrange(bc.df, chr, start)
+    bc.df = dplyr::arrange(bc.df, chr, start)
     samples = setdiff(colnames(bc.df), c("chr","start","end"))
 
     n.subset = min(nrow(bc.df), n.subset)
