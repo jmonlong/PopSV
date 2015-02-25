@@ -17,5 +17,5 @@ samples.merge <- function(files.df, samples, files.col, nb.cores=1, sig.digits=6
   res.l = matrix(signif(unlist(res.l),sig.digits), length(res.l[[1]]))
   colnames(res.l) = samples
   
-  return(cbind(res.1[,c("chr","start","end"), with=FALSE],res.l))
+  return(cbind(res.1[,c("chr","start","end")],res.l))
 }
