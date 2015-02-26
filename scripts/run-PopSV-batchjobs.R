@@ -1,5 +1,9 @@
 ## FTE : FOR TOY EXAMPLE: lines marked with this flag should be adapted to the analysis. Here I used smaller numbers to run a small toy example. '=>' shows what should be used instead for an analysis in practice.
 
+## Installation
+## devtools::install_github("jmonlong/PopSV", ref="tnKmean")
+##
+
 library(BatchJobs)
 library(PopSV)
 
@@ -50,7 +54,7 @@ dev.off()
 
 ## 4) GC correction
 ## TODO: Merge this step with the previous one !
-## system("rm -rf gcCor")
+## system("rm -rf gcCor-files")
 gcCor.reg <- makeRegistry(id="gcCor")
 gcCor.f <- function(file.i, gc.reg, files.df){
     library(PopSV)
