@@ -105,7 +105,7 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1) {
     pca.dmm = mean(pca.d)/median(pca.d)
     
     qv.normal = qvalue::qvalue(res.df$pv.normal)
-    if (mean(res.df$pv.poisson < 0.05) > 0.9) {
+    if (mean(res.df$pv.poisson < 0.05, na.rm=TRUE) > 0.9) {
         qv.poisson = list(pi0 = 0)
     } else {
         qv.poissson = qvalue::qvalue(res.df$pv.poisson)
