@@ -31,7 +31,7 @@ read.bedix <- function(file, subset.reg, col.names = NULL, as.is = TRUE) {
       ncol = length(strsplit(bed[1], "\t")[[1]])
       bed = matrix(unlist(strsplit(bed, "\t")), length(bed), ncol, byrow = TRUE)
       bed = data.table::data.table(bed)
-      bed = bed[, lapply(.SD, type.convert, as.is=TRUE)]
+      bed = bed[, lapply(data.table::.SD, type.convert, as.is=TRUE)]
       bed = as.data.frame(bed)
       ##bed = as.data.frame(bed, stringsAsFactors = FALSE)
       if (!is.null(col.names)) {
