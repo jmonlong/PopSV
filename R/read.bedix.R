@@ -21,42 +21,36 @@ read.bedix <- function(file, subset.reg, col.names = NULL, as.is = TRUE) {
         stop("'subset.reg' must be a data.frame or a GRanges object.")
     }
 
-    ##subset.reg = subset.reg[order(as.character(GenomicRanges::seqnames(subset.reg)), GenomicRanges::start(subset.reg))]
-    subset.reg = GenomicRanges::reduce(subset.reg)
-    
-    bed = tryCatch(unlist(Rsamtools::scanTabix(file, param = subset.reg)), error = function(e) c())
-    if (length(bed) == 0) {
+    subset.reg = subset.reg[order(as.character(GenomicRanges::seqnames(subset.reg)), GenomicRanges::start(subset.reg))]
+
+    read.chunk <- function(gr){
+      bed = tryCatch(unlist(Rsamtools::scanTabix(file, param = GenomicRanges::reduce(gr))), error = function(e) c())
+      if (length(bed) == 0) {
         return(NULL)
+      }
+      ncol = length(strsplit(bed[1], "\t")[[1]])
+      bed = matrix(unlist(strsplit(bed, "\t")), length(bed), ncol, byrow = TRUE)
+      bed = data.table::data.table(bed)
+      bed = bed[, lapply(.SD, type.convert, as.is=TRUE)]
+      bed = as.data.frame(bed)
+      ##bed = as.data.frame(bed, stringsAsFactors = FALSE)
+      if (!is.null(col.names)) {
+        colnames(bed) = col.names
+      } else {
+        colnames(bed) = as.character(read.table(file, nrows = 1, as.is = TRUE))
+      }
+      return(bed)
     }
-    gc()  ## Not sure if needed
-    ncol = length(strsplit(bed[1], "\t")[[1]])
-    if (length(bed) > 10000) {
-        bed.df = matrix(NA, length(bed), ncol)
-        chunks = cut(1:length(bed), ceiling(length(bed)/10000))
-        for (ch.id in levels(chunks)) {
-            ch.ii = which(chunks == ch.id)
-            bed.df[ch.ii, ] = matrix(unlist(strsplit(bed[ch.ii], "\t")), length(ch.ii), 
-                ncol, byrow = TRUE)
-        }
+    
+    if (length(subset.reg) > 10000) {
+      chunks = cut(1:length(subset.reg), ceiling(length(subset.reg)/10000))
+      bed.df = plyr::ldply(levels(chunks), function(ch.id){
+        cat(ch.id,"\n")
+        read.chunk(subset.reg[which(chunks == ch.id)])
+      })
     } else {
-        bed.df = matrix(unlist(strsplit(bed, "\t")), length(bed), ncol, byrow = TRUE)
+      bed.df = read.chunk(subset.reg)
     }
-    rm(bed)
-    bed.df = data.table::data.table(bed.df)
-    bed.df = bed.df[, lapply(.SD, type.convert, as.is=TRUE)]
-    bed.df = as.data.frame(bed.df)
-    ##bed.df = as.data.frame(bed.df, stringsAsFactors = FALSE)
-    if (!is.null(col.names)) {
-        colnames(bed.df) = col.names
-    } else {
-        colnames(bed.df) = as.character(read.table(file, nrows = 1, as.is = TRUE))
-    }
-    ##gc()
-    ##col.classes = c("character", rep("integer", 2), rep("numeric", ncol - 3))
-    ##for (ii in 1:ncol(bed.df)) {
-    ##    class(bed.df[, ii]) = col.classes[ii]
-    ##    gc()
-    ##}
     
     return(bed.df)
 } 
