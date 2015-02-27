@@ -42,18 +42,21 @@ read.bedix <- function(file, subset.reg, col.names = NULL, as.is = TRUE) {
         bed.df = matrix(unlist(strsplit(bed, "\t")), length(bed), ncol, byrow = TRUE)
     }
     rm(bed)
-    bed.df = as.data.frame(bed.df, stringsAsFactors = FALSE)
+    bed.df = data.table::data.table(bed.df)
+    bed.df = bed.df[, lapply(.SD, type.convert, as.is=TRUE)]
+    bed.df = as.data.frame(bed.df)
+    ##bed.df = as.data.frame(bed.df, stringsAsFactors = FALSE)
     if (!is.null(col.names)) {
         colnames(bed.df) = col.names
     } else {
         colnames(bed.df) = as.character(read.table(file, nrows = 1, as.is = TRUE))
     }
-    gc()
-    col.classes = c("character", rep("integer", 2), rep("numeric", ncol - 3))
-    for (ii in 1:ncol(bed.df)) {
-        class(bed.df[, ii]) = col.classes[ii]
-        gc()
-    }
+    ##gc()
+    ##col.classes = c("character", rep("integer", 2), rep("numeric", ncol - 3))
+    ##for (ii in 1:ncol(bed.df)) {
+    ##    class(bed.df[, ii]) = col.classes[ii]
+    ##    gc()
+    ##}
     
     return(bed.df)
 } 
