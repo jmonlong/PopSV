@@ -31,16 +31,16 @@ read.bedix <- function(file, subset.reg, col.names = NULL, as.is = TRUE) {
       ncol = length(strsplit(bed[1], "\t")[[1]])
       bed = matrix(unlist(strsplit(bed, "\t")), length(bed), ncol, byrow = TRUE)
       bed = data.table::data.table(bed)
-      bed = bed[, lapply(data.table::.SD, type.convert, as.is=TRUE)]
-      bed = as.data.frame(bed)
-      ##bed = as.data.frame(bed, stringsAsFactors = FALSE)
       if (!is.null(col.names)) {
-        colnames(bed) = col.names
+        data.table::setnames(bed, col.names)
       } else {
-        colnames(bed) = as.character(read.table(file, nrows = 1, as.is = TRUE))
+        data.table::setnames(bed, as.character(read.table(file, nrows = 1, as.is = TRUE)))
       }
+      bed = bed[, lapply(.SD, type.convert, as.is=TRUE)]
+      bed = as.data.frame(bed)
       return(bed)
     }
+
     if (length(subset.reg) > 10000) {
       chunks = cut(1:length(subset.reg), ceiling(length(subset.reg)/10000))
       bed.df = plyr::ldply(levels(chunks), function(ch.id){
