@@ -41,7 +41,6 @@ read.bedix <- function(file, subset.reg, col.names = NULL, as.is = TRUE) {
       }
       return(bed)
     }
-    
     if (length(subset.reg) > 10000) {
       chunks = cut(1:length(subset.reg), ceiling(length(subset.reg)/10000))
       bed.df = plyr::ldply(levels(chunks), function(ch.id){
