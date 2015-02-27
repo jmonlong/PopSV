@@ -43,7 +43,7 @@ read.bedix <- function(file, subset.reg, col.names = NULL, as.is = TRUE) {
     }
     rm(bed)
     bed.df = data.table::data.table(bed.df)
-    bed.df = bed.df[, lapply(.SD, type.convert, as.is=TRUE)]
+    bed.df = bed.df[, lapply(data.table::.SD, type.convert, as.is=TRUE)]
     bed.df = as.data.frame(bed.df)
     ##bed.df = as.data.frame(bed.df, stringsAsFactors = FALSE)
     if (!is.null(col.names)) {
