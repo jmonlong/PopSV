@@ -20,7 +20,8 @@ read.bedix <- function(file, subset.reg, col.names = NULL, as.is = TRUE) {
     } else if (class(subset.reg) != "GRanges") {
         stop("'subset.reg' must be a data.frame or a GRanges object.")
     }
-    
+
+    ##subset.reg = subset.reg[order(as.character(GenomicRanges::seqnames(subset.reg)), GenomicRanges::start(subset.reg))]
     subset.reg = GenomicRanges::reduce(subset.reg)
     
     bed = tryCatch(unlist(Rsamtools::scanTabix(file, param = subset.reg)), error = function(e) c())
