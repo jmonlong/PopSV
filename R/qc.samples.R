@@ -62,7 +62,7 @@ qc.samples <- function(files.df, bin.df, ref.samples = NULL, nb.ref.samples = NU
             med.med = median(unlist(med.samp), na.rm = TRUE)
         }
         for (samp.i in 1:nrow(files.df)) {
-            bc.df[, as.character(files.df$sample[samp.i])] = bc.l[[samp.i]] * med.med/med.samp[[samp.i]]
+            bc.df[, as.character(files.df$sample[samp.i])] = round(bc.l[[samp.i]] * med.med/med.samp[[samp.i]], 2)
         }
         if (!is.null(file)) {
             write.table(bc.df, file = file, quote = FALSE, row.names = FALSE, sep = "\t", 
