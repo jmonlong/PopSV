@@ -22,7 +22,6 @@
 ##' @title Normalized bin count QC metrics
 ##' @return a list with
 ##' \item{prop.non.normal.bin}{proportion of bins with non-normal distribution across samples.}
-##' \item{prop.non.poisson.bin}{proportion of bins with non-Poisson distribution across samples.}
 ##' \item{prop.nonRand.rank}{proportion of bins with non-random ranks.}
 ##' \item{prop.non.norm.z.mean}{average (across samples) proportion of bins with non-random Z-scores.}
 ##' \item{prop.non.norm.z.max}{maximum (i.e for worst sample) proportion of bins with non-random Z-scores.}
@@ -52,14 +51,6 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1) {
             bc.i = df[bc.i, ]
             if (length(unique(bc.i)) == 1) return(1)
             return(shapiro.test(bc.i)$p.value)
-        }, mc.cores = nb.cores))
-        ## Bin count Poisson
-        res.df$pv.poisson = as.numeric(parallel::mclapply(sub.ii, function(bc.i) {
-            bc.i = df[bc.i, ]
-            dump = capture.output({
-                res = as.numeric(summary(vcd::goodfit(bc.i, type = "poisson"))[1,3])
-            })
-            return(res)
         }, mc.cores = nb.cores))
         ## Ranks randomness
         res.df$nb.rank = as.numeric(parallel::mclapply(sub.ii, function(ii) {
@@ -101,17 +92,15 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1) {
     ## PCA dispersion
     pca.o = prcomp(t(bc.mat))
     pca.d = as.matrix(dist(pca.o$x[, 1:2]))
-    pca.dmm = mean(pca.d)/median(pca.d)
+    pca.dmm = median(pca.d)/mean(pca.d)
     
     qv.normal = qvalue::qvalue(res.df$pv.normal)
-    if (mean(res.df$pv.poisson < 0.05, na.rm=TRUE) > 0.9) {
-        qv.poisson = list(pi0 = 0)
-    } else {
-        qv.poissson = qvalue::qvalue(res.df$pv.poisson)
-    }
     ## 
-    return(list(prop.non.normal.bin = 1 - qv.normal$pi0, prop.non.poisson.bin = 1 - 
-        qv.poisson$pi0, nb.nonRand.rank = mean(res.df$nb.rank), prop.nonNorm.z.mean = mean(non.norm.z), 
-        prop.nonNorm.z.max = max(non.norm.z), prop.nonNorm.z = non.norm.z, pca.dmm = pca.dmm, 
-        n.subset = n.subset))
+    return(list(prop.non.normal.bin = 1 - qv.normal$pi0,
+                prop.nonRand.rank = mean(res.df$nb.rank)/length(samples),
+                prop.nonNorm.z.mean = mean(non.norm.z), 
+                prop.nonNorm.z.max = max(non.norm.z),
+                prop.nonNorm.z = non.norm.z,
+                pca.dmm = 1-pca.dmm, 
+                n.subset = n.subset))
 } 

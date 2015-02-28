@@ -15,8 +15,7 @@
 pca.norm <- function(bc.df, nb.pcs = 3, nb.cores = 1, norm.stats.comp = TRUE) {
     
     all.samples = setdiff(colnames(bc.df), c("chr", "start", "end"))
-    rownames(bc.df) = bins = paste(bc.df$chr, as.integer(bc.df$start), as.integer(bc.df$end), 
-        sep = "-")
+    rownames(bc.df) = bins = paste(bc.df$chr, as.integer(bc.df$start), as.integer(bc.df$end),sep = "-")
     
     norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 3 + 
         nb.pcs)), length(bins))
@@ -38,13 +37,13 @@ pca.norm <- function(bc.df, nb.pcs = 3, nb.cores = 1, norm.stats.comp = TRUE) {
     }
     
     pca.o = prcomp(bc)
-    pca.o = pca.o$x[, 1:nb.pcs]
+    pca.o = pca.o$x[, 1:nb.pcs, drop=FALSE]
     colnames(pca.o) = paste("pc", 1:nb.pcs, sep = "")
     reg.form = paste("bc.s ~ pc", paste(1:nb.pcs, collapse = " + pc"), sep = "")
     bc.norm[, all.samples] = matrix(as.numeric(unlist(parallel::mclapply(1:ncol(bc), 
         function(cc) {
             lm.o = glm(reg.form, data = data.frame(bc.s = bc[, cc], pca.o))  ##, family=poisson)
-            return(round(bc[, cc] * lm.o$coefficients[1]/predict(lm.o), 2))
+            return(round(bc[, cc] + lm.o$coefficients[1]-predict(lm.o), 2))
         }, mc.cores = nb.cores))), nrow(bc))
     
     if (norm.stats.comp) {

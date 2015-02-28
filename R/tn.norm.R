@@ -65,10 +65,10 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
                 bc.t = bc.i * norm.coeff
                 msd = mean.sd.outlierR(bc.t, 1e-06)
                 if (any(!is.na(bc.t))) {
-                  norm.stats[bin.ii, 4:7] = c(msd$m, msd$sd, msd$nb.remove, d.max)
+                  norm.stats[bin.ii, 4:7] = round(c(msd$m, msd$sd, msd$nb.remove, d.max), 3)
                   if (save.support.bins) 
                     norm.stats[bin.ii, 8:ncol(norm.stats)] = bin.for.norm
-                  bc.norm[bin.ii, -(1:3)] = bc.t
+                  bc.norm[bin.ii, -(1:3)] = round(bc.t, 2)
                 }
             }
         }
