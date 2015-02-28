@@ -57,8 +57,7 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1) {
         res.df$pv.poisson = as.numeric(parallel::mclapply(sub.ii, function(bc.i) {
             bc.i = df[bc.i, ]
             dump = capture.output({
-                res = as.numeric(summary(vcd::goodfit(bc.i, type = "poisson"))[1, 
-                  3])
+                res = as.numeric(summary(vcd::goodfit(bc.i, type = "poisson"))[1,3])
             })
             return(res)
         }, mc.cores = nb.cores))
