@@ -36,7 +36,7 @@ read.bedix <- function(file, subset.reg, col.names = NULL, as.is = TRUE) {
       } else {
         data.table::setnames(bed, as.character(read.table(file, nrows = 1, as.is = TRUE)))
       }
-      bed = bed[, lapply(.SD, type.convert, as.is=TRUE)]
+      bed = bed[, lapply(.SD, function(ee)type.convert(as.character(ee), as.is=TRUE))]
       bed = as.data.frame(bed)
       return(bed)
     }
@@ -44,7 +44,6 @@ read.bedix <- function(file, subset.reg, col.names = NULL, as.is = TRUE) {
     if (length(subset.reg) > 10000) {
       chunks = cut(1:length(subset.reg), ceiling(length(subset.reg)/10000))
       bed.df = plyr::ldply(levels(chunks), function(ch.id){
-        cat(ch.id,"\n")
         read.chunk(subset.reg[which(chunks == ch.id)])
       })
     } else {
