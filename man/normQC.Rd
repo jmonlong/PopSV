@@ -16,7 +16,6 @@ normQC(bc.df, n.subset = 10000, nb.cores = 1)
 \value{
 a list with
 \item{prop.non.normal.bin}{proportion of bins with non-normal distribution across samples.}
-\item{prop.non.poisson.bin}{proportion of bins with non-Poisson distribution across samples.}
 \item{prop.nonRand.rank}{proportion of bins with non-random ranks.}
 \item{prop.non.norm.z.mean}{average (across samples) proportion of bins with non-random Z-scores.}
 \item{prop.non.norm.z.max}{maximum (i.e for worst sample) proportion of bins with non-random Z-scores.}

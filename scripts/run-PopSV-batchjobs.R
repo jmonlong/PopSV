@@ -46,6 +46,7 @@ submitJobs(getBC.reg, findNotDone(getBC.reg), resources=list(walltime="10:0:0", 
 showStatus(getBC.reg)
 
 ## OPTIONAL QC: check the total number of reads counted in all samples
+library(ggplot2)
 pdf("qc-nbReads.pdf")
 qplot(reduceResultsVector(getBC.reg, fun=function(job, res)res$nb.reads)) + xlab("total number of reads") + ylab("number of samples") + theme_bw()
 dev.off()
@@ -128,5 +129,13 @@ batchMap(zRef.reg, zRef.f,out.files[1], more.args=list(samples=ref.samples, msd.
 submitJobs(zRef.reg, 1, resources=list(walltime="12:0:0", nodes="1", cores="6",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(zRef.reg)
 
-
 #### Normalization and Z-score computation for other samples
+## system("rm -rf callCases-files")
+callCases.reg <- makeRegistry(id="callCases")
+callCases.f <- function(samp, cont.sample, files.df, norm.stats.f, bc.ref.f){
+  library(PopSV)
+  tn.test.sample(samp, files.df, cont.sample, bc.ref.f, norm.stats.f, z.poisson=TRUE)
+}
+batchMap(callCases.reg, callCases.f,setdiff(files.df$sample, ref.samples), more.args=list(cont.sample=samp.qc.o$cont.sample, files.df=files.df, norm.stats.f=out.files[2], bc.ref.f=samp.qc.o$bc))
+submitJobs(callCases.reg, 1, resources=list(walltime="6:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
+showStatus(callCases.reg)

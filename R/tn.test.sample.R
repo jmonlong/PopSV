@@ -16,6 +16,8 @@
 ##' @param cont.sample the name of the sample used as control for the normalization.
 ##' @param bc.ref.f the path to the input file used for targeted normalization ('tn.norm').
 ##' @param norm.stats.f the name of the file with the statistic of the targeted normalization run.
+##' @param write.out.file should the result be written in files (from 'z' and 'fc' columns in 'files.df'). Default is TRUE.
+##' @param compress.index should the output files be compressed and indexed. Default is TRUE.
 ##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
 ##' Details). Default is FALSE.
 ##' @param aberrant.cases if TRUE (default) a more robust (but sligthly longer) normalization
@@ -29,7 +31,7 @@
 ##' \item{fc}{the fold-change compared to the average bin count in the reference samples}
 ##' @author Jean Monlong
 ##' @export
-tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.stats.f, 
+tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.stats.f, write.out.file=TRUE, compress.index=TRUE, 
     z.poisson = FALSE, aberrant.cases = FALSE) {
     chunk.size = 1000
     test.bc = read.table(subset(files.df, sample == test.sample)$bc.gc.gz, colClasses = c("character", 
@@ -91,6 +93,16 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
         res.df[id.test[bins], 4:6] = t(apply(norm.chunk, 1, test.bin))
     }
     close(con)
+
+    if(write.out.file){
+      files.out = c(files.df[which(files.df$sample == test.sample), "z"], files.df[which(files.df$sample == test.sample), "fc"])
+      write.table(res.df[,c("chr","start","end","z")], file = files.out[1], row.names = FALSE, quote = FALSE, sep = "\t")
+      write.table(res.df[,c("chr","start","end","fc")], file = files.out[2], row.names = FALSE, quote = FALSE, sep = "\t")
+      if (compress.index) {
+        comp.index.files(files.out)
+      }
+      res.df = files.out
+    }
     
     return(res.df)
 } 

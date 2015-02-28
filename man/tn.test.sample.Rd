@@ -5,7 +5,8 @@
 \title{Single sample targeted normalization and test}
 \usage{
 tn.test.sample(test.sample, files.df, cont.sample, bc.ref.f, norm.stats.f,
-  z.poisson = FALSE, aberrant.cases = FALSE)
+  write.out.file = TRUE, compress.index = TRUE, z.poisson = FALSE,
+  aberrant.cases = FALSE)
 }
 \arguments{
 \item{test.sample}{the name of the sample to test.}
@@ -20,6 +21,10 @@ present  after running 'initFileNames' function. Files should exist if
 \item{bc.ref.f}{the path to the input file used for targeted normalization ('tn.norm').}
 
 \item{norm.stats.f}{the name of the file with the statistic of the targeted normalization run.}
+
+\item{write.out.file}{should the result be written in files (from 'z' and 'fc' columns in 'files.df'). Default is TRUE.}
+
+\item{compress.index}{should the output files be compressed and indexed. Default is TRUE.}
 
 \item{z.poisson}{Should the Z-score be computed as an normal-poisson hybrid (see
 Details). Default is FALSE.}
