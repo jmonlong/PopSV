@@ -2,7 +2,6 @@
 
 ## Installation
 ## devtools::install_github("jmonlong/PopSV", ref="tnKmean")
-##
 
 library(BatchJobs)
 library(PopSV)
@@ -139,3 +138,16 @@ callCases.f <- function(samp, cont.sample, files.df, norm.stats.f, bc.ref.f){
 batchMap(callCases.reg, callCases.f,setdiff(files.df$sample, ref.samples), more.args=list(cont.sample=samp.qc.o$cont.sample, files.df=files.df, norm.stats.f=out.files[2], bc.ref.f=samp.qc.o$bc))
 submitJobs(callCases.reg, 1, resources=list(walltime="6:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(callCases.reg)
+
+#### Abnormal bin calling
+## system("rm -rf abCovCallCases-files")
+abCovCallCases.reg <- makeRegistry(id="abCovCallCases")
+abCovCallCases.f <- function(samp, files.df){
+  library(PopSV)
+  call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"/",samp,"-abCovCall.pdf"), FDR.th=.01, merge.cons.bins="stitch", fc=fc.f, min.normal.prop=.9, z.th="sdest2N")
+}
+batchMap(abCovCallCases.reg, abCovCallCases.f,files.df$sample, more.args=list(files.df=files.df))
+submitJobs(abCovCallCases.reg, findNotDone(abCovCallCases.reg) , resources=list(walltime="4:0:0", nodes="1", cores="1",queue="sw", supervisor.group="bws-221-ae"), wait=function(retries) 100, max.retries=10)
+showStatus(abCovCallCases.reg)
+
+res.df = plyr::ldply(reduceResultsList(abCovCallCases.reg), identity)

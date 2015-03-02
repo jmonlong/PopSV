@@ -11,6 +11,7 @@
 ##' @title Call abnormal bins
 ##' @param z the name of the file with the Z-scores for all samples OR or a
 ##' data.frame with the Z-scores for all samples. 
+##' @param files.df a data.frame with the paths to different sample files (bin count, Z-scores, ..). Here column 'z' and 'fc' are used to retrieve Z-scores and fold changes.
 ##' @param samp the name of the sample to analyze.
 ##' @param out.pdf the name of the output pdf file.
 ##' @param FDR.th the False Discovery Rate to use for the calls. Further filtering
@@ -22,8 +23,8 @@
 ##' @param norm.stats the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.
 ##' @param d.max.max the maximum correlation of the last supporting bin. 
 ##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered. Maximum value accepted is 0.98 . 
-##' @param ref.dist.weight the weight (value between 0 and 1) based on the distance to the reference samples.
 ##' @param aneu.chrs the names of the chromosomes to remove because flagged as aneuploid. If NULL (default) all chromosomes are analyzed.
+##' @param ref.dist.weight the weight (value between 0 and 1) based on the distance to the reference samples.
 ##' @return a data.frame with columns
 ##' \item{chr, start, end}{the genomic region definition}
 ##' \item{z}{the Z-score}
@@ -34,39 +35,53 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", 
+call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", 
     "zscores", "no"), z.th = c("sdest", "consbins", "sdest2N"), fc = NULL, norm.stats = NULL, 
     d.max.max = 0.5, min.normal.prop = 0.9, aneu.chrs = NULL, ref.dist.weight = NULL) {
-    
+
+  if(!is.null(z)){
     ## load Z-scores and FC coefficients
     if (is.character(z) & length(z) == 1) {
-        headers = read.table(z, nrows = 1, as.is = TRUE)
-        colC = rep("NULL", length(headers))
-        if (!all(c("chr", "start", "end", samp) %in% headers)) {
-            stop("Columns missing in Z file. Check that 'chr', 'start', 'end' and the sample column are present.")
-        }
-        colC[headers %in% c("chr", "start", "end", samp)] = c("character", rep("integer", 
+      headers = read.table(z, nrows = 1, as.is = TRUE)
+      colC = rep("NULL", length(headers))
+      if (!all(c("chr", "start", "end", samp) %in% headers)) {
+        stop("Columns missing in Z file. Check that 'chr', 'start', 'end' and the sample column are present.")
+      }
+      colC[headers %in% c("chr", "start", "end", samp)] = c("character", rep("integer", 
             2), "numeric")
-        res.df = read.table(z, header = TRUE, colClasses = colC)
+      res.df = read.table(z, header = TRUE, colClasses = colC)
     } else {
-        res.df = z[, c("chr", "start", "end", samp)]
-        rm(z)
+      res.df = z[, c("chr", "start", "end", samp)]
+      rm(z)
     }
     colnames(res.df)[4] = "z"
     if (!is.null(fc)) {
-        if (is.character(fc) & length(fc) == 1) {
-            headers = read.table(fc, nrows = 1, as.is = TRUE)
-            colC = rep("NULL", length(headers))
-            if (all(headers != samp)) {
-                stop("Columns missing in FC file. Check that 'chr', 'start', 'end' and the sample column are present.")
-            }
-            colC[headers == samp] = "numeric"
-            fc = read.table(fc, header = TRUE, colClasses = colC)
+      if (is.character(fc) & length(fc) == 1) {
+        headers = read.table(fc, nrows = 1, as.is = TRUE)
+        colC = rep("NULL", length(headers))
+        if (all(headers != samp)) {
+          stop("Columns missing in FC file. Check that 'chr', 'start', 'end' and the sample column are present.")
         }
-        res.df$fc = fc[, make.names(samp)]
-        rm(fc)
+        colC[headers == samp] = "numeric"
+        fc = read.table(fc, header = TRUE, colClasses = colC)
     }
-    if (!is.null(norm.stats)) {
+      res.df$fc = fc[, make.names(samp)]
+    rm(fc)
+    }
+  } else if(!is.null(files.df)) {
+    z.f = subset(files.df, sample==samp)$z
+    if(!file.exists(z.f)) z.f = paste0(z.f, ".bgz")
+    res.df = read.table(z.f, as.is=TRUE, header=TRUE)
+    fc.f = subset(files.df, sample==samp)$fc
+    if(!file.exists(fc.f)) fc.f = paste0(fc.f, ".bgz")
+    fc = read.table(fc.f, as.is=TRUE, header=TRUE)
+    res.df$fc = fc$fc
+    rm(fc)
+  } else {
+    stop("Either 'z' or 'files.df' pameter must be assigned.")
+  }
+  
+  if (!is.null(norm.stats)) {
         if (is.character(norm.stats) & length(norm.stats) == 1) {
             headers = read.table(norm.stats, nrows = 1, as.is = TRUE)
             colC = ifelse(headers == "d.max", "numeric", "NULL")

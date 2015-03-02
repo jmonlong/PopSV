@@ -12,14 +12,15 @@ Description: Detect abnormal read coverage using a set of samples as
     a set of reference samples. Functions for pre/post-processing are also
     provided.
 License: GPL-2
-Depends: data.table, GenomicRanges
 Imports:
-	magrittr,
-	Rsamtools, 
-	ggplot2, 
-	dplyr,
+    data.table,
+    GenomicRanges,
+    GenomeInfoDb,
+    magrittr,
+    Rsamtools,
+    ggplot2,
+    dplyr,
     MASS,
-    vcd,
     qvalue,
     IRanges,
     outliers,

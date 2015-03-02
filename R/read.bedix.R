@@ -12,6 +12,7 @@
 ##' @return a data.frame with the retrieved BED information.
 ##' @author Jean Monlong
 ##' @export
+##' @import data.table
 read.bedix <- function(file, subset.reg, col.names = NULL, as.is = TRUE) {
     
     if (is.data.frame(subset.reg)) {
