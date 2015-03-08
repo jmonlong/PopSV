@@ -47,10 +47,10 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
       if (!all(c("chr", "start", "end", samp) %in% headers)) {
         stop("Columns missing in Z file. Check that 'chr', 'start', 'end' and the sample column are present.")
       }
-      ##colC[headers %in% c("chr", "start", "end", samp)] = c("character", rep("integer", 2), "numeric")
-      ##res.df = read.table(z, header = TRUE, colClasses = colC)
-      res.df = data.table::fread(z, header=TRUE)
-      res.df = as.data.frame(res.df[, c("chr","start","end",samp), with=FALSE])
+      colC[headers %in% c("chr", "start", "end", samp)] = c("character", rep("integer", 2), "numeric")
+      res.df = read.table(z, header = TRUE, colClasses = colC)
+      ##res.df = data.table::fread(z, header=TRUE)
+      ##res.df = as.data.frame(res.df[, c("chr","start","end",samp), with=FALSE])
     } else {
       res.df = z[, c("chr", "start", "end", samp)]
       rm(z)
@@ -63,10 +63,10 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
         if (all(headers != samp)) {
           stop("Columns missing in FC file. Check that 'chr', 'start', 'end' and the sample column are present.")
         }
-        ##colC[headers == samp] = "numeric"
-        ##fc = read.table(fc, header = TRUE, colClasses = colC)
-        fc = data.table::fread(z, header=TRUE)
-        fc = as.data.frame(fc[, samp, with=FALSE])
+        colC[headers == samp] = "numeric"
+        fc = read.table(fc, header = TRUE, colClasses = colC)
+        ##fc = data.table::fread(z, header=TRUE)
+        ##fc = as.data.frame(fc[, samp, with=FALSE])
       }
       res.df$fc = fc[, make.names(samp)]
       rm(fc)
@@ -74,10 +74,10 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   } else if(!is.null(files.df)) {
     z.f = subset(files.df, sample==samp)$z
     if(!file.exists(z.f)) z.f = paste0(z.f, ".bgz")
-    res.df = as.data.frame(data.table::fread(z.f, header=TRUE))
+    res.df = read.table(z.f, header=TRUE, as.is=TRUE)
     fc.f = subset(files.df, sample==samp)$fc
     if(!file.exists(fc.f)) fc.f = paste0(fc.f, ".bgz")
-    fc = as.data.frame(data.table::fread(fc.f, header=TRUE))
+    fc = read.table(fc.f, header=TRUE, as.is=TRUE)
     res.df$fc = fc$fc
     rm(fc)
   } else {
@@ -88,7 +88,7 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     if (is.character(norm.stats) & length(norm.stats) == 1) {
       headers = read.table(norm.stats, nrows = 1, as.is = TRUE)
       colC = ifelse(headers == "d.max", "numeric", "NULL")
-      d.max = as.data.frame(data.table::fread(norm.stats, header = TRUE, colClasses = colC))
+      d.max = read.table(norm.stats, header = TRUE, colClasses = colC)
     }
     res.df$d.max = d.max$d.max
     rm(d.max)
