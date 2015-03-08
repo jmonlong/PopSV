@@ -31,14 +31,7 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
             (x - mean.c)/sd.c
         }
     }
-    
-    if (!is.null(msd.f)) {
-        msd.all = as.data.frame(data.table::fread(msd.f, select = 1:5, header = TRUE))
-        msd.col.ids = 1:nrow(msd.all)
-        names(msd.col.ids) = paste(msd.all$chr, as.integer(msd.all$start), as.integer(msd.all$end), sep = "-")
-        msd.all = t(as.matrix(msd.all[, -(1:3)]))
-    }
-    
+        
     if (is.data.frame(files.df)) {
         bc.1 = data.table::fread(subset(files.df, sample == samples[1])[, col], header = TRUE)
         bc.l = parallel::mclapply(subset(files.df, sample %in% samples)[, col], function(fi) {
@@ -53,15 +46,18 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     
     if (is.null(msd.f)) {
         msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,], pv.max.ol = 1e-06)), mc.cores=nb.cores)
-        msd = matrix(unlist(msd), ncol=3, byrow=TRUE)
+        msd = matrix(unlist(msd), nrow=3)
     } else {
-        msd = msd.all[, msd.col.ids[paste(bc.1$chr, as.integer(bc.1$start), as.integer(bc.1$end), 
-            sep = "-")]]
+        msd = as.data.frame(data.table::fread(msd.f, select = 1:5, header = TRUE))
+        msd.col.ids = 1:nrow(msd)
+        names(msd.col.ids) = paste(msd$chr, as.integer(msd$start), as.integer(msd$end), sep = "-")
+        msd = t(as.matrix(msd[, -(1:3)]))
+        msd = msd[, msd.col.ids[paste(bc.1$chr, as.integer(bc.1$start), as.integer(bc.1$end), sep = "-")]]
     }
     
-    z = parallel::mclapply(1:ncol(bc.l), function(cc) z.comp.f(bc.l[,cc], mean.c = msd[,1 ], sd.c = msd[,2 ]), mc.cores=nb.cores)
+    z = parallel::mclapply(1:ncol(bc.l), function(cc) z.comp.f(bc.l[,cc], mean.c = msd[1, ], sd.c = msd[2, ]), mc.cores=nb.cores)
     z = matrix(unlist(z), ncol=length(z))
-    fc = bc.l/msd[,1 ]
+    fc = bc.l/msd[1, ]
     colnames(z) = colnames(fc) = samples
     z = data.frame(bc.1[, 1:3, with = FALSE], z)
     fc = data.frame(bc.1[, 1:3, with = FALSE], fc)
