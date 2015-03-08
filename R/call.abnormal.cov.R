@@ -82,113 +82,113 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   }
   
   if (!is.null(norm.stats)) {
-        if (is.character(norm.stats) & length(norm.stats) == 1) {
-            headers = read.table(norm.stats, nrows = 1, as.is = TRUE)
-            colC = ifelse(headers == "d.max", "numeric", "NULL")
-            d.max = read.table(norm.stats, header = TRUE, colClasses = colC)
-        }
-        res.df$d.max = d.max$d.max
-        rm(d.max)
-        res.df = subset(res.df, !is.na(d.max) & d.max != 1 & d.max < d.max.max)
+    if (is.character(norm.stats) & length(norm.stats) == 1) {
+      headers = read.table(norm.stats, nrows = 1, as.is = TRUE)
+      colC = ifelse(headers == "d.max", "numeric", "NULL")
+      d.max = read.table(norm.stats, header = TRUE, colClasses = colC)
     }
-    
-    ## Remove aneuploid chromosomes
-    if (!is.null(aneu.chrs)) {
-        res.df = res.df[which(!(res.df$chr %in% aneu.chrs)), ]
+    res.df$d.max = d.max$d.max
+    rm(d.max)
+    res.df = subset(res.df, !is.na(d.max) & d.max != 1 & d.max < d.max.max)
+  }
+  
+  ## Remove aneuploid chromosomes
+  if (!is.null(aneu.chrs)) {
+    res.df = res.df[which(!(res.df$chr %in% aneu.chrs)), ]
+  }
+  
+  if (!is.null(out.pdf)) {
+    pdf(out.pdf, 13, 10)
+  }
+  
+  res.df = subset(res.df, !is.na(z) & !is.infinite(z))
+  bin.width = median(round(res.df$end - res.df$start + 1))
+  ## Pvalue/Qvalue estimation
+  if (all(is.na(res.df$z))) 
+    return(NULL)
+  if (z.th[1] == "sdest") {
+    if (min.normal.prop > 0.98) {
+      stop("Maximum value accepted for 'min.normal.prop' is 0.98.")
     }
+    fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 0.01), 
+      plot = !is.null(out.pdf))
+    res.df$pv = fdr$pval
+    res.df$qv = fdr$qval
     
-    if (!is.null(out.pdf)) {
-        pdf(out.pdf, 13, 10)
+    ## Remove large aberrations
+    aber.large = mergeConsBin.reduce(res.df[which(res.df$qv < 0.05), ], stitch.dist = 10 * 
+      bin.width)
+    aber.large = subset(aber.large, end - start > 1e+07)
+    if (nrow(aber.large) > 0 | !is.null(ref.dist.weight)) {
+      if (nrow(aber.large) > 0) {
+        aber.gr = with(aber.large, GenomicRanges::GRanges(chr, IRanges::IRanges(start, 
+          end)))
+        res.gr = with(res.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, 
+          end)))
+        res.aber.large = res.df[GenomicRanges::overlapsAny(res.gr, aber.gr), 
+          ]
+        res.df = res.df[!GenomicRanges::overlapsAny(res.gr, aber.gr), ]
+      }
+      fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 
+                                         0.01), ref.dist.weight = ref.dist.weight, plot = FALSE)
+      res.df$pv = fdr$pval
+      res.df$qv = fdr$qval
+      if (nrow(aber.large) > 0) {
+        res.df = rbind(res.df, res.aber.large)
+      }
     }
+    res.df = res.df[which(res.df$qv < FDR.th), ]
+  } else if (z.th[1] == "consbins") {
+    res.df = z.thres.cons.bins(res.df, plot = !is.null(out.pdf), pvalues = TRUE)$z.df
+  } else if (z.th[1] == "sdest2N") {
+    if (min.normal.prop > 0.98) {
+      stop("Maximum value accepted for 'min.normal.prop' is 0.98.")
+    }
+    fdr = fdrtool.quantile.2N(res.df$z, plot = !is.null(out.pdf), min.prop.null = min.normal.prop)
+    res.df$pv = fdr$pval
+    res.df$qv = fdr$qval
+    res.df = res.df[which(res.df$qv < FDR.th), ]
+  } else {
+    stop("'z.th=': available thresholding approaches are : 'stitch', 'zscores'.")
+  }
+  
+  if (merge.cons.bins[1] != "no") {
     
-    res.df = subset(res.df, !is.na(z) & !is.infinite(z))
-    bin.width = median(round(res.df$end - res.df$start + 1))
-    ## Pvalue/Qvalue estimation
-    if (all(is.na(res.df$z))) 
-        return(NULL)
-    if (z.th[1] == "sdest") {
-        if (min.normal.prop > 0.98) {
-            stop("Maximum value accepted for 'min.normal.prop' is 0.98.")
-        }
-        fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 0.01), 
-            plot = !is.null(out.pdf))
-        res.df$pv = fdr$pval
-        res.df$qv = fdr$qval
-        
-        ## Remove large aberrations
-        aber.large = mergeConsBin.reduce(res.df[which(res.df$qv < 0.05), ], stitch.dist = 10 * 
-            bin.width)
-        aber.large = subset(aber.large, end - start > 1e+07)
-        if (nrow(aber.large) > 0 | !is.null(ref.dist.weight)) {
-            if (nrow(aber.large) > 0) {
-                aber.gr = with(aber.large, GenomicRanges::GRanges(chr, IRanges::IRanges(start, 
-                  end)))
-                res.gr = with(res.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, 
-                  end)))
-                res.aber.large = res.df[GenomicRanges::overlapsAny(res.gr, aber.gr), 
-                  ]
-                res.df = res.df[!GenomicRanges::overlapsAny(res.gr, aber.gr), ]
-            }
-            fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 
-                0.01), ref.dist.weight = ref.dist.weight, plot = FALSE)
-            res.df$pv = fdr$pval
-            res.df$qv = fdr$qval
-            if (nrow(aber.large) > 0) {
-                res.df = rbind(res.df, res.aber.large)
-            }
-        }
-        res.df = res.df[which(res.df$qv < FDR.th), ]
-    } else if (z.th[1] == "consbins") {
-        res.df = z.thres.cons.bins(res.df, plot = !is.null(out.pdf), pvalues = TRUE)$z.df
-    } else if (z.th[1] == "sdest2N") {
-        if (min.normal.prop > 0.98) {
-            stop("Maximum value accepted for 'min.normal.prop' is 0.98.")
-        }
-        fdr = fdrtool.quantile.2N(res.df$z, plot = !is.null(out.pdf), min.prop.null = min.normal.prop)
-        res.df$pv = fdr$pval
-        res.df$qv = fdr$qval
-        res.df = res.df[which(res.df$qv < FDR.th), ]
+    if (merge.cons.bins[1] == "stitch") {
+      res.df = mergeConsBin.reduce(res.df, stitch.dist = bin.width + 1)
+    } else if (merge.cons.bins[1] == "zscores") {
+      res.df = mergeConsBin.z(res.df, fdr.th = FDR.th, sd.null = fdr$sigma.est)
     } else {
-        stop("'z.th=': available thresholding approaches are : 'stitch', 'zscores'.")
+      stop("'merge.cons.bins=' : available bin merging approaches are : 'stitch', 'zscores'.")
     }
     
-    if (merge.cons.bins[1] != "no") {
-        
-        if (merge.cons.bins[1] == "stitch") {
-            res.df = mergeConsBin.reduce(res.df, stitch.dist = bin.width + 1)
-        } else if (merge.cons.bins[1] == "zscores") {
-            res.df = mergeConsBin.z(res.df, fdr.th = FDR.th, sd.null = fdr$sigma.est)
-        } else {
-            stop("'merge.cons.bins=' : available bin merging approaches are : 'stitch', 'zscores'.")
-        }
-        
-        if (nrow(res.df) > 0 & !is.null(out.pdf)) {
-            nb.bin.cons = NULL  ## Uglily appease R checks
-            print(ggplot2::ggplot(res.df, ggplot2::aes(x = factor(nb.bin.cons))) + 
-                ggplot2::geom_histogram() + ggplot2::ylab("number of bins") + ggplot2::xlab("number of consecutive abnormal bins") + 
-                ggplot2::theme_bw())
-            
-            if (any(colnames(res.df) == "fc") & sum(res.df$nb.bin.cons > 2 & res.df$fc < 
-                2.5) > 3) {
-                print(ggplot2::ggplot(subset(res.df, nb.bin.cons > 2), ggplot2::aes(x = 2 * 
-                  fc)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::ylab("number of bins") + 
-                  ggplot2::xlab("copy number estimate") + ggplot2::ggtitle("At least 3 consecutive abnormal bins") + 
-                  ggplot2::xlim(0, 5))
-            }
-        }
+    if (nrow(res.df) > 0 & !is.null(out.pdf)) {
+      nb.bin.cons = NULL  ## Uglily appease R checks
+      print(ggplot2::ggplot(res.df, ggplot2::aes(x = factor(nb.bin.cons))) + 
+            ggplot2::geom_histogram() + ggplot2::ylab("number of bins") + ggplot2::xlab("number of consecutive abnormal bins") + 
+            ggplot2::theme_bw())
+      
+      if (any(colnames(res.df) == "fc") & sum(res.df$nb.bin.cons > 2 & res.df$fc < 
+                        2.5) > 3) {
+        print(ggplot2::ggplot(subset(res.df, nb.bin.cons > 2), ggplot2::aes(x = 2 * 
+                                                                            fc)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::ylab("number of bins") + 
+              ggplot2::xlab("copy number estimate") + ggplot2::ggtitle("At least 3 consecutive abnormal bins") + 
+              ggplot2::xlim(0, 5))
+      }
     }
-    
-    if (!is.null(out.pdf)) {
-        dev.off()
-    }
-    
-    res.df$cn2.dev = abs(res.df$fc - 1)
-    
-    if (nrow(res.df) > 0 & merge.cons.bins[1] != "no") {
-        return(data.frame(sample = samp, res.df, stringsAsFactors = FALSE))
-    } else if (any(res.df$qv <= FDR.th, na.rm = TRUE)) {
-        return(data.frame(sample = samp, res.df[which(res.df$qv <= FDR.th), ], stringsAsFactors = FALSE))
-    } else {
-        return(NULL)
-    }
+  }
+  
+  if (!is.null(out.pdf)) {
+    dev.off()
+  }
+  
+  res.df$cn2.dev = abs(res.df$fc - 1)
+  
+  if (nrow(res.df) > 0 & merge.cons.bins[1] != "no") {
+    return(data.frame(sample = samp, res.df, stringsAsFactors = FALSE))
+  } else if (any(res.df$qv <= FDR.th, na.rm = TRUE)) {
+    return(data.frame(sample = samp, res.df[which(res.df$qv <= FDR.th), ], stringsAsFactors = FALSE))
+  } else {
+    return(NULL)
+  }
 } 
