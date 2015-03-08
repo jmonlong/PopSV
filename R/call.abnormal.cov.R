@@ -74,10 +74,10 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   } else if(!is.null(files.df)) {
     z.f = subset(files.df, sample==samp)$z
     if(!file.exists(z.f)) z.f = paste0(z.f, ".bgz")
-    res.df = read.table(z.f, as.is=TRUE, header=TRUE)
+    res.df = as.data.frame(data.table::fread(z.f, header=TRUE))
     fc.f = subset(files.df, sample==samp)$fc
     if(!file.exists(fc.f)) fc.f = paste0(fc.f, ".bgz")
-    fc = read.table(fc.f, as.is=TRUE, header=TRUE)
+    fc = as.data.frame(data.table::fread(fc.f, header=TRUE))
     res.df$fc = fc$fc
     rm(fc)
   } else {
@@ -88,7 +88,7 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     if (is.character(norm.stats) & length(norm.stats) == 1) {
       headers = read.table(norm.stats, nrows = 1, as.is = TRUE)
       colC = ifelse(headers == "d.max", "numeric", "NULL")
-      d.max = read.table(norm.stats, header = TRUE, colClasses = colC)
+      d.max = as.data.frame(data.table::fread(norm.stats, header = TRUE, colClasses = colC))
     }
     res.df$d.max = d.max$d.max
     rm(d.max)
