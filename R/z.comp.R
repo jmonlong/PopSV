@@ -43,9 +43,9 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     if (is.data.frame(files.df)) {
         bc.1 = data.table::fread(subset(files.df, sample == samples[1])[, col], header = TRUE)
         bc.l = parallel::mclapply(subset(files.df, sample %in% samples)[, col], function(fi) {
-            data.table::fread(fi, header = TRUE)[, 4, with = FALSE]
+          data.table::fread(fi, header = TRUE)[, 4, with = FALSE]
         }, mc.cores = nb.cores)
-        bc.l = matrix(unlist(bc.l), length(bc.l[[1]]))
+        bc.l = matrix(unlist(bc.l), ncol=length(bc.l))
     } else {
         bc.l = data.table::fread(files.df, header = TRUE)
         bc.1 = bc.l[, 1:3, with = FALSE]
@@ -53,14 +53,15 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     }
     
     if (is.null(msd.f)) {
-        msd = apply(bc.l, 1, function(ee) unlist(mean.sd.outlierR(ee, pv.max.ol = 1e-06)))
+        msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,], pv.max.ol = 1e-06)), mc.cores=nb.cores)
+        msd = matrix(unlist(msd), ncol=3, byrow=TRUE)
     } else {
         msd = msd.all[, msd.col.ids[paste(bc.1$chr, as.integer(bc.1$start), as.integer(bc.1$end), 
             sep = "-")]]
     }
     
-    z = apply(bc.l, 2, z.comp.f, mean.c = msd[1, ], sd.c = msd[2, ])
-    fc = bc.l/msd[1, ]
+    z = apply(bc.l, 2, z.comp.f, mean.c = msd[,1 ], sd.c = msd[,2 ])
+    fc = bc.l/msd[,1 ]
     colnames(z) = colnames(fc) = samples
     z = data.frame(bc.1[, 1:3, with = FALSE], z)
     fc = data.frame(bc.1[, 1:3, with = FALSE], fc)
