@@ -64,13 +64,13 @@ qc.samples <- function(files.df, bin.df, ref.samples = NULL, nb.ref.samples = NU
     for (samp.i in 1:nrow(files.df)) {
       bc.df[, as.character(files.df$sample[samp.i])] = round(bc.l[[samp.i]] * med.med/med.samp[[samp.i]], 2)
     }
+    bc.df = bc.df[order(bc.df$chr, bc.df$start, bc.df$end),]
     if (!is.null(file)) {
       write.table(bc.df, file = file, quote = FALSE, row.names = FALSE, sep = "\t", 
                   append = append.f, col.names = !append.f)
     }
     if (!is.null(sub.bc)) 
       bc.df = bc.df[sample(1:nrow(bc.df), min(c(nrow(bc.df), sub.bc))), ]
-    bc.df = bc.df[order(bc.df$chr, bc.df$start, bc.df$end),]
     return(bc.df)
   }
   center.pt <- function(m) {
