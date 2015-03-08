@@ -69,7 +69,14 @@ showStatus(gcCor.reg)
 ## 5) Sample QC and reference sample definition
 ## You may(should) have an idea of which samples can be used as reference (e.g. normal in a cancer project; controls in a case/control project; eventually every samples)
 ref.samples = subset(files.df, group=="normal")$sample ## Here I had this information in the original bam info file in a 'group' column.
+
 ## If you have too many reference samples (lucky you) and want to find, say, 200 of them to use for the analysis, use 'nb.ref.samples=200' parameter in 'qc.samples(...)'
+
+## OPTIONAL: If you suspect important batch effects that could create distinct groups of samples, the samples can be clustered first. Eventually analysis can be run separately on each cluster. THIS IS USUALLY NOT NECESSARY but is safe to check..
+bc.rand = quick.count(files.df, bins.df, nb.cores=3, col.files="bc.gc.gz", nb.rand.bins=1e3) ## Gets counts for all samples on a subset of 1000 bins
+qc.samples.cluster(bc.rand)
+## END OPTIONAL
+
 bc.all.f = "bc-gcCor-all.tsv"
 sampQC.pdf.f = "sampQC.pdf"
 ## system("rm -rf sampQC-files")
