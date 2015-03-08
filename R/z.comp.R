@@ -33,11 +33,10 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     }
     
     if (!is.null(msd.f)) {
-        msd.all = data.table::fread(msd.f, select = 1:5, header = TRUE)
+        msd.all = as.data.frame(data.table::fread(msd.f, select = 1:5, header = TRUE))
         msd.col.ids = 1:nrow(msd.all)
-        names(msd.col.ids) = paste(msd.all$chr, as.integer(msd.all$start), as.integer(msd.all$end), 
-            sep = "-")
-        msd.all = t(as.matrix(msd.all[, -(1:3), with = FALSE]))
+        names(msd.col.ids) = paste(msd.all$chr, as.integer(msd.all$start), as.integer(msd.all$end), sep = "-")
+        msd.all = t(as.matrix(msd.all[, -(1:3)]))
     }
     
     if (is.data.frame(files.df)) {
