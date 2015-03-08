@@ -74,7 +74,7 @@ ref.samples = subset(files.df, group=="normal")$sample ## Here I had this inform
 
 ## OPTIONAL: If you suspect important batch effects that could create distinct groups of samples, the samples can be clustered first. Eventually analysis can be run separately on each cluster. THIS IS USUALLY NOT NECESSARY but is safe to check..
 bc.rand = quick.count(files.df, bins.df, nb.cores=3, col.files="bc.gc.gz", nb.rand.bins=1e3) ## Gets counts for all samples on a subset of 1000 bins
-qc.samples.cluster(bc.rand)
+qc.samples.cluster(bc.rand) ## Run locally because it opens an interactive web browser apllication
 ## END OPTIONAL
 
 bc.all.f = "bc-gcCor-all.tsv"
@@ -154,7 +154,11 @@ abCovCallCases.f <- function(samp, files.df){
   call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"/",samp,"-abCovCall.pdf"), FDR.th=.01, merge.cons.bins="stitch", fc=fc.f, min.normal.prop=.9, z.th="sdest2N")
 }
 batchMap(abCovCallCases.reg, abCovCallCases.f,files.df$sample, more.args=list(files.df=files.df))
-submitJobs(abCovCallCases.reg, findNotDone(abCovCallCases.reg) , resources=list(walltime="4:0:0", nodes="1", cores="1",queue="sw", supervisor.group="bws-221-ae"), wait=function(retries) 100, max.retries=10)
+submitJobs(abCovCallCases.reg, findNotDone(abCovCallCases.reg) , resources=list(walltime="4:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(abCovCallCases.reg)
 
 res.df = plyr::ldply(reduceResultsList(abCovCallCases.reg), identity)
+
+## Open locally because the output opens an interactive web browser application
+sv.summary.interactive(res.df)
+##
