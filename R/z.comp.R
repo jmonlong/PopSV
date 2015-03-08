@@ -61,7 +61,7 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     }
     
     z = parallel::mclapply(1:ncol(bc.l), function(cc) z.comp.f(bc.l[,cc], mean.c = msd[,1 ], sd.c = msd[,2 ]), mc.cores=nb.cores)
-    z = matrix(n=unlist(z), ncol=length(z))
+    z = matrix(unlist(z), ncol=length(z))
     fc = bc.l/msd[,1 ]
     colnames(z) = colnames(fc) = samples
     z = data.frame(bc.1[, 1:3, with = FALSE], z)

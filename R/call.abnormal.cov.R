@@ -36,8 +36,8 @@
 ##' @author Jean Monlong
 ##' @export
 call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", 
-    "zscores", "no"), z.th = c("sdest", "consbins", "sdest2N"), fc = NULL, norm.stats = NULL, 
-    d.max.max = 0.5, min.normal.prop = 0.9, aneu.chrs = NULL, ref.dist.weight = NULL) {
+                                                                                            "zscores", "no"), z.th = c("sdest", "consbins", "sdest2N"), fc = NULL, norm.stats = NULL, 
+                              d.max.max = 0.5, min.normal.prop = 0.9, aneu.chrs = NULL, ref.dist.weight = NULL) {
 
   if(!is.null(z)){
     ## load Z-scores and FC coefficients
@@ -47,9 +47,10 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
       if (!all(c("chr", "start", "end", samp) %in% headers)) {
         stop("Columns missing in Z file. Check that 'chr', 'start', 'end' and the sample column are present.")
       }
-      colC[headers %in% c("chr", "start", "end", samp)] = c("character", rep("integer", 
-            2), "numeric")
-      res.df = read.table(z, header = TRUE, colClasses = colC)
+      ##colC[headers %in% c("chr", "start", "end", samp)] = c("character", rep("integer", 2), "numeric")
+      ##res.df = read.table(z, header = TRUE, colClasses = colC)
+      res.df = data.table::fread(z, header=TRUE)
+      res.df = as.data.frame(res.df[, c("chr","start","end",samp), with=FALSE])
     } else {
       res.df = z[, c("chr", "start", "end", samp)]
       rm(z)
@@ -62,11 +63,13 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
         if (all(headers != samp)) {
           stop("Columns missing in FC file. Check that 'chr', 'start', 'end' and the sample column are present.")
         }
-        colC[headers == samp] = "numeric"
-        fc = read.table(fc, header = TRUE, colClasses = colC)
-    }
+        ##colC[headers == samp] = "numeric"
+        ##fc = read.table(fc, header = TRUE, colClasses = colC)
+        fc = data.table::fread(z, header=TRUE)
+        fc = as.data.frame(fc[, samp, with=FALSE])
+      }
       res.df$fc = fc[, make.names(samp)]
-    rm(fc)
+      rm(fc)
     }
   } else if(!is.null(files.df)) {
     z.f = subset(files.df, sample==samp)$z
@@ -117,7 +120,7 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     
     ## Remove large aberrations
     aber.large = mergeConsBin.reduce(res.df[which(res.df$qv < 0.05), ], stitch.dist = 10 * 
-      bin.width)
+                                       bin.width)
     aber.large = subset(aber.large, end - start > 1e+07)
     if (nrow(aber.large) > 0 | !is.null(ref.dist.weight)) {
       if (nrow(aber.large) > 0) {
@@ -165,15 +168,15 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     if (nrow(res.df) > 0 & !is.null(out.pdf)) {
       nb.bin.cons = NULL  ## Uglily appease R checks
       print(ggplot2::ggplot(res.df, ggplot2::aes(x = factor(nb.bin.cons))) + 
-            ggplot2::geom_histogram() + ggplot2::ylab("number of bins") + ggplot2::xlab("number of consecutive abnormal bins") + 
-            ggplot2::theme_bw())
+              ggplot2::geom_histogram() + ggplot2::ylab("number of bins") + ggplot2::xlab("number of consecutive abnormal bins") + 
+                ggplot2::theme_bw())
       
       if (any(colnames(res.df) == "fc") & sum(res.df$nb.bin.cons > 2 & res.df$fc < 
-                        2.5) > 3) {
+                                                2.5) > 3) {
         print(ggplot2::ggplot(subset(res.df, nb.bin.cons > 2), ggplot2::aes(x = 2 * 
-                                                                            fc)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::ylab("number of bins") + 
-              ggplot2::xlab("copy number estimate") + ggplot2::ggtitle("At least 3 consecutive abnormal bins") + 
-              ggplot2::xlim(0, 5))
+                                                                              fc)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::ylab("number of bins") + 
+                                                                                ggplot2::xlab("copy number estimate") + ggplot2::ggtitle("At least 3 consecutive abnormal bins") + 
+                                                                                  ggplot2::xlim(0, 5))
       }
     }
   }
