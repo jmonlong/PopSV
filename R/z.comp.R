@@ -23,7 +23,7 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
             z.n = (x - mean.c)/sd.c
             z.p = qnorm(ppois(x, mean.c))
             n.ii = abs(z.n) < abs(z.p)
-            z.p[n.ii] = z.n[n.ii]
+            z.p[which(n.ii)] = z.n[which(n.ii)]
             z.p
         }
     } else {
