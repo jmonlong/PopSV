@@ -1,0 +1,16 @@
+
+#PBS -N <%= job.name %>
+## merge standard error and output
+#PBS -j oe
+## direct streams to our logfile
+#PBS -o <%= log.file %>
+#PBS -l walltime=<%= resources$walltime %>
+#PBS -l nodes=<%= resources$nodes %>:ppn=<%= resources$cores %>
+#PBS -A <%= resources$supervisor.group %>
+#PBS -q <%= resources$queue %>
+#PBS -V
+
+## Run R:
+## we merge R output with stdout from PBS, which gets then logged via -o option
+R CMD BATCH --no-save --no-restore "<%= rscript %>" /dev/stdout
+
