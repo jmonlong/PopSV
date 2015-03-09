@@ -6,16 +6,17 @@
 ##' @param res.n the name of 'res' elements containing joined results.
 ##' @param files.col the name of 'files.df' to use for each 'res' element.
 ##' @param compress.index should the output be compressed and indexed. Default is TRUE.
+##' @param nb.cores the number of computing cores to use. Default is 1.
 ##' @return 'Done' if everything worked fine. 
 ##' @author Jean Monlong
 ##' @export
 write.split.samples <- function(res, files.df, samples, res.n = c("z", "fc"), files.col = c("z", 
-    "fc"), compress.index = TRUE) {
+    "fc"), compress.index = TRUE, nb.cores=1) {
     
     if (length(res.n) != length(files.col)) 
         stop("'res.n' and 'files.col' have different length.")
     
-    tmp = sapply(samples, function(samp) {
+    tmp = parallel::mclapply(samples, function(samp) {
         for (ii in 1:length(files.col)) {
             res.f = res[[res.n[ii]]][, c("chr", "start", "end", samp)]
             colnames(res.f)[4] = res.n[ii]
@@ -23,7 +24,7 @@ write.split.samples <- function(res, files.df, samples, res.n = c("z", "fc"), fi
             write.table(res.f, file = files.df[which(files.df$sample == samp), files.col[ii]], 
                 row.names = FALSE, quote = FALSE, sep = "\t")
         }
-    })
+    }, mc.cores=nb.cores)
     
     if (compress.index) {
         files.tc = as.character(unlist(files.df[which(files.df$sample %in% samples), 

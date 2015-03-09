@@ -5,7 +5,7 @@
 \title{Split and write results in one file per sample}
 \usage{
 write.split.samples(res, files.df, samples, res.n = c("z", "fc"),
-  files.col = c("z", "fc"), compress.index = TRUE)
+  files.col = c("z", "fc"), compress.index = TRUE, nb.cores = 1)
 }
 \arguments{
 \item{res}{a list with the results to split/write.}
@@ -19,6 +19,8 @@ write.split.samples(res, files.df, samples, res.n = c("z", "fc"),
 \item{files.col}{the name of 'files.df' to use for each 'res' element.}
 
 \item{compress.index}{should the output be compressed and indexed. Default is TRUE.}
+
+\item{nb.cores}{the number of computing cores to use. Default is 1.}
 }
 \value{
 'Done' if everything worked fine.
