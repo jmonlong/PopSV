@@ -146,7 +146,9 @@ batchMap(callCases.reg, callCases.f,setdiff(files.df$sample, ref.samples), more.
 submitJobs(callCases.reg, 1, resources=list(walltime="6:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(callCases.reg)
 
-#### Abnormal bin calling
+
+
+## 7) Abnormal bin calling
 ## system("rm -rf abCovCallCases-files")
 abCovCallCases.reg <- makeRegistry(id="abCovCallCases")
 abCovCallCases.f <- function(samp, files.df){

@@ -24,7 +24,7 @@ rm(bins.df)
 bins.df = getGC.hg19(bins.df)
 
 
-## 3) Get bin counts in each sample and GC correction
+## 3-4) Get bin counts in each sample and GC correction
 bc.o = sapply(1:nrow(files.df), function(file.i){
     bin.bam(files.df$bam[file.i], bins.df, files.df$bc[file.i])
     correct.GC(files.df$bc.gz[file.i], bins.df, files.df$bc.gc[file.i])
@@ -77,7 +77,9 @@ cases.o = lapply(setdiff(files.df$sample, ref.samples), function(samp){
   tn.test.sample(samp, files.df, samp.qc.o$cont.sample, samp.qc.o$bc, out.files[2])
 })
 
-#### Abnormal bin calling
+
+
+## 7) Abnormal bin calling
 call.o = lapply(files.df$sample, function(samp){
   call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"/",samp,"-abCovCall.pdf"), FDR.th=.01, merge.cons.bins="stitch", z.th="sdest2N")
 })
