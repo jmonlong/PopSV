@@ -33,6 +33,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
         shiny::textInput("fdr", "False Discovery rate", "0.05"),
         shiny::textInput("cnD", "Deviation from CN 2", "0"),
         shiny::textInput("sing.kb", "Maximum amount of single bins (Kb)", "Inf"),
+        shiny::textInput("min.cov", "Minimum coverage in reference)", "0"),
         shiny::conditionalPanel(condition = "input.conditionPanels == 'Copy number estimates' | input.conditionPanels == 'Number of calls'",
                                 shiny::radioButtons("col", "Colour by ", c("event type","event size","sample"))),
         shiny::conditionalPanel(condition = "input.conditionPanels == 'Copy number estimates'",
@@ -69,6 +70,11 @@ sv.summary.interactive <- function(res.df, height="500px"){
           samp.th = with(pdf, dplyr::summarize(dplyr::arrange(dplyr::group_by(pdf[pdf$nb.bin.cons==1,], sample), qv), sig.th=qv[max(which(cumsum(gen.kb)<as.numeric(input$sing.kb)))]))
           pdf = merge(pdf, samp.th)
           pdf = pdf[pdf$qv <= pdf$sig.th, ]
+        }
+        if(any(colnames(pdf)=="mean.cov")){
+          pdf = pdf[which(pdf$mean.cov>as.numeric(input$min.cov)),]
+        } else {
+          warning("No column with the mean coverage in the reference.")
         }
         samp.o = aggregate(gen.kb~sample, data=pdf, sum)
         pdf$sample = factor(pdf$sample, levels=samp.o$sample[order(samp.o$gen.kb)])
