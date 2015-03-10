@@ -4,13 +4,10 @@
 \alias{mergeConsBin.reduce}
 \title{Merge nearby bins}
 \usage{
-mergeConsBin.reduce(df, col.mean = c("z", "pv", "qv", "fc"),
-  stitch.dist = 10000)
+mergeConsBin.reduce(df, stitch.dist = 10000)
 }
 \arguments{
 \item{df}{a data.frame with at least 'chr', 'start' and 'end' columns.}
-
-\item{col.mean}{the columns from which the average across the bins to merge will be computed.}
 
 \item{stitch.dist}{the stitching distance, i.e. the maximum distance at which two bins will be merged.}
 }
