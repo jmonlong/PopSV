@@ -9,13 +9,13 @@ mergeConsBin.reduce <- function(df, stitch.dist = 10000) {
   if (nrow(df) == 0) 
     return(df)
 
-  col.mean = c("z", "fc")
+  col.mean = c("z", "fc", "m")
   col.mean.log = c("pv", "qv")
   
   fun3 <- function(x, FUN = mean, log.x=FALSE) {
     if(log.x){x = log(x)}
     if (length(x) > 2) {
-      res.x = FUN(x[c(2, length(x)-1)])
+      res.x = FUN(x[2:(length(x)-1)])
     } else if (length(x) == 2) {
       res.x = FUN(x)
     } else {
