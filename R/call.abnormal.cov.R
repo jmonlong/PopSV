@@ -184,8 +184,12 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   if (!is.null(out.pdf)) {
     dev.off()
   }
+
+  ## Deviation from copy number 2
+  res.df$cn2.dev = 2*abs(res.df$fc - 1)
+  res.df$cn = round(2*res.df$fc)
+  res.df$prop.single.bin = mean(res.df$nb.bin.cons==1)
   
-  res.df$cn2.dev = abs(res.df$fc - 1)
   
   if (nrow(res.df) > 0 & merge.cons.bins[1] != "no") {
     return(data.frame(sample = samp, res.df, stringsAsFactors = FALSE))
