@@ -71,8 +71,11 @@ sv.summary.interactive <- function(res.df, merge.cons.bin=TRUE, height="500px"){
       server = function(input, output) {
         plot.df <- shiny::reactive({
           pdf = res.df[which(res.df$qv<as.numeric(input$fdr) & res.df$cn2.dev>=input$cnD),]
-          sing.kb = aggregate(gen.kb~sample, data=pdf[pdf$nb.bin.cons==1,], sum)
-          pdf = pdf[pdf$sample %in% sing.kb$sample[sing.kb$gen.kb<as.numeric(input$sing.kb)], ]
+          if(!is.infinite(as.numeric(input$sing.kb))){
+            samp.th = dplyr::summarize(dplyr::arrange(dplyr::group_by(pdf[pdf$nb.bin.cons==1,], sample), qv), sig.th=qv[max(which(cumsum(gen.kb)<as.numeric(input$sing.kb)))])
+            pdf = merge(pdf, samp.th)
+            pdf = pdf[pdf$qv <= pdf$sig.th, ]
+          }
           samp.o = aggregate(gen.kb~sample, data=pdf, sum)
           pdf$sample = factor(pdf$sample, levels=samp.o$sample[order(samp.o$gen.kb)])
           pdf
