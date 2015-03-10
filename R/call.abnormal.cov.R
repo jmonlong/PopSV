@@ -21,7 +21,6 @@
 ##' @param fc the name of the file with the copy number estimates for all samples OR
 ##' or a data.frame with the copy number estimates for all samples. 
 ##' @param norm.stats the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.
-##' @param d.max.max the maximum correlation of the last supporting bin. 
 ##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered. Maximum value accepted is 0.98 . 
 ##' @param aneu.chrs the names of the chromosomes to remove because flagged as aneuploid. If NULL (default) all chromosomes are analyzed.
 ##' @param ref.dist.weight the weight (value between 0 and 1) based on the distance to the reference samples.
@@ -35,9 +34,10 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", 
-                                                                                            "zscores", "no"), z.th = c("sdest", "consbins", "sdest2N"), fc = NULL, norm.stats = NULL, 
-                              d.max.max = 0.5, min.normal.prop = 0.9, aneu.chrs = NULL, ref.dist.weight = NULL) {
+call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05,
+                              merge.cons.bins = c("stitch", "zscores", "no"),
+                              z.th = c("sdest", "consbins", "sdest2N"),
+                              fc = NULL, norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, ref.dist.weight = NULL) {
 
   if(!is.null(z)){
     ## load Z-scores and FC coefficients
@@ -87,12 +87,10 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   if (!is.null(norm.stats)) {
     if (is.character(norm.stats) & length(norm.stats) == 1) {
       headers = read.table(norm.stats, nrows = 1, as.is = TRUE)
-      colC = ifelse(headers == "d.max", "numeric", "NULL")
-      d.max = read.table(norm.stats, header = TRUE, colClasses = colC)
+      colC = ifelse(headers == "m", "numeric", "NULL")
+      norm.stats = read.table(norm.stats, header = TRUE, colClasses = colC)
     }
-    res.df$d.max = d.max$d.max
-    rm(d.max)
-    res.df = subset(res.df, !is.na(d.max) & d.max != 1 & d.max < d.max.max)
+    res.df$mean.cov = norm.stats$m
   }
   
   ## Remove aneuploid chromosomes
@@ -119,8 +117,7 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     res.df$qv = fdr$qval
     
     ## Remove large aberrations
-    aber.large = mergeConsBin.reduce(res.df[which(res.df$qv < 0.05), ], stitch.dist = 10 * 
-                                       bin.width)
+    aber.large = mergeConsBin.reduce(res.df[which(res.df$qv < 0.05), ], stitch.dist = 10 * bin.width)
     aber.large = subset(aber.large, end - start > 1e+07)
     if (nrow(aber.large) > 0 | !is.null(ref.dist.weight)) {
       if (nrow(aber.large) > 0) {
