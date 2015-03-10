@@ -4,13 +4,10 @@
 \alias{sv.summary.interactive}
 \title{Interactive summary}
 \usage{
-sv.summary.interactive(res.df, merge.cons.bin = TRUE, height = "500px")
+sv.summary.interactive(res.df, height = "500px")
 }
 \arguments{
 \item{res.df}{the data.frame with the results.}
-
-\item{merge.cons.bin}{TRUE if the single-bin calls has been merged
-(Default, 'merge' option in 'call.abnormal.cov'). FALSE for single-bin calls.}
 
 \item{height}{the height of the plot in the webpage. Default is "500px".}
 }
