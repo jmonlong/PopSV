@@ -9,7 +9,7 @@ mergeConsBin.reduce <- function(df, stitch.dist = 10000) {
   if (nrow(df) == 0) 
     return(df)
 
-  col.mean = c("z", "fc", "mean.cov")
+  col.mean = c("z", "fc", "mean.cov", "GCcontent", "lowC", "map")
   col.mean.log = c("pv", "qv")
   
   fun3 <- function(x, FUN = mean, log.x=FALSE) {

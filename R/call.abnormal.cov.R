@@ -104,10 +104,10 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     pdf(out.pdf, 13, 10)
   }
   
-  res.df = subset(res.df, !is.na(z) & !is.infinite(z))
+  res.df = res.df[which(!is.na(res.df$z) & !is.infinite(res.df$z)),]
   bin.width = median(round(res.df$end - res.df$start + 1))
   ## Pvalue/Qvalue estimation
-  if (all(is.na(res.df$z))) 
+  if (all(is.na(res.df$z)))
     return(NULL)
   if (z.th[1] == "sdest") {
     if (min.normal.prop > 0.98) {
@@ -127,9 +127,8 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
           end)))
         res.gr = with(res.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, 
           end)))
-        res.aber.large = res.df[GenomicRanges::overlapsAny(res.gr, aber.gr), 
-          ]
-        res.df = res.df[!GenomicRanges::overlapsAny(res.gr, aber.gr), ]
+        res.aber.large = res.df[which(GenomicRanges::overlapsAny(res.gr, aber.gr)), ]
+        res.df = res.df[which(!GenomicRanges::overlapsAny(res.gr, aber.gr)), ]
       }
       fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 
                                          0.01), ref.dist.weight = ref.dist.weight, plot = FALSE)
@@ -159,7 +158,7 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     if (merge.cons.bins[1] == "stitch") {
       res.df = mergeConsBin.reduce(res.df, stitch.dist = bin.width + 1)
     } else if (merge.cons.bins[1] == "zscores") {
-      res.df = mergeConsBin.z(res.df, fdr.th = FDR.th, sd.null = fdr$sigma.est)
+      res.df = mergeConsBin.z(res.df, fdr.th = FDR.th, sd.null = max(c(fdr$sigma.est.dup,fdr$sigma.est.del)))
     } else {
       stop("'merge.cons.bins=' : available bin merging approaches are : 'stitch', 'zscores'.")
     }

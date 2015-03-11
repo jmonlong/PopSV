@@ -5,6 +5,7 @@
 ##' null normal variance.
 ##' @param ref.dist.weight the weight (value between 0 and 1) based on the distance to the reference samples.
 ##' @param plot should some graphs be displayed. Default if FALSE.
+##' @param z.th the Z-score threshold to use to estimate the null normal variance, if 'quant.int=NULL'. If one value the same threshold is used for both duplication and deletion; if a vector, the threshold for duplication / deletions. 
 ##' @return a list with
 ##' \item{pval}{the vector of P-values}
 ##' \item{qval}{the vector of Q-values / FDR estimates}
@@ -13,7 +14,7 @@
 ##' @author Jean Monlong
 ##' @keywords internal
 fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), ref.dist.weight = NULL, 
-    plot = TRUE) {
+    plot = TRUE, z.th=NULL) {
     localMax <- function(x, min.max.prop = 0.1) {
         d = density(x, na.rm = TRUE)
         im = 1 + which(diff(sign(diff(d$y))) == -2)
@@ -32,11 +33,16 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), ref.dist.weight =
     ## Duplication
     z.dup = z.non.na[z.non.na > 0]
     z.dup = sample(c(-1, 1), length(z.dup), replace = TRUE) * z.dup
-    sd.df = plyr::ldply(quant.int, function(qi) {
+    if(!is.null(quant.int)){
+      sd.df = plyr::ldply(quant.int, function(qi) {
         data.frame(quant = qi, sd.est = fdrtool::censored.fit(z.dup, quantile(abs(z.dup), 
-            probs = qi, na.rm = TRUE))[5])
-    })
-    sd.e = localMax(sd.df$sd.est)$lM[1]
+                                 probs = qi, na.rm = TRUE))[5])
+      })
+      sd.e = localMax(sd.df$sd.est)$lM[1]
+    } else {
+      if(is.null(z.th)){stop("Either quant.int or z.th parameters are necessary.")}
+      sd.e = fdrtool::censored.fit(z.dup, z.th[1])[5]
+    }
     if (!is.null(ref.dist.weight)) {
         sd.df = with(sd.df, dplyr::arrange(sd.df, abs(sd.est - sd.e)))
         sd.e = sd.e + ref.dist.weight * 10 * sd(sd.df$sd.est[1:20])
@@ -45,11 +51,19 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), ref.dist.weight =
     ## Deletion
     z.del = z.non.na[z.non.na < 0]
     z.del = sample(c(-1, 1), length(z.del), replace = TRUE) * z.del
-    sd.df = plyr::ldply(quant.int, function(qi) {
+    if(!is.null(quant.int)){
+      sd.df = plyr::ldply(quant.int, function(qi) {
         data.frame(quant = qi, sd.est = fdrtool::censored.fit(z.del, quantile(abs(z.del), 
-            probs = qi, na.rm = TRUE))[5])
-    })
-    sd.e = localMax(sd.df$sd.est)$lM[1]
+                                 probs = qi, na.rm = TRUE))[5])
+      })
+      sd.e = localMax(sd.df$sd.est)$lM[1]
+    } else {
+      if(length(z.th)>1){
+        sd.e = fdrtool::censored.fit(z.dup, z.th[2])[5]
+      } else {
+        sd.e = fdrtool::censored.fit(z.dup, z.th[1])[5]
+      }
+    }
     if (!is.null(ref.dist.weight)) {
         sd.df = with(sd.df, dplyr::arrange(sd.df, abs(sd.est - sd.e)))
         sd.e = sd.e + ref.dist.weight * 10 * sd(sd.df$sd.est[1:20])

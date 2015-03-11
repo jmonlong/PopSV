@@ -4,12 +4,14 @@
 ##' @param bin.size the size of the bins
 ##' @return a data.frame with columns 'chr', 'start' and 'end'.
 ##' @author Jean Monlong
+##' @import GenomicRanges
+##' @import GenomeInfoDb
 ##' @export
 fragment.genome.hp19 <- function(bin.size = 1000) {
     if (!require(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE)) {
         stop("Please install BSgenome first by running:\n> source(\"http://bioconductor.org/biocLite.R\")\n> biocLite(\"BSgenome.Hsapiens.UCSC.hg19\")\n")
     }
-    seql.1.22 = GenomeInfoDb::seqlengths(BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)[paste0("chr", 
+    seql.1.22 = seqlengths(BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)[paste0("chr", 
         1:22)]
     fragment.chr <- function(chr.i) {
         starts = as.integer(seq(1, seql.1.22[chr.i], bin.size))

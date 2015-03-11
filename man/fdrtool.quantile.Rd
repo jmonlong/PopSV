@@ -5,7 +5,7 @@
 \title{P-values estimation}
 \usage{
 fdrtool.quantile(z, quant.int = seq(0.4, 1, 0.02), ref.dist.weight = NULL,
-  plot = TRUE)
+  plot = TRUE, z.th = NULL)
 }
 \arguments{
 \item{z}{a vector with the Z-scores}
@@ -16,6 +16,8 @@ null normal variance.}
 \item{ref.dist.weight}{the weight (value between 0 and 1) based on the distance to the reference samples.}
 
 \item{plot}{should some graphs be displayed. Default if FALSE.}
+
+\item{z.th}{the Z-score threshold to use to estimate the null normal variance, if 'quant.int=NULL'. If one value the same threshold is used for both duplication and deletion; if a vector, the threshold for duplication / deletions.}
 }
 \value{
 a list with
