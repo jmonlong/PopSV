@@ -33,7 +33,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
         shiny::textInput("fdr", "False Discovery rate", "0.05"),
         shiny::textInput("cnD", "Deviation from CN 2", "0"),
         shiny::textInput("sing.kb", "Maximum amount of single bins (Kb)", "Inf"),
-        shiny::textInput("min.cov", "Minimum coverage in reference)", "0"),
+        shiny::textInput("min.cov", "Minimum read coverage in reference", "0"),
         shiny::conditionalPanel(condition = "input.conditionPanels == 'Copy number estimates' | input.conditionPanels == 'Number of calls'",
                                 shiny::radioButtons("col", "Colour by ", c("event type","event size","sample"))),
         shiny::conditionalPanel(condition = "input.conditionPanels == 'Copy number estimates'",
