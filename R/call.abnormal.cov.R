@@ -87,10 +87,12 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   if (!is.null(norm.stats)) {
     if (is.character(norm.stats) & length(norm.stats) == 1) {
       headers = read.table(norm.stats, nrows = 1, as.is = TRUE)
-      colC = ifelse(headers == "m", "numeric", "NULL")
+      colC = rep("NULL", length(headers))
+      colC[1:4] = c("character","integer","integer","numeric")
       norm.stats = read.table(norm.stats, header = TRUE, colClasses = colC)
     }
-    res.df$mean.cov = norm.stats$m
+    colnames(norm.stats)[4] = "mean.cov"
+    res.df = merge(res.df, norm.stats, all.x=TRUE)
   }
   
   ## Remove aneuploid chromosomes
