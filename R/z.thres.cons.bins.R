@@ -111,8 +111,8 @@ z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
     print(ggplot2::ggplot(z.df, ggplot2::aes(x = z)) + ggplot2::geom_histogram() + 
           ggplot2::xlim(-20, 20) + ggplot2::geom_vline(xintercept = c(-del.th, dup.th), linetype = 2) + ggplot2::theme_bw())
     if (pvalues) {
-      print(ggplot2::ggplot(z.df, ggplot2::aes(x = pv)) + ggplot2::geom_histogram() + 
-            ggplot2::xlim(0, 1) + ggplot2::theme_bw())
+      print(ggplot2::ggplot(z.df, ggplot2::aes(x = pv, fill=abnormal)) + ggplot2::geom_histogram() + 
+             ggplot2::xlim(0, 1) + ggplot2::theme_bw())
     }
   }
   

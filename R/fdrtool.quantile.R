@@ -59,9 +59,9 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), ref.dist.weight =
       sd.e = localMax(sd.df$sd.est)$lM[1]
     } else {
       if(length(z.th)>1){
-        sd.e = fdrtool::censored.fit(z.dup, z.th[2])[5]
+        sd.e = fdrtool::censored.fit(z.del, z.th[2])[5]
       } else {
-        sd.e = fdrtool::censored.fit(z.dup, z.th[1])[5]
+        sd.e = fdrtool::censored.fit(z.del, z.th[1])[5]
       }
     }
     if (!is.null(ref.dist.weight)) {
@@ -71,7 +71,7 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), ref.dist.weight =
     res$sigma.est.del = sd.e
     
     res$pval[non.na.i[z.non.na > 0]] = 2 * pnorm(-abs(z.dup), 0, res$sigma.est.dup)
-    res$pval[non.na.i[z.non.na < 0]] = 2 * pnorm(abs(z.del), 0, res$sigma.est.del)
+    res$pval[non.na.i[z.non.na < 0]] = 2 * pnorm(-abs(z.del), 0, res$sigma.est.del)
     if (any(res$pval == 0, na.rm = TRUE)) 
         res$pval[which(res$pval == 0)] = .Machine$double.xmin
     res$qval = p.adjust(res$pval, method = "fdr")
