@@ -47,6 +47,7 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     if (is.null(msd.f)) {
         msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,], pv.max.ol = 1e-06)), mc.cores=nb.cores)
         msd = matrix(unlist(msd), nrow=3)
+        rownames(msd) = c("m","sd","nb.remove")
     } else {
         msd = as.data.frame(data.table::fread(msd.f, select = 1:5, header = TRUE))
         msd.col.ids = 1:nrow(msd)
@@ -62,7 +63,7 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     z = data.frame(bc.1[, 1:3, with = FALSE], z)
     fc = data.frame(bc.1[, 1:3, with = FALSE], fc)
     if (is.null(msd.f)) {
-        msd = data.frame(bc.1[, 1:3], t(msd))
+        msd = data.frame(as.data.frame(bc.1[, 1:3]), t(msd))
     } else {
         msd = NULL
     }
