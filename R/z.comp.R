@@ -1,4 +1,4 @@
-##' Z-score computation from bin count and/or mean/sd metrics on the reference samples
+ ##' Z-score computation from bin count and/or mean/sd metrics on the reference samples
 ##'
 ##' @title Z-score computation
 ##' @param files.df a data.frame with the file paths.
@@ -63,7 +63,7 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     z = data.frame(bc.1[, 1:3, with = FALSE], z)
     fc = data.frame(bc.1[, 1:3, with = FALSE], fc)
     if (is.null(msd.f)) {
-        msd = data.frame(as.data.frame(bc.1[, 1:3]), t(msd))
+        msd = data.frame(as.data.frame(bc.1[, 1:3, with=FALSE]), t(msd))
     } else {
         msd = NULL
     }
