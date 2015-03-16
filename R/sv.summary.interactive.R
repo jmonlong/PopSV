@@ -54,16 +54,19 @@ sv.summary.interactive <- function(res.df, height="500px"){
       shiny::mainPanel(
         shiny::tabsetPanel(
           shiny::tabPanel("Number of calls", shiny::plotOutput("nb.calls", height=height)),
-          shiny::tabPanel("Single bin proportion", shiny::plotOutput("prop.sing", height=height)),
           shiny::tabPanel("Copy number estimates", shiny::plotOutput("cn", height=height)),
           shiny::tabPanel("Frequency distribution", shiny::plotOutput("freq", height=height)),
-          shiny::tabPanel("Frequency across the genome", shiny::plotOutput("freq.chr", height=height)), id="conditionPanels"
+          shiny::tabPanel("Frequency across the genome", shiny::plotOutput("freq.chr", height=height)),
+          shiny::tabPanel("Sample QC", shiny::plotOutput("prop.sing", height=height)),
+          shiny::tabPanel("Export", shiny::helpText("To export the results with the current filters, click on 'Export results' button. The results will be exported in 'sv-summary-results.RData' file on your working directory."), shiny::hr(), shiny::actionButton("exp","Export results"), shiny::hr(), shiny::textOutput("export")),
+          id="conditionPanels"
           )
         )
       ),
     
     
     server = function(input, output) {
+
       plot.df <- shiny::reactive({
         pdf = res.df[which(res.df$qv<as.numeric(input$fdr) & res.df$cn2.dev>=input$cnD),]
         if(!is.infinite(as.numeric(input$sing.kb))){
@@ -111,12 +114,14 @@ sv.summary.interactive <- function(res.df, height="500px"){
         }
         gp
       })
+
       output$prop.sing = shiny::renderPlot({
         pdf = plot.df()
         pdf.s = with(pdf, dplyr::summarize(dplyr::group_by(pdf, sample), nb.bin.cons=mean(nb.bin.cons==1), gen.kb=sum(gen.kb)))
         
         ggplot2::ggplot(pdf.s, ggplot2::aes(x=nb.bin.cons)) + ggplot2::geom_histogram() + ggplot2::xlab("proportion of single bins") + ggplot2::ylab("number of samples") + ggplot2::theme_bw()
       })
+
       output$cn = shiny::renderPlot({
         pdf = plot.df()
         pdf = pdf[which(pdf$nb.bin.cons>=input$nbc),]
@@ -140,19 +145,21 @@ sv.summary.interactive <- function(res.df, height="500px"){
         }
         gp
       })
+
       output$freq = shiny::renderPlot({
         f.df = freq.df()
         f.df = dplyr::summarize(dplyr::group_by(f.df, chr, start, end), nb=sum(nb), prop=sum(prop), gen.kb=head((end-start)/1e3, 1))
         if(input$freq.rep=="nb"){
           ggp = ggplot2::ggplot(dplyr::arrange(f.df[which(f.df$nb>=input$nbMin),], chr), ggplot2::aes(x=nb,  y=gen.kb, fill=chr)) + ggplot2::xlab("number of samples") 
         } else {
-          ggp = ggplot2::ggplot(dplyr::arrange(f.df[which(f.df$nb>=input$nbMin),], chr), ggplot2::aes(x=prop, y=gen.kb, fill=chr)) + ggplot2::xlab("proportion of samples") 
+          ggp = ggplot2::ggplot(dplyr::arrange(f.df[which(f.df$nb>=input$nbMin),], chr), ggplot2::aes(x=signif(prop,3), y=gen.kb, fill=chr)) + ggplot2::xlab("proportion of samples") 
         }
         ggp + ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() +
           ggplot2::ylab("abnormal genome (Kb)") +
             ggplot2::guides(fill=FALSE) +
               ggplot2::scale_fill_manual(values=rep(RColorBrewer::brewer.pal(9,"Set1"),3)) 
       })
+
       output$freq.chr = shiny::renderPlot({
         if(input$chr=="all"){
           chr.df = freq.df()
@@ -196,5 +203,13 @@ sv.summary.interactive <- function(res.df, height="500px"){
                  ggplot2::xlab("position (Mb)") + facet.o)
         }
       })
+
+      output$export = shiny::renderText({
+        input$exp
+        svSummaryRes = shiny::isolate(plot.df())
+        save(svSummaryRes, file="sv-summary-results.RData")
+        return(paste(nrow(svSummaryRes)," calls saved in 'sv-summary-results.RData'."))
+      })
+      
     }))
 }
