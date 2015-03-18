@@ -1,4 +1,4 @@
- ##' Z-score computation from bin count and/or mean/sd metrics on the reference samples
+##' Z-score computation from bin count and/or mean/sd metrics on the reference samples
 ##'
 ##' @title Z-score computation
 ##' @param files.df a data.frame with the file paths.

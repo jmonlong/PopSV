@@ -151,11 +151,11 @@ showStatus(callCases.reg)
 ## 7) Abnormal bin calling
 ## system("rm -rf abCovCallCases-files")
 abCovCallCases.reg <- makeRegistry(id="abCovCallCases")
-abCovCallCases.f <- function(samp, files.df){
+abCovCallCases.f <- function(samp, files.df, norm.stats.f){
   library(PopSV)
-  call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"/",samp,"-abCovCall.pdf"), FDR.th=.01, merge.cons.bins="stitch", z.th="sdest2N")
+  call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"/",samp,"-abCovCall.pdf"), FDR.th=.01, merge.cons.bins="stitch", z.th="sdest2N", norm.stats=norm.stats.f)
 }
-batchMap(abCovCallCases.reg, abCovCallCases.f,files.df$sample, more.args=list(files.df=files.df))
+batchMap(abCovCallCases.reg, abCovCallCases.f,files.df$sample, more.args=list(files.df=files.df, norm.stats.f=out.files[2]))
 submitJobs(abCovCallCases.reg, findNotDone(abCovCallCases.reg) , resources=list(walltime="1:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(abCovCallCases.reg)
 

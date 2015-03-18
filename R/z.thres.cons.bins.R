@@ -107,7 +107,7 @@ z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
   
   ## Z-score distribution with thresholds
   if (plot) {
-    z = pv = qv = NULL  ## Uglily appease R checks
+    z = pv = qv = abnormal = NULL  ## Uglily appease R checks
     print(ggplot2::ggplot(z.df, ggplot2::aes(x = z)) + ggplot2::geom_histogram() + 
           ggplot2::xlim(-20, 20) + ggplot2::geom_vline(xintercept = c(-del.th, dup.th), linetype = 2) + ggplot2::theme_bw())
     if (pvalues) {
