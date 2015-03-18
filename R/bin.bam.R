@@ -81,9 +81,11 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
             return(df)
         }
     }
-    
-    . = chunk = NULL  ## Uglyly appease R checks
-    bc.df = dplyr::do(dplyr::group_by(bin.df, chunk), binBam.chunk(.))
+
+    bc.df = lapply(unique(bin.df$chunk), function(chunk.i){
+      binBam.chunk(bin.df[which(bin.df$chunk==chunk.i),])
+    })
+    bc.df = plyr::ldply(bc.df, identity)
     
     if (appendIndex.outfile & !is.null(outfile.prefix)) {
         final.file = paste(outfile.prefix, ".bgz", sep = "")
