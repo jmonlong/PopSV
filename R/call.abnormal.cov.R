@@ -17,6 +17,7 @@
 ##' @param FDR.th the False Discovery Rate to use for the calls. Further filtering
 ##' can always be performed.
 ##' @param merge.cons.bins how the bins should be merged. Default is 'stitch'. 'zscores' is another approch (see Details), 'no' means no bin merging.
+##' @param stitch.dist the maximal distance between two calls to be merged into one (if 'merge.cons.bins="stitch"'). If NULL (default), the bin size + 1 is used.
 ##' @param z.th how the threshold for abnormal Z-score is chosen. Default is 'sdest' which will use 'FDR.th=' parameter as well. 'consbins' looks at the number of consecutive bins, see Details.
 ##' @param fc the name of the file with the copy number estimates for all samples OR
 ##' or a data.frame with the copy number estimates for all samples. 
@@ -35,7 +36,7 @@
 ##' @author Jean Monlong
 ##' @export
 call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05,
-                              merge.cons.bins = c("stitch", "zscores", "no"),
+                              merge.cons.bins = c("stitch", "zscores", "no"), stitch.dist=NULL,
                               z.th = c("sdest", "consbins", "sdest2N"),
                               fc = NULL, norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, ref.dist.weight = NULL) {
 
@@ -156,7 +157,10 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   if (merge.cons.bins[1] != "no") {
     
     if (merge.cons.bins[1] == "stitch") {
-      res.df = mergeConsBin.reduce(res.df, stitch.dist = bin.width + 1)
+      if(is.null(stitch.dist)) {
+        stitch.dist = bin.width + 1
+      }
+      res.df = mergeConsBin.reduce(res.df, stitch.dist = stitch.dist)
     } else if (merge.cons.bins[1] == "zscores") {
       res.df = mergeConsBin.z(res.df, fdr.th = FDR.th, sd.null = max(c(fdr$sigma.est.dup,fdr$sigma.est.del)))
     } else {
