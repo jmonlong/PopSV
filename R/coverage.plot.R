@@ -12,7 +12,7 @@
 ##' @return a ggplot object
 ##' @author Jean Monlong
 ##' @export
-cnv.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, ref.samples=NULL, boxplot=FALSE , samples=NULL){
+coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, ref.samples=NULL, boxplot=FALSE , samples=NULL){
 
   gr = GenomicRanges::GRanges(chr, IRanges::IRanges(start, end))
   
