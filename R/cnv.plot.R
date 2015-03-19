@@ -32,10 +32,10 @@ cnv.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, ref.s
     bin.gr = unique(with(bc.all, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end))))
     sv.gr =  with(sv.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
     sv.df = sv.df[overlapsAny(sv.gr, gr),]
-    if(!is.null(samples)){
-      sv.df = sv.df[which(sv.df$sample %in% samples),]
-    }
     bc.sv = bc.all[which(bc.all$sample %in% unique(sv.df$sample)), ]
+  }
+  if(!is.null(samples)){
+    bc.sv = bc.all[which(bc.all$sample %in% samples),]
   }
     
   if(!is.null(norm.stats.f)){
@@ -49,15 +49,15 @@ cnv.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, ref.s
   if(!is.null(norm.stats.f)) {
     gp.o = ggplot2::ggplot(bc.ref, ggplot2::aes(x=pos)) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::geom_errorbar(ggplot2::aes(ymin=m-3*sd,ymax=m+3*sd)) + ggplot2::geom_point(ggplot2::aes(y=m))
   } else if(boxplot){
-    gp.o = ggplot2::ggplot(bc.ref, ggplot2::aes(x=pos, y=value)) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::geom_boxplot(ggplot2::aes(group=pos))
+    gp.o = ggplot2::ggplot(bc.ref, ggplot2::aes(x=pos, y=value)) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::geom_boxplot(ggplot2::aes(group=pos), fill="lightblue",alpha=.7)
   } else {
-    gp.o = ggplot2::ggplot(bc.df, ggplot2::aes(x=pos, y=value)) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::geom_violin(ggplot2::aes(group=pos))
+    gp.o = ggplot2::ggplot(bc.ref, ggplot2::aes(x=pos, y=value)) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::geom_violin(ggplot2::aes(group=pos), fill="lightblue",alpha=.7)
   }
   
   
   ## Add the SVs
   if(!is.null(bc.sv)){
-    gp.o = gp.o + ggplot2::geom_line(ggplot2::aes(group=sample),alpha=.7,data=bc.sv)
+    gp.o = gp.o + ggplot2::geom_line(ggplot2::aes(y=value, group=sample),alpha=.7,data=bc.sv)
   }
 
   gp.o  
