@@ -1,88 +1,91 @@
-library(PopSV)
-library(dplyr)
+## This version is UNPRACTICAL AND NOT RECOMMENDED FOR REAL ANALYSIS. It is there as a more readable worflow. The BatchJobs version should be used in real analysis. Eventually, if BatchJobs is not desired, this script could help the user to deconstruct it to fit his computing cluster favorite strategy (but seriously don't waste your time and "learn" BatchJobs).
 
-bam.files = NULL ## read.table("bamfiles.tsv", as.is=TRUE)
+## FTE : FOR TOY EXAMPLE: lines marked with this flag should be adapted to the analysis. Here I used smaller numbers to run a small toy example. '=>' shows what should be used instead for an analysis in practice.
+
+## Installation
+## devtools::install_github("jmonlong/PopSV")
+
+library(PopSV)
+
+setwd("../../PopSV-toyex") ## FTE: set working directory path => put WD of the project
+bam.files = read.table("bams.tsv", as.is=TRUE, header=TRUE)
 bin.size = 1e3
 
-## 1) Init file names
+
+## 1) Init file names and construct bins
 files.df = init.filenames(bam.files, code="example")
 bins.df = fragment.genome.hp19(bin.size)
+bins.df = subset(bins.df, chr==22) ## FTE: chr 22 only => remove line
 save(bins.df, file="bins.RData")
 rm(bins.df)
 
-## 2) Get GC content
-## system("rm -rf getGC")
-getGC.reg <- makeRegistry(id="getGC", seed=123, file.dir="getGC")
-getGC.f <- function(imF){
-  load(imF)
-  getGC.hg19(bins.df)
-}
-batchMap(getGC.reg, getGC.f,"bins.RData")
-submitJobs(getGC.reg, 1, resources=list(walltime="12:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
-showStatus(getGC.reg)
 
-## 3) Get bin counts
-## system("rm -rf getBC")
-getBC.reg <- makeRegistry(id="getBC", seed=123, file.dir="getBC")
-getBC.f <- function(file.i, gc.reg, files.df){
-    bins.df = loadResult(gc.reg,1)
-    binBam(files.df$bam[file.i], bins.df, files.df$bc[file.i])
-}
-batchMap(getBC.reg, getBC.f,1:nrow(files.df), more.args=list(gc.reg=getGC.reg, files.df=files.df))
-submitJobs(getBC.reg, findNotDone(getBC.reg), resources=list(walltime="30:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
-showStatus(getBC.reg)
-nb.reads = reduceResultsVector(getBC.reg, fun=function(job, res)res$nb.reads)
+## 2) Get GC content in each bin
+bins.df = getGC.hg19(bins.df)
 
-## 4) GC correction
-## system("rm -rf gcCor")
-gcCor.reg <- makeRegistry(id="gcCor", seed=123, file.dir="gcCor")
-gcCor.f <- function(file.i, gc.reg, files.df){
-    gc.df = loadResult(gc.reg,1)
-    correct.GC(files.df$bc.gz[file.i], gc.df, files.df$bc.gc[file.i])
-}
-batchMap(gcCor.reg, gcCor.f,1:nrow(files.df), more.args=list(gc.reg=getGC.reg, files.df=files.df))
-submitJobs(gcCor.reg, findNotDone(gcCor.reg), resources=list(walltime="12:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
-showStatus(gcCor.reg)
-all(reduceResultsVector(gcCor.reg)==files.df$bc.gc.gz)
 
-## 5) Sample QC
-### First guess at we the reference will be.
-### (e.g. normal in  cancer study, controls in case/control study)
-ref.samples = NULL
+## 3-4) Get bin counts in each sample and GC correction
+bc.o = sapply(1:nrow(files.df), function(file.i){
+    bin.bam(files.df$bam[file.i], bins.df, files.df$bc[file.i])
+    correct.GC(files.df$bc.gz[file.i], bins.df, files.df$bc.gc[file.i])
+})
+
+
+## 5) Sample QC and reference sample definition
+## You may(should) have an idea of which samples can be used as reference (e.g. normal in a cancer project; controls in a case/control project; eventually every samples)
+ref.samples = subset(files.df, group=="normal")$sample ## Here I had this information in the original bam info file in a 'group' column.
+
+## If you have too many reference samples (lucky you) and want to find, say, 200 of them to use for the analysis, use 'nb.ref.samples=200' parameter in 'qc.samples(...)'
+
+## OPTIONAL: If you suspect important batch effects that could create distinct groups of samples, the samples can be clustered first. Eventually analysis can be run separately on each cluster. THIS IS USUALLY NOT NECESSARY but is safe to check..
+bc.rand = quick.count(subset(files.df, group=="normal"), bins.df, nb.cores=3, col.files="bc.gc.gz", nb.rand.bins=1e3) ## Gets counts for all samples on a subset of 1000 bins
+qc.samples.cluster(bc.rand) ## Run locally because it opens an interactive web browser apllication
+## END OPTIONAL
+
 bc.all.f = "bc-gcCor-all.tsv"
-sampQC.pdf.f = "sampQC.pdf"
-## system("rm -rf sampQC")
-sampQC.reg <- makeRegistry(id="sampQC", seed=123, file.dir="sampQC")
-sampQC.f <- function(bc.all.f, gc.reg, files.df, ref.samples, sampQC.pdf.f){
-    gc.df = loadResult(gc.reg,1)
-    qc.samples(files.df, gc.df, ref.samples, bc.all.f, sampQC.pdf.f)
-}
-batchMap(sampQC.reg, sampQC.f,bc.all.f, more.args=list(gc.reg=getGC.reg,
-                                            files.df=files.df, ref.samples = ref.samples,
-                                            sampQC.pdf.f=sampQC.pdf.f))
-submitJobs(sampQC.reg, 1, resources=list(walltime="12:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
-showStatus(sampQC.reg)
-samp.qc.o = loadResult(sampQC.reg, 1)
+pdf("sampQC.pdf")
+samp.qc.o = qc.samples(files.df, bins.df, ref.samples, outfile.prefix=bc.all.f)
+dev.off()
 
-## Potentially refine the reference samples definition
-ref.samples = subset(samp.qc.o$dstat, Dstat > .8)$sample
-cont.sample = arrange(samp.qc.o$dstat, desc(Dstat))$sample[1]
 
 ## 6) Normalize and compute Z scores
-## system("rm -rf bcNormZ")
-bcNormZ.reg <- makeRegistry(id="bcNormZ", seed=123, file.dir="bcNormZ")
-chunk.size = 1e5
-### To be nice, this part could be run on an interactive node
-bins.df = loadResult(getGC.reg,1)
-bins.df$chunk = sample(rep(1:ceiling(nrow(bins.df)/chunk.size),each=chunk.size)[1:nrow(bins.df)])
-bcNormZ.f <- function(chunk.id, file.bc, imF){
-    load(imF)
-    bc.df = read.bedix(file.bc, subset(bins.df, chunk==chunk.id))
-    tn.norm(bc.df, cont.sample, ref.samples)
-}
-imF = "bcNorm-temp.RData"
-save(bins.df, cont.sample, ref.samples, file=imF)
-batchMap(bcNormZ.reg, bcNormZ.f,1:max(bins.df$chunk), more.args=list(file.bc=samp.qc.o$bc, imF=imF))
-### End of the "nice guy interactive node" part
-submitJobs(bcNormZ.reg, findJobs(bcNormZ.reg) , resources=list(walltime="12:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
-showStatus(bcNormZ.reg)
+
+## 6a - Using targeted normalization (Recommended)
+
+#### Normalize reference samples
+bins.df = chunk.bin(bins.df, bg.chunk.size=2e4, sm.chunk.size=1e4, large.chr.chunks=TRUE) ## FTE: smaller chunks => 'bg.chunk.size=1e5' recommended
+save(bins.df, file="bins.RData")
+
+norm.o = lapply(unique(bins.df$sm.chunk), function(chunk.id){
+  bc.df = read.bedix(samp.qc.o$bc, subset(bins.df, bg.chunk==subset(bins.df, sm.chunk==chunk.id)$bg.chunk[1]))
+  tn.norm(bc.df, samp.qc.o$cont.sample, bins=subset(bins.df, sm.chunk==chunk.id)$bin)
+})
+out.files = paste("ref", c("bc-norm.tsv", "msd.tsv"), sep="-")
+file.remove(out.files)
+tmp = lapply(norm.o, function(res){
+    write.table(res$bc.norm, file=out.files[1], sep="\t", row.names=FALSE, quote=FALSE, append=file.exists(out.files[1]), col.names=!file.exists(out.files[1]))
+    write.table(res$norm.stats, file=out.files[2], sep="\t", row.names=FALSE, quote=FALSE, append=file.exists(out.files[2]), col.names=!file.exists(out.files[2]))
+})
+
+#### Compute Z-scores in reference samples
+res.z = z.comp(out.files[1], ref.samples, out.files[2])
+write.split.samples(res.z, files.df, ref.samples, res.n=c("z","fc"), files.col=c("z","fc"), compress.index=TRUE)
+
+
+#### Normalization and Z-score computation for other samples
+cases.o = lapply(setdiff(files.df$sample, ref.samples), function(samp){
+  tn.test.sample(samp, files.df, samp.qc.o$cont.sample, samp.qc.o$bc, out.files[2])
+})
+
+
+
+## 7) Abnormal bin calling
+call.o = lapply(files.df$sample, function(samp){
+  call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"/",samp,"-abCovCall.pdf"), FDR.th=.01, merge.cons.bins="stitch", z.th="sdest2N")
+})
+
+res.df = plyr::ldply(call.o, identity)
+
+## Open locally because the output opens an interactive web browser application
+sv.summary.interactive(res.df)
+##

@@ -9,9 +9,10 @@
 ##' and 'end' are required.
 ##' @param ref.samples a vector with the names of the samples planned to be used
 ##' as reference.
+##' @param nb.ref.samples the number of reference samples desired. Default is the size of 'ref.samples'.
 ##' @param outfile.prefix the prefix of the name of the output file. The suffix '.bgz' will
-##' be appended to this name prefix after compression. 
-##' @param out.pdf the name of the output pdf file.
+##' be appended if compressed ('appendIndex.outfile=TRUE'). 
+##' @param plot should PCA graphs be outputed. Default is TRUE.
 ##' @param appendIndex.outfile if TRUE (default), the results will be appended regularly on
 ##' the output file which will be ultimately indexed. This is recommend when a large number
 ##' of bins are analyzed. If FALSE, a data.frame with the bin counts will be returned and no
@@ -21,135 +22,149 @@
 ##' @param col.bc the column from 'files.df' defining the bin count file names.
 ##' @param nb.cores number of cores to use. If higher than 1, \code{parallel}
 ##' package is used to parallelized the counting.
-##' @param nb.bin.support the number of supporting bins to define for the future normalization.
 ##' @return a list with
 ##' \item{bc}{the name of the file with the joined bin counts OR a data.frame with
 ##' these bin counts.}
-##' \item{dstat}{a data.frame with for each sample its D-statistic (average correlation
-##' with other reference samples).}
-##' \item{pc.1.3}{a matrix with the first 3 principal components for all samples.}
-##' \item{cor.pw}{a matrix with correlation for any pair of samples.}
+##' \item{ref.samples}{a vector with the reference samples names.}
+##' \item{cont.sample}{the name of the sample to use as control among the reference samples (for normalization).}
+##' \item{pc.all.df}{a data.frame with the first 3 principal components for all input reference samples.}
+##' \item{pc.ref.df}{a data.frame with the first 3 principal components for the final reference samples.}
 ##' @author Jean Monlong
 ##' @export
-qc.samples <- function(files.df, bin.df, ref.samples=NULL, outfile.prefix, out.pdf=NULL, appendIndex.outfile=TRUE, chunk.size=1e5, col.bc="bc.gc.gz", nb.cores=1, nb.bin.support=1e4){
-    if(is.null(ref.samples)) ref.samples = as.character(files.df$sample)
-    if(nrow(bin.df)<1.3*chunk.size){
-        bc.df = createEmptyDF(c("character",rep("integer",2), rep("numeric",nrow(files.df))), nrow(bin.df))
-        colnames(bc.df) = c("chr","start","end", as.character(files.df$sample))
-        bc.df$chr = bin.df$chr
-        bc.df$start = bin.df$start
-        bc.df$end = bin.df$end
-        if(nb.cores>1){
-            bc.l = parallel::mclapply(files.df[,col.bc], function(fi){
-                read.bedix(fi, bin.df)[,4]
-            },mc.cores=nb.cores)
-        } else {
-            bc.l = lapply(files.df[,col.bc], function(fi){
-                read.bedix(fi, bin.df)[,4]
-            })
-        }
-        med.samp = lapply(bc.l,median, na.rm=TRUE) ## Normalization of the median coverage
-        med.med = median(unlist(med.samp), na.rm=TRUE)
-        for(samp.i in 1:nrow(files.df)){
-            bc.df[,as.character(files.df$sample[samp.i])] = bc.l[[samp.i]] * med.med / med.samp[[samp.i]]
-        }
-        med.cov.df = data.frame(bc.df[,1:3], med.bc= apply(bc.df[,ref.samples], 1, median, na.rm=TRUE))
-        write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t")
+qc.samples <- function(files.df, bin.df, ref.samples = NULL, nb.ref.samples = NULL, 
+                       outfile.prefix, plot = TRUE, appendIndex.outfile = TRUE, chunk.size = 1e+05, 
+                       col.bc = "bc.gc.gz", nb.cores = 1) {
+  if (is.null(ref.samples)) 
+    ref.samples = as.character(files.df$sample)
+  if (is.null(nb.ref.samples)) 
+    nb.ref.samples = length(ref.samples)
+  
+  ## Flexible function to read bin counts on specific bins, several files, ...
+  read.bc.samples <- function(df, files.df, nb.cores = 1, med.med = NULL, med.samp = NULL, 
+                              file = NULL, append.f = FALSE, sub.bc = NULL) {
+    bc.df = createEmptyDF(c("character", rep("integer", 2), rep("numeric", nrow(files.df))), 
+      nrow(df))
+    colnames(bc.df) = c("chr", "start", "end", as.character(files.df$sample))
+    bc.df$chr = df$chr
+    bc.df$start = df$start
+    bc.df$end = df$end
+    if (nb.cores > 1) {
+      bc.l = parallel::mclapply(files.df[, col.bc], function(fi) {
+        read.bedix(fi, df)[, 4]
+      }, mc.cores = nb.cores)
     } else {
-        nb.chunks = ceiling(nrow(bin.df)/chunk.size)
-        bin.df$chunk = rep(1:nb.chunks,each=chunk.size)[1:nrow(bin.df)]
-        ## Median coverage
-        med.samp = rep(list(1),nrow(files.df)) ## Normalization of the median coverage
-        med.med = 1
-        analyze.chunk <- function(df, write.out=TRUE, sub.bc=TRUE){
-          ch.nb = as.numeric(df$chunk[1])
-          df.o = read.bedix(files.df[1,col.bc], df)
-          bc.df = createEmptyDF(c("character",rep("integer",2), rep("numeric",nrow(files.df))), nrow(df.o))
-          colnames(bc.df) = c("chr","start","end", as.character(files.df$sample))
-          bc.df$chr = df.o$chr
-          bc.df$start = df.o$start
-          bc.df$end = df.o$end
-          if(nb.cores>1){
-            bc.l = parallel::mclapply(files.df[,col.bc], function(fi){
-              read.bedix(fi, df)[,4]
-            },mc.cores=nb.cores)
-          } else {
-            bc.l = lapply(files.df[,col.bc], function(fi){
-              read.bedix(fi, df)[,4]
-            })
-          }
-          for(samp.i in 1:nrow(files.df)){
-            bc.df[,as.character(files.df$sample[samp.i])] = bc.l[[samp.i]] * med.med / med.samp[[samp.i]]
-          }
-          med.cov.df = data.frame(bc.df[,1:3], med.bc= apply(bc.df[,ref.samples], 1, median, na.rm=TRUE))
-          if(write.out){
-            write.table(bc.df, file=outfile.prefix, quote=FALSE, row.names=FALSE, sep="\t", append=ch.nb>1, col.names=ch.nb==1)
-          }
-          if(sub.bc) bc.df=bc.df[sample(1:nrow(bc.df),chunk.size/nb.chunks),]
-          return(list(med.cov.df=med.cov.df, bc.df=bc.df))
-        }
-        bc.rand = analyze.chunk(bin.df[sample(1:nrow(bin.df), 1e3),], write.out=FALSE, sub.bc=FALSE)
-        med.samp = lapply(as.character(files.df$sample), function(samp.i)median(bc.rand$bc.df[,samp.i], na.rm=TRUE)) ## Normalization of the median coverage
-        med.med = median(unlist(med.samp), na.rm=TRUE)
-        bc.res = lapply(unique(bin.df$chunk), function(chunk.i){
-            analyze.chunk(subset(bin.df, chunk==chunk.i))
-        })
-        med.cov.df = plyr::ldply(bc.res, function(ee)ee$med.cov.df)
-        bc.df = plyr::ldply(bc.res, function(ee)ee$bc.df)
+      bc.l = lapply(files.df[, col.bc], function(fi) {
+        read.bedix(fi, df)[, 4]
+      })
     }
-
-    ## Select set of supporting bins
-    med.cov.df = subset(med.cov.df, med.bc!=0)
-    q.bk = quantile(med.cov.df$med.bc, c(0,.05,.1,.2,.8,.9,.95,1))
-    med.cov.cut = cut(med.cov.df$med.bc, breaks=q.bk)
-    cut.prop = c(.2,.15,.1,.1,.1,.15,.2)/2
-    bin.sup.i = unique(unlist(sapply(1:nlevels(med.cov.cut), function(ii)sample(which(as.numeric(med.cov.cut)==ii), nb.bin.support*cut.prop[ii], replace=TRUE))))
-    bin.sup.i = c(bin.sup.i, sample(setdiff(1:nrow(med.cov.df), bin.sup.i), nb.bin.support-length(bin.sup.i)))
-    bin.sup.df = med.cov.df[bin.sup.i, ]
-    ##
-
-    ## Compress and index
-    if(appendIndex.outfile){
-        final.file = paste(outfile.prefix,".bgz",sep="")
-        Rsamtools::bgzip(outfile.prefix, dest=final.file, overwrite=TRUE)
-        file.remove(outfile.prefix)
-        Rsamtools::indexTabix(final.file, format="bed")
+    if (is.null(med.med) & is.null(med.samp)) {
+      med.samp = lapply(bc.l, median, na.rm = TRUE)  ## Normalization of the median coverage
+      med.med = median(unlist(med.samp), na.rm = TRUE)
     }
-    ##
-    
-    ## QC
-    cor.bs <- function(x,nbsim=10,prop=.1,replace=FALSE){
-        ni.sim = nrow(x)*prop
-        cor.sim = sapply(1:nbsim,function(i)as.vector(cor(x[sample(1:nrow(x),ni.sim,replace=replace),],use="comp")))
-        res = matrix(apply(cor.sim,1,median),ncol(x),ncol(x))
-        colnames(res) = rownames(res) = colnames(x)
-        return(res)
+    for (samp.i in 1:nrow(files.df)) {
+      bc.df[, as.character(files.df$sample[samp.i])] = round(bc.l[[samp.i]] * med.med/med.samp[[samp.i]], 2)
     }
-    all.samples = colnames(bc.df)[-(1:3)]
-    bc.mv = medvar.norm.internal(bc.df[,all.samples])
-    corbs = cor.bs(bc.mv)
-    cor.pw = corbs
-    diag(cor.pw) = NA
-    meanCor = apply(cor.pw[ref.samples,ref.samples],1,function(e)mean(e,na.rm=TRUE))
+    bc.df = bc.df[order(bc.df$chr, bc.df$start, bc.df$end),]
+    if (!is.null(file)) {
+      write.table(bc.df, file = file, quote = FALSE, row.names = FALSE, sep = "\t", 
+                  append = append.f, col.names = !append.f)
+    }
+    if (!is.null(sub.bc)) 
+      bc.df = bc.df[sample(1:nrow(bc.df), min(c(nrow(bc.df), sub.bc))), ]
+    return(bc.df)
+  }
+  center.pt <- function(m) {
+    dm = as.matrix(dist(m))
+    diag(dm) = NA
+    rownames(m)[which.min(apply(dm, 2, mean, na.rm = TRUE))]
+  }
+  
+  ## Too many ref.samples
+  pc.all.df = bc.rand = NULL
+  if (length(ref.samples) > nb.ref.samples) {
+    sparse.pts <- function(m, nb.pts) {
+      dm = as.matrix(dist(m))
+      diag(dm) = NA
+      pts.jj = 1:nrow(dm)
+      pts.ii = which.max(apply(dm, 1, max, na.rm = TRUE))
+      pts.jj = pts.jj[-pts.ii]
+      while (length(pts.ii) < nb.pts) {
+        m.ii = which.max(apply(dm[pts.ii, pts.jj, drop = FALSE], 2, min, 
+          na.rm = TRUE))
+        pts.ii = c(pts.ii, pts.jj[m.ii])
+        pts.jj = pts.jj[-m.ii]
+      }
+      m[pts.ii, ]
+    }
+    ## Get subset of bins
+    bc.rand = read.bc.samples(bin.df[sample(1:nrow(bin.df), 1000), ], files.df, 
+      med.med = 1, med.samp = rep(list(1), nrow(files.df)))
     ## PCA
-    pc = prcomp(t(na.exclude(bc.mv)))
-    if(!is.null(out.pdf)){
-        pdf(out.pdf,10,8)
-        hc = hclust(as.dist(1-corbs))
-        plot(hc)
-        print(ggplot2::qplot(x=meanCor) +
-              ggplot2::geom_histogram() +
-              ggplot2::ggtitle("D statistic - Mean correlation with the other samples") +
-              ggplot2::theme_bw())
-        plot(pc$x[,1:2],type="n",main="PCA")
-        text(pc$x[,1:2],labels=all.samples)
-        dev.off()
+    bc.mv = medvar.norm.internal(bc.rand[, ref.samples])
+    pc.all = prcomp(t(na.exclude(bc.mv)))
+    pc.all.df = data.frame(pc.all$x[, 1:3])
+    pc.all.df$sample = ref.samples
+    sp.o = sparse.pts(pc.all$x[, 1:2], nb.ref.samples)
+    pc.all.df$reference = pc.all.df$sample %in% rownames(sp.o)
+    if (plot) {
+      PC1 = PC2 = reference = NULL  ## Uglily appease R checks
+      print(ggplot2::ggplot(pc.all.df, ggplot2::aes(x = PC1, y = PC2, size = reference)) + 
+              ggplot2::geom_point(alpha = 0.8) + ggplot2::theme_bw() + ggplot2::scale_size_manual(values = 2:3))
     }
-    if(appendIndex.outfile){
-        bc.df = paste(outfile.prefix,".bgz",sep="")
+    ref.samples = rownames(sp.o)
+    bc.rand = bc.rand[, c("chr", "start", "end", ref.samples)]
+  }
+  
+  files.df = files.df[which(files.df$sample %in% ref.samples), ]
+  bin.df = bin.df[order(bin.df$chr, bin.df$start, bin.df$end),]
+  if (nrow(bin.df) < 1.3 * chunk.size) {
+    bc.df = read.bc.samples(bin.df, files.df, nb.cores)
+    write.table(bc.df, file = outfile.prefix, quote = FALSE, row.names = FALSE, 
+                sep = "\t")
+  } else {
+    nb.chunks = ceiling(nrow(bin.df)/chunk.size)
+    bin.df$chunk = rep(1:nb.chunks, each = chunk.size)[1:nrow(bin.df)]
+    analyze.chunk <- function(df) {
+      ch.nb = as.numeric(df$chunk[1])
+      df.o = read.bedix(files.df[1, col.bc], df)
+      read.bc.samples(df.o, files.df, nb.cores, med.med, med.samp, file = outfile.prefix, 
+                      append.f = ch.nb > 1, sub.bc = chunk.size/nb.chunks)
     }
-    return(list(bc=bc.df,dstat=data.frame(sample=ref.samples,Dstat=meanCor),
-                pc.1.3=pc$x[,1:3], cor.pw=corbs, bin.sup.df=bin.sup.df))
-}
-
-# LocalWords:  df
+    if (is.null(bc.rand)) {
+      bc.rand = read.bc.samples(bin.df[sample(1:nrow(bin.df), 1000), ], files.df, 
+        med.med = 1, med.samp = rep(list(1), nrow(files.df)))
+    }
+    med.samp = lapply(as.character(files.df$sample), function(samp.i) median(bc.rand[, 
+      samp.i], na.rm = TRUE))  ## Normalization of the median coverage
+    med.med = median(unlist(med.samp), na.rm = TRUE)
+    bc.res = lapply(unique(bin.df$chunk), function(chunk.i) {
+      analyze.chunk(bin.df[which(bin.df$chunk == chunk.i), ])
+    })
+    bc.df = plyr::ldply(bc.res, identity)
+  }
+  
+  ## Compress and index
+  if (appendIndex.outfile) {
+    final.file = paste(outfile.prefix, ".bgz", sep = "")
+    Rsamtools::bgzip(outfile.prefix, dest = final.file, overwrite = TRUE)
+    file.remove(outfile.prefix)
+    Rsamtools::indexTabix(final.file, format = "bed")
+    outfile.prefix = final.file
+  }
+  ## 
+  
+  ## QC
+  bc.mv = medvar.norm.internal(bc.df[, ref.samples])
+  pc.ref = prcomp(t(na.exclude(bc.mv)))
+  pc.ref.df = data.frame(pc.ref$x[, 1:3])
+  pc.ref.df$sample = ref.samples
+  if (plot) {
+    PC1 = PC2 = NULL  ## Uglily appease R checks
+    print(ggplot2::ggplot(pc.ref.df, ggplot2::aes(x = PC1, y = PC2)) + ggplot2::geom_point(alpha = 0.8) + 
+            ggplot2::theme_bw())
+  }
+  cont.sample = center.pt(pc.ref$x[, 1:2])
+  bc.df = outfile.prefix
+  return(list(bc = bc.df, ref.samples = ref.samples, cont.sample = cont.sample, 
+              pca.all.df = pc.all.df, pca.ref.df = pc.ref.df))
+} 

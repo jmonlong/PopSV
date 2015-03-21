@@ -1,107 +1,80 @@
+
 ##' Bin counts are normalized one bin at a time, using a subset of the bins that look
 ##' similar across the reference samples.
 ##'
-##' The Z-score is computed by substracting the bin count by the average bin count
-##' across the reference samples and dividing by their standard deviation. If
-##' 'z.poisson' is TRUE, a score using Poisson distribution is also computed, using
-##' the average bin count as an estimator of the lambda. Then the score with the lowest
-##' absolute value is kept. This hybrid Z-score is to be used when some regions have low
-##' coverage where it is more robust to use Poisson assumptions.
 ##' @title Targeted-normalization of bin counts
 ##' @param bc a matrix or data.frame with the bin counts (bin x sample).
 ##' @param cont.sample the sample to use as baseline for the pairwise normalization.
 ##' All the samples will be normalized to it.
-##' @param ref.samples a vector with the names of the samples to be used as reference.
 ##' @param nb.support.bins the number of bins to use for the normalization.
 ##' @param bins a vector the names of the bins to normalize. If NULL (default), all
 ##' bins are normalized.
 ##' @param save.support.bins if TRUE (default) the bins used for the normalization are
 ##' saved in the output object 'norm.stats'.
-##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
-##' Details). Default is FALSE.
-##' @param aberrant.cases if TRUE (default) a more robust (but sligthly longer) normalization
-##' is performed on cases to deal with potential large chromosomal aberrations. In practice,
-##' it is recommended for cancer but can be turned off if less than ~20% of the genome is expected
-##' to be affected.
 ##' @return a list with
 ##' \item{norm.stats}{a data.frame witht some metrics about the normalization of each
 ##' bin (row) : correlation with worst supporting bin; coverage average and standard
 ##' deviation; number of outlier reference samples; supporting bins.}
 ##' \item{bc.norm}{a matrix with the normalized bin counts (bin x sample).}
-##' \item{z}{a matrix with the Z-scores for each bin and sample (bin x sample).}
-##' \item{fc}{a matrix with the fold-change compared to the average bin count in
-##' the reference samples for each bin and sample (bin x sample).}
 ##' \item{nb.support.bins, cont.sample, z.poisson}{a backup of the input parameters.}
+##' \item{cont.sample}{the name of the sample used to normalize all samples.}
 ##' @author Jean Monlong
 ##' @export
-tn.norm <- function(bc,cont.sample,ref.samples,nb.support.bins=1e3,bins=NULL,save.support.bins=TRUE, z.poisson=FALSE, aberrant.cases=TRUE){
-    all.samples = setdiff(colnames(bc),c("chr","start","end"))
-    ref.samples.ii = which(all.samples %in% ref.samples)
-    rownames(bc) = paste(bc$chr, as.integer(bc$start), sep="-")
-    if(is.null(bins)) bins = rownames(bc)
-    if(save.support.bins) {
-        norm.stats = createEmptyDF(c("character", rep("integer",2),rep("numeric",4),rep("character",nb.support.bins)), length(bins))
-        colnames(norm.stats) = c("chr", "start","end","d.max","m","sd","nb.remove",paste("b",1:nb.support.bins,sep=""))
+tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.support.bins = TRUE) {
+    
+    all.samples = setdiff(colnames(bc), c("chr", "start", "end"))
+    rownames(bc) = paste(bc$chr, as.integer(bc$start), sep = "-")
+    if (is.null(bins)) 
+        bins = rownames(bc)
+    
+    if (save.support.bins) {
+        norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 
+            4), rep("character", nb.support.bins)), length(bins))
+        colnames(norm.stats) = c("chr", "start", "end", "m", "sd", "nb.remove", "d.max", 
+            paste("b", 1:nb.support.bins, sep = ""))
     } else {
-        norm.stats = createEmptyDF(c("character", rep("integer",2),rep("numeric",4)), length(bins))
-        colnames(norm.stats) = c("chr", "start","end","d.max","m","sd","nb.remove")
+        norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 
+            4)), length(bins))
+        colnames(norm.stats) = c("chr", "start", "end", "m", "sd", "nb.remove", "d.max")
     }
-    bc.norm = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
-    z = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
-    fc = createEmptyDF(c("character", rep("integer",2),rep("numeric",length(all.samples))), length(bins))
-    colnames(bc.norm) = colnames(z) = colnames(fc) = c("chr", "start","end",all.samples)
-    norm.stats$chr = bc.norm$chr = z$chr = fc$chr = bc[bins,"chr"]
-    norm.stats$start = bc.norm$start = z$start = fc$start = bc[bins,"start"]
-    norm.stats$end = bc.norm$end = z$end = fc$end = bc[bins,"end"]
-    if(z.poisson){
-        z.comp <- function(x, mean.c, sd.c){
-            z.n = (x-mean.c)/sd.c
-            z.p = qnorm(ppois(x, mean.c))
-            n.ii = abs(z.n) < abs(z.p)
-            z.p[n.ii] = z.n[n.ii]
-            z.p
-        }
-    } else {
-        z.comp <- function(x, mean.c, sd.c){(x-mean.c)/sd.c}
-    }
-    chrs = bc$chr
-    bc = t(as.matrix(bc[,all.samples]))
-    for(bin.ii in 1:length(bins)){
+    bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))), 
+        length(bins))
+    colnames(bc.norm) = c("chr", "start", "end", all.samples)
+    norm.stats$chr = bc.norm$chr = bc[bins, "chr"]
+    norm.stats$start = bc.norm$start = bc[bins, "start"]
+    norm.stats$end = bc.norm$end = bc[bins, "end"]
+    
+    bc = t(as.matrix(bc[, all.samples]))
+    for (bin.ii in 1:length(bins)) {
+        
         bin = bins[bin.ii]
-        bc.i = bc[,bin]
-        if(any(!is.na(bc.i) & bc.i!=0)) {
-            if(sum(as.numeric(bc.i[ref.samples.ii])>0)<5){
-                d.o.i = c(which(colnames(bc)==bin),sample(1:ncol(bc), nb.support.bins-1))
-                d.max=-1
+        bc.i = bc[, bin]
+        if (any(!is.na(bc.i) & bc.i != 0)) {
+            if (sum(as.numeric(bc.i) > 0) < 5) {
+                d.o.i = sample(1:ncol(bc), nb.support.bins)
+                d.max = -1
             } else {
-                d.i = 1-as.numeric(cor(as.numeric(bc.i[ref.samples.ii]),bc[ref.samples.ii,],use="pairwise.complete.obs"))
+                d.i = 1 - as.numeric(cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs"))
                 d.o.i = order(d.i)[1:nb.support.bins]
                 d.max = as.numeric(d.i[d.o.i[nb.support.bins]])
             }
-            if(!is.infinite(d.max) & !is.na(d.max)) {
-                bc.g = t(bc[,d.o.i])
+            if (!is.infinite(d.max) & !is.na(d.max)) {
+                bc.g = t(bc[, d.o.i])
                 bin.for.norm = colnames(bc)[d.o.i]
-                norm.coeff = rep(NA,ncol(bc.g))
-                norm.coeff[ref.samples.ii] = norm.tm.opt(bc.g[,ref.samples.ii],ref.col=bc.g[,cont.sample])
-                msd = mean.sd.outlierR(bc.g[1,ref.samples.ii] * norm.coeff[ref.samples.ii],1e-6)
-                if(length(norm.coeff) > length(ref.samples.ii)){
-                    if(aberrant.cases){
-                        norm.coeff[-ref.samples.ii] = norm.tm.opt(bc.g[,-ref.samples.ii,drop=FALSE],ref.col=bc.g[,cont.sample],bc.mean.norm=msd$m,chrs=chrs[d.o.i])
-                    } else {
-                        norm.coeff[-ref.samples.ii] = norm.tm.opt(bc.g[,-ref.samples.ii,drop=FALSE],ref.col=bc.g[,cont.sample])
-                    }
-                }
-                bc.t = bc.g[1,] * norm.coeff
-                if(any(!is.na(bc.t))){
-                    norm.stats[bin.ii,4:7]=c(d.max,msd$m,msd$sd,msd$nb.remove)
-                    if(save.support.bins) norm.stats[bin.ii,8:ncol(norm.stats)] = bin.for.norm
-                    bc.norm[bin.ii,-(1:3)] = bc.t
-                    z[bin.ii,-(1:3)] = z.comp(bc.t,msd$m,msd$sd)
-                    fc[bin.ii,-(1:3)] = bc.t/msd$m
-
+                norm.coeff = norm.tm.opt(bc.g, ref.col = bc.g[, cont.sample])
+                bc.t = bc.i * norm.coeff
+                msd = mean.sd.outlierR(bc.t, 1e-06)
+                if (any(!is.na(bc.t))) {
+                  norm.stats[bin.ii, 4:7] = round(c(msd$m, msd$sd, msd$nb.remove, d.max), 3)
+                  if (save.support.bins) 
+                    norm.stats[bin.ii, 8:ncol(norm.stats)] = bin.for.norm
+                  bc.norm[bin.ii, -(1:3)] = round(bc.t, 2)
                 }
             }
         }
+        
     }
-    list(norm.stats=norm.stats, bc.norm=bc.norm,z=z, fc=fc, nb.support.bins=nb.support.bins, cont.sample=cont.sample, z.poisson=z.poisson)
-}
+    
+    return(list(norm.stats = norm.stats, bc.norm = bc.norm, nb.support.bins = nb.support.bins, 
+        cont.sample = cont.sample))
+} 

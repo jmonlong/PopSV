@@ -11,10 +11,21 @@
 ##' 'fragment.genome.hp19'.
 ##' @param bg.chunk.size the number of bins in a big chunk.
 ##' @param sm.chunk.size the number of bins in a small chunk.
+##' @param large.chr.chunks should the big chunks be made of just some large genomic sub-regions ? Default is false. It is faster than using random bins, hence recommended when dealing with a large number of bins (e.g. > 5e5).
 ##' @export
-chunk.bin <- function(bins.df, bg.chunk.size = 1e5, sm.chunk.size = 1e3){
-    bins.df$bg.chunk = sample(rep(1:ceiling(nrow(bins.df)/bg.chunk.size),each=bg.chunk.size)[1:nrow(bins.df)])
-    bins.df = dplyr::mutate(dplyr::group_by(bins.df,bg.chunk),sm.chunk=paste(bg.chunk,sample(rep(1:ceiling(length(chr)/sm.chunk.size),each=sm.chunk.size)[1:length(chr)]), sep="-"))
-    bins.df$bin = paste(bins.df$chr, bins.df$start, sep="-")
+chunk.bin <- function(bins.df, bg.chunk.size = 1e+05, sm.chunk.size = 1000, large.chr.chunks = FALSE) {
+    bins.df = with(bins.df, dplyr::arrange(bins.df, chr, start))
+    if (large.chr.chunks) {
+        nb.supchunks = 50
+        bins.df$bg.chunk = rep(sample(rep(1:ceiling(nrow(bins.df)/bg.chunk.size), 
+            nb.supchunks)), each = ceiling(bg.chunk.size/nb.supchunks))[1:nrow(bins.df)]
+    } else {
+        bins.df$bg.chunk = sample(rep(1:ceiling(nrow(bins.df)/bg.chunk.size), each = bg.chunk.size)[1:nrow(bins.df)])
+    }
+    bg.chunk = chr = NULL  ## Uglily appease R checks
+    bins.df = dplyr::mutate(dplyr::group_by(bins.df, bg.chunk), sm.chunk = paste(bg.chunk, 
+        sample(rep(1:ceiling(length(chr)/sm.chunk.size), each = sm.chunk.size)[1:length(chr)]), 
+        sep = "-"))
+    bins.df$bin = paste(bins.df$chr, bins.df$start, sep = "-")
     bins.df
-}
+} 
