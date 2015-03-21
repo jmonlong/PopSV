@@ -5,7 +5,7 @@
 \title{Targeted-normalization of bin counts}
 \usage{
 tn.norm(bc, cont.sample, nb.support.bins = 1000, bins = NULL,
-  save.support.bins = TRUE)
+  save.support.bins = TRUE, bootstrap = FALSE)
 }
 \arguments{
 \item{bc}{a matrix or data.frame with the bin counts (bin x sample).}
@@ -20,6 +20,8 @@ bins are normalized.}
 
 \item{save.support.bins}{if TRUE (default) the bins used for the normalization are
 saved in the output object 'norm.stats'.}
+
+\item{bootstrap}{should the supporting bins defined using a bootstrap approach. Default is FALSE.}
 }
 \value{
 a list with
