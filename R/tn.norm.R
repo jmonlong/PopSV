@@ -60,6 +60,9 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
             1 - as.numeric(cor(as.numeric(bc.i[bs.samps]), bc[bs.samps,], use = "pairwise.complete.obs"))
           })
           d.i = apply(d.i, 1, max, na.rm=TRUE)
+          if(any(is.infinite(d.i))) {
+            d.i[which(is.infinite(d.i))] = NA
+          }
         } else {
           d.i = 1 - as.numeric(cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs"))
         }
