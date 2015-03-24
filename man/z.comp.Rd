@@ -5,7 +5,8 @@
 \title{Z-score computation}
 \usage{
 z.comp(files.df, samples, msd.f = NULL, z.poisson = FALSE,
-  col = "bc.gc.norm.gz", nb.cores = 1)
+  col = "bc.gc.norm.gz", nb.cores = 1, chunk.size = NULL,
+  out.prefix = NULL)
 }
 \arguments{
 \item{files.df}{a data.frame with the file paths.}
@@ -20,6 +21,10 @@ Details). Default is FALSE.}
 \item{col}{the column in 'files.df' that define the bin count file path.}
 
 \item{nb.cores}{the number of cores to use.}
+
+\item{chunk.size}{the chunk size. If NULL (Default), no chunks are used.}
+
+\item{out.prefix}{the prefix for the output files. Suffix '-z.tsv', '-fc.tsv' and '-msd.tsv' will de added if in chunk mode ('chunk.size!=NULL').}
 }
 \value{
 a list with
