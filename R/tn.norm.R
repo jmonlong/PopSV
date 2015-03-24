@@ -57,14 +57,14 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
         if(bootstrap){
           d.i = sapply(1:5,function(ii){
             bs.samps = sample(1:length(bc.i), length(bc.i)*.5)
-            1 - as.numeric(cor(as.numeric(bc.i[bs.samps]), bc[bs.samps,], use = "pairwise.complete.obs"))
+            1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i[bs.samps]), bc[bs.samps,], use = "pairwise.complete.obs")))
           })
-          d.i = apply(d.i, 1, max, na.rm=TRUE)
+          d.i = apply(d.i, 1, function(ee) suppressWarnings(max(ee, na.rm=TRUE)))
           if(any(is.infinite(d.i))) {
             d.i[which(is.infinite(d.i))] = NA
           }
         } else {
-          d.i = 1 - as.numeric(cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs"))
+          d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs")))
         }
         d.o.i = order(d.i)[1:nb.support.bins]
         d.max = as.numeric(d.i[d.o.i[nb.support.bins]])
