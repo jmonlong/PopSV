@@ -10,7 +10,7 @@
 ##' bins are normalized.
 ##' @param save.support.bins if TRUE (default) the bins used for the normalization are
 ##' saved in the output object 'norm.stats'.
-##' @param bootstrap should the supporting bins defined using a bootstrap approach. Default is FALSE.
+##' @param twopass.norm should the supporting bins defined using a two-pass approach. Default is FALSE.
 ##' @return a list with
 ##' \item{norm.stats}{a data.frame witht some metrics about the normalization of each
 ##' bin (row) : correlation with worst supporting bin; coverage average and standard
@@ -20,7 +20,7 @@
 ##' \item{cont.sample}{the name of the sample used to normalize all samples.}
 ##' @author Jean Monlong
 ##' @export
-tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.support.bins = TRUE, bootstrap = FALSE) {
+tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.support.bins = TRUE, twopass.norm = FALSE) {
   
   all.samples = setdiff(colnames(bc), c("chr", "start", "end"))
   rownames(bc) = paste(bc$chr, as.integer(bc$start), sep = "-")
@@ -50,22 +50,11 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
     bin = bins[bin.ii]
     bc.i = bc[, bin]
     if (any(!is.na(bc.i) & bc.i != 0)) {
-      if (sum(as.numeric(bc.i) > 0) < 5) {
+      if (twopass.norm | sum(as.numeric(bc.i) > 0) < 5) {
         d.o.i = sample(1:ncol(bc), nb.support.bins)
         d.max = -1
       } else {
-        if(bootstrap){
-          d.i = sapply(1:5,function(ii){
-            bs.samps = sample(1:length(bc.i), length(bc.i)*.5)
-            1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i[bs.samps]), bc[bs.samps,], use = "pairwise.complete.obs")))
-          })
-          d.i = apply(d.i, 1, function(ee) suppressWarnings(max(ee, na.rm=TRUE)))
-          if(any(is.infinite(d.i))) {
-            d.i[which(is.infinite(d.i))] = NA
-          }
-        } else {
-          d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs")))
-        }
+        d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs")))
         d.o.i = order(d.i)[1:nb.support.bins]
         d.max = as.numeric(d.i[d.o.i[nb.support.bins]])
       }
@@ -75,10 +64,21 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
         norm.coeff = norm.tm.opt(bc.g, ref.col = bc.g[, cont.sample])
         bc.t = bc.i * norm.coeff
         msd = mean.sd.outlierR(bc.t, 1e-06)
+        if(twopass.norm & sum(as.numeric(bc.i) > 0) >= 5){
+          med.samps = order(abs(bc.t-msd$m))[1:(length(bc.i)*.5)]
+          d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i[med.samps]), bc[med.samps,], use = "pairwise.complete.obs")))
+          d.o.i = order(d.i)[1:nb.support.bins]
+          d.max = as.numeric(d.i[d.o.i[nb.support.bins]])
+          bc.g = t(bc[, d.o.i])
+          bin.for.norm = colnames(bc)[d.o.i]
+          norm.coeff = norm.tm.opt(bc.g, ref.col = bc.g[, cont.sample])
+          bc.t = bc.i * norm.coeff
+          msd = mean.sd.outlierR(bc.t, 1e-06)
+        }
         if (any(!is.na(bc.t))) {
           norm.stats[bin.ii, 4:7] = round(c(msd$m, msd$sd, msd$nb.remove, d.max), 3)
           if (save.support.bins) 
-            norm.stats[bin.ii, 8:ncol(norm.stats)] = bin.for.norm
+          norm.stats[bin.ii, 8:ncol(norm.stats)] = bin.for.norm
           bc.norm[bin.ii, -(1:3)] = round(bc.t, 2)
         }
       }
