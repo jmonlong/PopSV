@@ -12,7 +12,7 @@ Description: Detect abnormal read coverage using a set of samples as
     a set of reference samples. Functions for pre/post-processing are also
     provided.
 License: GPL-2
-Imports:
+Imports: 
     data.table,
     GenomicRanges,
     GenomeInfoDb,
@@ -33,5 +33,6 @@ Imports:
     parallel,
     grid,
     reshape
-Suggests:
-    BSgenome.Hsapiens.UCSC.hg19
+Suggests: 
+    BSgenome.Hsapiens.UCSC.hg19,
+    testthat
