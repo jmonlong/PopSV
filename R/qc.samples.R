@@ -69,8 +69,9 @@ qc.samples <- function(files.df, bin.df, ref.samples = NULL, nb.ref.samples = NU
       write.table(bc.df, file = file, quote = FALSE, row.names = FALSE, sep = "\t", 
                   append = append.f, col.names = !append.f)
     }
-    if (!is.null(sub.bc)) 
+    if (!is.null(sub.bc)) {
       bc.df = bc.df[sample(1:nrow(bc.df), min(c(nrow(bc.df), sub.bc))), ]
+    }
     return(bc.df)
   }
   center.pt <- function(m) {
