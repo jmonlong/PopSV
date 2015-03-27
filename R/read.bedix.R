@@ -23,9 +23,9 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE) {
   } else if (class(subset.reg) != "GRanges") {
     stop("'subset.reg' must be a data.frame or a GRanges object.")
   }
-
+  
   subset.reg = subset.reg[order(as.character(GenomicRanges::seqnames(subset.reg)), GenomicRanges::start(subset.reg))]
-
+  
   read.chunk <- function(gr){
     bed = tryCatch(unlist(Rsamtools::scanTabix(file, param = GenomicRanges::reduce(gr))), error = function(e) c())
     if (length(bed) == 0) {
@@ -34,14 +34,14 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE) {
     ncol = length(strsplit(bed[1], "\t")[[1]])
     bed = matrix(unlist(strsplit(bed, "\t")), length(bed), ncol, byrow = TRUE)
     bed = data.table::data.table(bed)
-    if (header)) {
+    if (header) {
       data.table::setnames(bed, as.character(read.table(file, nrows = 1, as.is = TRUE)))
     }
     bed = bed[, lapply(.SD, function(ee)type.convert(as.character(ee), as.is=TRUE))]
     bed = as.data.frame(bed)
     return(bed)
   }
-
+  
   if (length(subset.reg) > 10000) {
     chunks = cut(1:length(subset.reg), ceiling(length(subset.reg)/10000))
     bed.df = plyr::ldply(levels(chunks), function(ch.id){
@@ -50,6 +50,6 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE) {
   } else {
     bed.df = read.chunk(subset.reg)
   }
-
+  bed.df = bed.df[order(bed.df$chr, bed.df$start),]
   return(bed.df)
 } 
