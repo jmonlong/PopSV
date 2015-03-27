@@ -25,9 +25,13 @@ test_that("Files exists",{
 
 test_that("Works with both chr naming",{
   expect_equal(length(bin.bam(bam.f, bin.df, appendIndex.outfile=FALSE)), 2)
+  expect_equal(length(bin.bam(bam.f, bin.df, appendIndex.outfile=FALSE, check.chr.name=FALSE)), 2)
+  bin.df$chr = 180
+  suppressWarnings(expect_error(bin.bam(bam.f, bin.df, appendIndex.outfile=FALSE), "Couldn't guess"))
+  suppressWarnings(expect_error(bin.bam(bam.f, bin.df, appendIndex.outfile=FALSE, no.checks=TRUE)))
   bin.df$chr = 18
   expect_equal(length(bin.bam(bam.f, bin.df, appendIndex.outfile=FALSE)), 2)
-  bin.df$chr = "chr18"
+  suppressWarnings(expect_error(bin.bam(bam.f, bin.df, appendIndex.outfile=FALSE, check.chr.name=FALSE)))
 })
 
 test_that("Works with different chunk sizes",{
@@ -57,7 +61,8 @@ test_that("Writes files",{
   file.remove(paste0("test.tsv",c(".bgz",".bgz.tbi")))
 })
 
-test_that("Stops if no reads found",{
-  expect_error(bin.bam(bam.f, tail(bin.df), appendIndex.outfile=FALSE))
+test_that("Stops if no reads found or not",{
+  expect_error(bin.bam(bam.f, tail(bin.df), appendIndex.outfile=FALSE), "no reads found")
+  expect_equal(length(bin.bam(bam.f, tail(bin.df), appendIndex.outfile=FALSE, no.checks=TRUE)), 2)
 })
 

@@ -18,6 +18,7 @@
 ##' @param check.chr.name if TRUE (default), the function will try to check that the
 ##' definition of chromosome (e.g. '1' vs 'chr1') are consistent between the bin
 ##' definition and the BAM file. If FALSE, the analysis will continue either way.
+##' @param no.checks if TRUE, won't stop if there are no reads or the chromosome names are inconsistent. Default is FALSE.
 ##' @return a list:
 ##' \item{bc}{the final output file name if 'appendIndex.outfile' was TRUE; a data.frame with
 ##' the bin counts if not.}
@@ -25,11 +26,11 @@
 ##' @author Jean Monlong
 ##' @export
 bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile = TRUE, 
-                    proper = TRUE, map.quality = 30, chunk.size = 10000, check.chr.name = TRUE) {
+                    proper = TRUE, map.quality = 30, chunk.size = 10000, check.chr.name = TRUE, no.checks=FALSE) {
   if (is.null(outfile.prefix) & appendIndex.outfile) {
     stop("If 'appendIndex.outfile' is TRUE, please provide 'outfile.prefix'.")
   }
-  if(!all(colnames(bin.df) %in% c("chr","start","end"))){
+  if(!all(c("chr","start","end") %in% colnames(bin.df))){
     stop("Missing column in 'bin.df'. 'chr', 'start' and 'end' are required.")
   }
   if(!file.exists(bam.file)){
@@ -67,7 +68,7 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
           bin.df$chr = gsub("chr", "", bin.df$chr)
         }
       }
-      if(!any(paste0("SN:",unique(bin.df$chr)) %in% unlist(lapply(bam.headers[[1]][[2]],"[",1)))) {
+      if(!any(paste0("SN:",unique(bin.df$chr)) %in% unlist(lapply(bam.headers[[1]][[2]],"[",1))) & !no.checks) {
         stop("Couldn't guess if chr 1 is defined as '1' or 'chr1'.\nCheck manually and/or switch off option 'check.chr.name'.")
       }
     } else {
@@ -80,7 +81,7 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
           bin.df$chr = gsub("chr", "", bin.df$chr)
         }
         bc.chrTest = binBam.single(bin.df[sample(1:nrow(bin.df), min(nrow(bin.df), 20)), ])
-        if (all(bc.chrTest == 0)) {
+        if (all(bc.chrTest == 0) & !no.checks) {
           stop("Couldn't guess if chr 1 is defined as '1' or 'chr1'.\nCheck manually and/or switch off option 'check.chr.name'.")
         }
       }
@@ -115,7 +116,12 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
   }
   if(is.null(outfile.prefix)) {
     bc.df$chunk = NULL
-    return(list(bc = bc.df, nb.reads = sum(bc.df$bc, na.rm = TRUE)))
+    res.l = list(bc = bc.df, nb.reads = sum(bc.df$bc, na.rm = TRUE))
+  } else {
+    res.l = list(bc = final.file, nb.reads = sum(bc.df$nb.reads, na.rm = TRUE))
   }
-  return(list(bc = final.file, nb.reads = sum(bc.df$nb.reads, na.rm = TRUE)))
+  if(res.l$nb.reads==0 & !no.checks){
+    stop("no reads found with these parameters (binning, mapping) in:",bam.file,". Suspicious, maybe investigate.")
+  }
+  return(res.l)
 } 
