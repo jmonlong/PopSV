@@ -15,14 +15,27 @@
 ##' @import data.table
 read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE) {
 
+  if(!file.exists(file)){
+    file = paste0(file, ".bgz")
+  }
+  if(!file.exists(file)){
+    stop(file, "Input file not found (with and without .bgz extension).")
+  }
+  if(!file.exists(paste0(file,".tbi"))){
+    stop(paste0(file,".tbi"),"Index file not found.")
+  }
   if(is.null(subset.reg)){
     return(read.table(file, as.is=as.is, header=header))
   }
   if (is.data.frame(subset.reg)) {
+    if(!all(c("chr","start","end") %in% colnames(subset.reg))){
+      stop("Missing column in 'subset.reg'. 'chr', 'start' and 'end' are required.")
+    }
     subset.reg = with(subset.reg, GenomicRanges::GRanges(chr, IRanges::IRanges(start,end)))
   } else if (class(subset.reg) != "GRanges") {
     stop("'subset.reg' must be a data.frame or a GRanges object.")
   }
+
   
   subset.reg = subset.reg[order(as.character(GenomicRanges::seqnames(subset.reg)), GenomicRanges::start(subset.reg))]
   

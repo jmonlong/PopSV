@@ -61,17 +61,43 @@ test_that("reads file with or without headers",{
   write.table(b2.df, file="test.tsv", quote=FALSE, sep="\t", row.names=FALSE)
   expect_equal(length(comp.index.files("test.tsv")), 1)
   expect_equal(nrow(read.bedix("test.tsv.bgz")), nrow(b2.df))
+  file.remove("test.tsv.bgz","test.tsv.bgz.tbi")
   write.table(b2.df, file="test.tsv", quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   expect_equal(length(comp.index.files("test.tsv")), 1)
   expect_equal(nrow(read.bedix("test.tsv.bgz", header=FALSE)), nrow(b2.df))  
   file.remove("test.tsv.bgz","test.tsv.bgz.tbi")
 })
 
-test_that("reads file with or without .bgz extension",{})
+test_that("reads file with or without .bgz extension",{
+  write.table(b2.df, file="test.tsv", quote=FALSE, sep="\t", row.names=FALSE)
+  expect_equal(length(comp.index.files("test.tsv")), 1)
+  expect_equal(file.exists("test.tsv"), FALSE)
+  expect_equal(nrow(read.bedix("test.tsv")), nrow(b2.df))  
+  expect_equal(nrow(read.bedix("test.tsv.bgz")), nrow(b2.df))
+  file.remove("test.tsv.bgz","test.tsv.bgz.tbi")
+})
 
-test_that("Checks that files exists",{})
+test_that("Checks that files exists",{
+  write.table(b2.df, file="test.tsv", quote=FALSE, sep="\t", row.names=FALSE)
+  expect_error(comp.index.files(c("test.tsv", "fakefile.tsv")), "file not found")
+  expect_error(read.bedix("fakefile.tsv"), "file not found")  
+  expect_equal(length(comp.index.files("test.tsv")), 1)
+  file.remove("test.tsv.bgz.tbi")
+  expect_error(read.bedix("test.tsv.bgz"), "file not found")  
+  file.remove("test.tsv.bgz")
+})
 
-test_that("Checks that files are indexed",{})
-
-test_that("Checks for bins missing columns",{})
+test_that("Checks for bins missing columns",{
+  write.table(b1.df, file="test.tsv", quote=FALSE, sep="\t", row.names=FALSE)
+  expect_equal(length(comp.index.files("test.tsv")), 1)
+  bad.df = bin.df[,c("chr","start")]
+  expect_error( read.bedix("test.tsv.bgz", bad.df), "Missing column")
+  bad.df = bin.df[,c("end","start")]
+  expect_error( read.bedix("test.tsv.bgz", bad.df), "Missing column")
+  bad.df = bin.df[,c("chr","end")]
+  expect_error( read.bedix("test.tsv.bgz", bad.df), "Missing column")
+  good.df = bin.df[,c("chr","end", "start")]
+  expect_equal(nrow(read.bedix("test.tsv", good.df)), nrow(good.df))  
+  file.remove("test.tsv.bgz","test.tsv.bgz.tbi")
+})
 

@@ -8,12 +8,15 @@
 ##' @author Jean Monlong
 ##' @export
 comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrite.out = TRUE) {
-    sapply(1:length(files), function(file.ii) {
-        final.file = paste(outprefix[file.ii], ".bgz", sep = "")
-        Rsamtools::bgzip(files[file.ii], dest = final.file, overwrite = TRUE)
-        if (rm.input) 
-            file.remove(files[file.ii])
-        Rsamtools::indexTabix(final.file, format = "bed")
-        return(paste(final.file, "created and indexed."))
-    })
+  if(any(!file.exists(files))){
+    stop(files[which(!file.exists(files))], ": file not found")
+  }
+  sapply(1:length(files), function(file.ii) {
+    final.file = paste(outprefix[file.ii], ".bgz", sep = "")
+    Rsamtools::bgzip(files[file.ii], dest = final.file, overwrite = TRUE)
+    if (rm.input) 
+      file.remove(files[file.ii])
+    Rsamtools::indexTabix(final.file, format = "bed")
+    return(paste(final.file, "created and indexed."))
+  })
 } 
