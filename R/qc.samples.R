@@ -32,8 +32,7 @@
 ##' @author Jean Monlong
 ##' @export
 qc.samples <- function(files.df, bin.df, ref.samples = NULL, nb.ref.samples = NULL, 
-                       outfile.prefix, plot = TRUE, appendIndex.outfile = TRUE, chunk.size = 1e+05, 
-                       col.bc = "bc.gc.gz", nb.cores = 1) {
+                       outfile.prefix, plot = TRUE, appendIndex.outfile = TRUE, chunk.size = 1e+05, col.bc = "bc.gc.gz", nb.cores = 1) {
   if (is.null(ref.samples)) 
     ref.samples = as.character(files.df$sample)
   if (is.null(nb.ref.samples)) 
