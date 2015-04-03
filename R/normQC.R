@@ -30,10 +30,11 @@
 ##' @param bc.df matrix with bin counts (bins x samples). 
 ##' @param n.subset number of bins to use for the analysis. Default is 10 000. Bins are selected randomly.
 ##' @param nb.cores the number of cores to use. Default is 1.
+##' @param plot Should some graphs be outputed ? Default is FALSE.
 ##' @author Jean Monlong
 ##' @export
 ##' @import magrittr
-normQC <- function(bc.df, n.subset = 10000, nb.cores = 1) {
+normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
     ## Order by genomic location.
     bc.df = dplyr::arrange(bc.df, chr, start)
     samples = setdiff(colnames(bc.df), c("chr", "start", "end"))
@@ -66,7 +67,7 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1) {
     chr = . = NULL  ## Uglily appease R checks
     res.df = bc.df %>% dplyr::group_by(chr) %>% dplyr::do(test.chr.f(.))
     
-    sub.ii = sample.int(nrow(bc.df), n.subset)
+    sub.ii = sample(which(apply(bc.df, 1, function(ee) all(!is.na(ee)))), n.subset)
     bc.mat = as.matrix(bc.df[sub.ii, samples])
     ## Z-score distribution
     n.dens = 1000
@@ -88,11 +89,21 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1) {
         dis.prop = sum(abs(f$y - fn))/(2 * sum(fn))
         return(dis.prop)
     }, mc.cores = nb.cores))
-    
+
     ## PCA dispersion
     pca.o = prcomp(t(bc.mat))
     pca.d = as.matrix(dist(pca.o$x[, 1:2]))
     pca.dmm = median(pca.d)/mean(pca.d)
+
+    if(plot){
+      ## Rank
+      print(ggplot2::ggplot(res.df, ggplot2::aes(x=nb.rank)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::xlab("number of samples with rank bias") + ggplot2::ylab("number of regions"))
+      zlim = quantile(abs(as.numeric(z)), probs=.98)
+      ## Best Z-scores
+      print(ggplot2::ggplot(reshape::melt(z[,samples[order(non.norm.z)[1:6]]]), ggplot2::aes(x=value)) + ggplot2::geom_density() + ggplot2::theme_bw() + ggplot2::xlim(-1*zlim,zlim) + ggplot2::facet_wrap(~variable, scales="free") + ggplot2::xlab("Z-score"))
+      ## Worst Z-scores
+      print(ggplot2::ggplot(reshape::melt(z[,samples[order(-1*non.norm.z)[1:6]]]), ggplot2::aes(x=value)) + ggplot2::geom_density() + ggplot2::theme_bw() + ggplot2::xlim(-1*zlim,zlim) + ggplot2::facet_wrap(~variable, scales="free") + ggplot2::xlab("Z-score"))
+    }
     
     qv.normal = qvalue::qvalue(res.df$pv.normal)
     ## 
