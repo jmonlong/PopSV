@@ -5,7 +5,7 @@
 \title{Targeted-normalization of bin counts}
 \usage{
 tn.norm(bc, cont.sample, nb.support.bins = 1000, bins = NULL,
-  save.support.bins = TRUE, twopass.norm = FALSE)
+  save.support.bins = TRUE, norm = c("1pass", "2pass", "bootstrap"))
 }
 \arguments{
 \item{bc}{a matrix or data.frame with the bin counts (bin x sample).}
@@ -21,7 +21,7 @@ bins are normalized.}
 \item{save.support.bins}{if TRUE (default) the bins used for the normalization are
 saved in the output object 'norm.stats'.}
 
-\item{twopass.norm}{should the supporting bins defined using a two-pass approach. Default is FALSE.}
+\item{norm}{the type of normalization. '1pass' (default) means one pass of normalization. Other options are '2pass' and 'bootstrap'.}
 }
 \value{
 a list with
