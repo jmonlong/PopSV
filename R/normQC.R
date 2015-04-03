@@ -98,11 +98,13 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
     if(plot){
       ## Rank
       print(ggplot2::ggplot(res.df, ggplot2::aes(x=nb.rank)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::xlab("number of samples with rank bias") + ggplot2::ylab("number of regions"))
-      zlim = quantile(abs(as.numeric(z)), probs=.98)
+      zlim = quantile(abs(as.numeric(z)), probs=.99) + 3
       ## Best Z-scores
-      print(ggplot2::ggplot(reshape::melt(z[,samples[order(non.norm.z)[1:6]]]), ggplot2::aes(x=value)) + ggplot2::geom_density() + ggplot2::theme_bw() + ggplot2::xlim(-1*zlim,zlim) + ggplot2::facet_wrap(~variable, scales="free") + ggplot2::xlab("Z-score"))
+      zt = t(z[samples[order(non.norm.z)[1:6]],])
+      print(ggplot2::ggplot(reshape::melt(zt), ggplot2::aes(x=value)) + ggplot2::geom_density() + ggplot2::theme_bw() + ggplot2::xlim(-1*zlim,zlim) + ggplot2::facet_wrap(~X2, scales="free") + ggplot2::xlab("Z-score"))
       ## Worst Z-scores
-      print(ggplot2::ggplot(reshape::melt(z[,samples[order(-1*non.norm.z)[1:6]]]), ggplot2::aes(x=value)) + ggplot2::geom_density() + ggplot2::theme_bw() + ggplot2::xlim(-1*zlim,zlim) + ggplot2::facet_wrap(~variable, scales="free") + ggplot2::xlab("Z-score"))
+      zt = t(z[samples[order(-non.norm.z)[1:6]],])
+      print(ggplot2::ggplot(reshape::melt(zt), ggplot2::aes(x=value)) + ggplot2::geom_density() + ggplot2::theme_bw() + ggplot2::xlim(-zlim,zlim) + ggplot2::facet_wrap(~X2, scales="free") + ggplot2::xlab("Z-score"))
     }
     
     qv.normal = qvalue::qvalue(res.df$pv.normal)
