@@ -17,6 +17,7 @@ comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrit
     if (rm.input) 
       file.remove(files[file.ii])
     Rsamtools::indexTabix(final.file, format = "bed")
-    return(paste(final.file, "created and indexed."))
+    ##message(paste(final.file, "created and indexed."))
+    return(final.file)
   })
 } 

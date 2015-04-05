@@ -7,11 +7,11 @@
 ##' 'correct.GC' was run.
 ##' @param bin.df a data.frame with the information about the bins. Columns 'chr', 'start'
 ##' and 'end' are required.
+##' @param outfile.prefix the prefix of the name of the output file. The suffix '.bgz' will
+##' be appended if compressed ('appendIndex.outfile=TRUE'). 
 ##' @param ref.samples a vector with the names of the samples planned to be used
 ##' as reference.
 ##' @param nb.ref.samples the number of reference samples desired. Default is the size of 'ref.samples'.
-##' @param outfile.prefix the prefix of the name of the output file. The suffix '.bgz' will
-##' be appended if compressed ('appendIndex.outfile=TRUE'). 
 ##' @param plot should PCA graphs be outputed. Default is TRUE.
 ##' @param appendIndex.outfile if TRUE (default), the results will be appended regularly on
 ##' the output file which will be ultimately indexed. This is recommend when a large number
@@ -31,12 +31,21 @@
 ##' \item{pc.ref.df}{a data.frame with the first 3 principal components for the final reference samples.}
 ##' @author Jean Monlong
 ##' @export
-qc.samples <- function(files.df, bin.df, ref.samples = NULL, nb.ref.samples = NULL, 
-                       outfile.prefix, plot = TRUE, appendIndex.outfile = TRUE, chunk.size = 1e+05, col.bc = "bc.gc.gz", nb.cores = 1) {
-  if (is.null(ref.samples)) 
+qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.ref.samples = NULL, plot = TRUE, appendIndex.outfile = TRUE, chunk.size = 1e+05, col.bc = "bc.gc.gz", nb.cores = 1) {
+
+  ## Checks and arguments completion
+  if(!all(c("chr","start","end") %in% colnames(bin.df))){
+    stop("Missing column in 'bin.df'. 'chr', 'start' and 'end' are required.")
+  }
+  if(!all(c("sample", col.bc) %in% colnames(files.df))){
+    stop("Missing column in 'files.df'. 'sample', '",col.bc,"' are required.")
+  }
+  if (is.null(ref.samples)) {
     ref.samples = as.character(files.df$sample)
-  if (is.null(nb.ref.samples)) 
+  }
+  if (is.null(nb.ref.samples)) {
     nb.ref.samples = length(ref.samples)
+  }
   
   ## Flexible function to read bin counts on specific bins, several files, ...
   read.bc.samples <- function(df, files.df, nb.cores = 1, med.med = NULL, med.samp = NULL, 
@@ -48,11 +57,11 @@ qc.samples <- function(files.df, bin.df, ref.samples = NULL, nb.ref.samples = NU
     bc.df$start = df$start
     bc.df$end = df$end
     if (nb.cores > 1) {
-      bc.l = parallel::mclapply(files.df[, col.bc], function(fi) {
+      bc.l = parallel::mclapply(as.character(files.df[, col.bc]), function(fi) {
         read.bedix(fi, df)[, 4]
       }, mc.cores = nb.cores)
     } else {
-      bc.l = lapply(files.df[, col.bc], function(fi) {
+      bc.l = lapply(as.character(files.df[, col.bc]), function(fi) {
         read.bedix(fi, df)[, 4]
       })
     }
@@ -79,6 +88,7 @@ qc.samples <- function(files.df, bin.df, ref.samples = NULL, nb.ref.samples = NU
     rownames(m)[which.min(apply(dm, 2, mean, na.rm = TRUE))]
   }
   
+  files.df = files.df[which(files.df$sample %in% ref.samples), ]
   ## Too many ref.samples
   pc.all.df = bc.rand = NULL
   if (length(ref.samples) > nb.ref.samples) {
@@ -97,8 +107,7 @@ qc.samples <- function(files.df, bin.df, ref.samples = NULL, nb.ref.samples = NU
       m[pts.ii, ]
     }
     ## Get subset of bins
-    bc.rand = read.bc.samples(bin.df[sample(1:nrow(bin.df), 1000), ], files.df, 
-      med.med = 1, med.samp = rep(list(1), nrow(files.df)))
+    bc.rand = read.bc.samples(bin.df[sample.int(nrow(bin.df), min(c(nrow(bin.df)/2,1000))), ], files.df, med.med = 1, med.samp = rep(list(1), nrow(files.df)))
     ## PCA
     bc.mv = medvar.norm.internal(bc.rand[, ref.samples])
     pc.all = prcomp(t(na.exclude(bc.mv)))
@@ -126,13 +135,12 @@ qc.samples <- function(files.df, bin.df, ref.samples = NULL, nb.ref.samples = NU
     bin.df$chunk = rep(1:nb.chunks, each = chunk.size)[1:nrow(bin.df)]
     analyze.chunk <- function(df) {
       ch.nb = as.numeric(df$chunk[1])
-      df.o = read.bedix(files.df[1, col.bc], df)
+      df.o = read.bedix(as.character(files.df[1, col.bc]), df)
       read.bc.samples(df.o, files.df, nb.cores, med.med, med.samp, file = outfile.prefix, 
                       append.f = ch.nb > 1, sub.bc = chunk.size/nb.chunks)
     }
     if (is.null(bc.rand)) {
-      bc.rand = read.bc.samples(bin.df[sample(1:nrow(bin.df), 1000), ], files.df, 
-        med.med = 1, med.samp = rep(list(1), nrow(files.df)))
+      bc.rand = read.bc.samples(bin.df[sample.int(nrow(bin.df), min(c(nrow(bin.df)/2,1000))), ], files.df, med.med = 1, med.samp = rep(list(1), nrow(files.df)))
     }
     med.samp = lapply(as.character(files.df$sample), function(samp.i) median(bc.rand[, 
       samp.i], na.rm = TRUE))  ## Normalization of the median coverage
@@ -155,6 +163,9 @@ qc.samples <- function(files.df, bin.df, ref.samples = NULL, nb.ref.samples = NU
   
   ## QC
   bc.mv = medvar.norm.internal(bc.df[, ref.samples])
+  if(any(is.infinite(bc.mv))){
+    bc.mv[which(is.infinite(bc.mv))] = NA
+  }
   pc.ref = prcomp(t(na.exclude(bc.mv)))
   pc.ref.df = data.frame(pc.ref$x[, 1:3])
   pc.ref.df$sample = ref.samples

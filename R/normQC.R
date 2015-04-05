@@ -96,6 +96,7 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
     pca.dmm = median(pca.d)/mean(pca.d)
 
     if(plot){
+      nb.rank = value = NULL  ## Uglily appease R checks
       ## Rank
       print(ggplot2::ggplot(res.df, ggplot2::aes(x=nb.rank)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::xlab("number of samples with rank bias") + ggplot2::ylab("number of regions"))
       zlim = quantile(abs(as.numeric(z)), probs=.99) + 3
