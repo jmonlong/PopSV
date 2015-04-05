@@ -46,6 +46,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
   }
 
   ## Plot reference samples
+  pos = m = value = NULL ## Uglily appease R checks
   if(!is.null(norm.stats.f)) {
     gp.o = ggplot2::ggplot(bc.ref, ggplot2::aes(x=pos)) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::geom_errorbar(ggplot2::aes(ymin=m-3*sd,ymax=m+3*sd)) + ggplot2::geom_point(ggplot2::aes(y=m))
   } else if(boxplot){
