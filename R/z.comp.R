@@ -37,7 +37,7 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     if(header){
       col.n = read.table(file, nrows=1, sep=sep, header=FALSE, as.is=TRUE)
     }
-    dt = data.table::fread(file,nrows=chunk.end-chunk.start+1, skip=chunk.start-1+as.numeric(header), header=FALSE, sep=sep)
+    dt = suppressWarnings(data.table::fread(file,nrows=chunk.end-chunk.start+1, skip=chunk.start-1+as.numeric(header), header=FALSE, sep=sep))
     data.table::setnames(dt, as.character(col.n))
     dt
   }
