@@ -71,8 +71,8 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     ## Read chunk
     if (is.data.frame(files.df)) {
       bc.1 = read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),subset(files.df, sample == samples[1])[, col])
-      bc.l = parallel::mclapply(subset(files.df, sample %in% samples)[, col], function(fi) {
-        read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),fi)[, 4, with = FALSE]
+      bc.l = parallel::mclapply(samples, function(samp.i) {
+        read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),as.character(files.df[which(files.df$sample==samp.i), col]))[, 4, with = FALSE]
       }, mc.cores = nb.cores)
       bc.l = matrix(unlist(bc.l), ncol=length(bc.l))
     } else {
