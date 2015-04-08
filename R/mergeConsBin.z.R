@@ -90,7 +90,7 @@ mergeConsBin.z <- function(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06) {
   res.df = res.df[which(res.df$link != "none"), ]
   if (nrow(res.df) > 0) {
     merge.event.f <- function(df.f) {
-      df.o = with(df.f, data.frame(chr = chr, start = min(start), end = max(end), nb.bin.cons = nrow(df.f)))
+      df.o = with(df.f, data.frame(chr = head(chr,1), start = min(start), end = max(end), nb.bin.cons = nrow(df.f)))
       cbind(df.o,
             t(apply(df.f[, intersect(colnames(df.f), col.mean), drop = FALSE], 2, fun3)),
             t(apply(df.f[, intersect(colnames(df.f), col.mean.log), drop = FALSE], 2, fun3, log.x=TRUE))
