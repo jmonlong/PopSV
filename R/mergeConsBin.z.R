@@ -59,7 +59,7 @@ mergeConsBin.z <- function(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06) {
   }
   ## Simulate the empirical null distribution
   ## z.null = apply(rbind(rnorm(nb.sim, 0, sd.null), rnorm(nb.sim, 0, sd.null)), 2, sort)
-  z.null = apply(rbind(sample(df$z, nb.sim, replace=TRUE), sample(df$z, nb.sim, replace=TRUE)), 2, sort)
+  z.null = apply(rbind(sample(res.df$z, nb.sim, replace=TRUE), sample(res.df$z, nb.sim, replace=TRUE)), 2, sort)
   ## Compute P-values
   res.df = with(res.df, dplyr::arrange(res.df, chr, start))
   pvLink.f <- function(df) {
