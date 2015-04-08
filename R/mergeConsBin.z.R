@@ -58,52 +58,50 @@ mergeConsBin.z <- function(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06) {
     }
   }
   ## Simulate the empirical null distribution
-  z.null = apply(rbind(rnorm(nb.sim, 0, sd.null), rnorm(nb.sim, 0, sd.null)), 2, 
-    sort)
+  ## z.null = apply(rbind(rnorm(nb.sim, 0, sd.null), rnorm(nb.sim, 0, sd.null)), 2, sort)
+  z.null = apply(rbind(sample(df$z, nb.sim, replace=TRUE), sample(df$z, nb.sim, replace=TRUE)), 2, sort)
   ## Compute P-values
   res.df = with(res.df, dplyr::arrange(res.df, chr, start))
   pvLink.f <- function(df) {
     z.link = apply(rbind(df$z[-1], df$z[-nrow(df)]), 2, sort)
-    data.frame(pv.dup = compute.pv(z.link[1, ], z.null = z.null[1, ]), pv.del = compute.pv(z.link[2, 
-                                                                         ], z.null = z.null[2, ], alt.greater = FALSE))
+    data.frame(pv.dup = compute.pv(z.link[1, ], z.null = z.null[1, ]), pv.del = compute.pv(z.link[2, ], z.null = z.null[2, ], alt.greater = FALSE))
   }
-  chr = . = link = NULL  ## Uglily appease R checks
-  link.df = dplyr::do(dplyr::group_by(res.df, chr), pvLink.f(.))
+  link.df = lapply(unique(res.df$chr), function(chr.i)data.frame(chr=chr.i, pvLink.f(res.df[which(res.df$chr==chr.i),])))
+  link.df = plyr::ldply(link.df, identity)
   ## Multiple test correction
-  link.df$qv.dup = fdrtool::fdrtool(link.df$pv.dup, statistic = "pvalue", plot = FALSE, 
-    verbose = FALSE)$qval
-  link.df$qv.del = fdrtool::fdrtool(link.df$pv.del, statistic = "pvalue", plot = FALSE, 
-    verbose = FALSE)$qval
+  link.df$qv.dup = fdrtool::fdrtool(link.df$pv.dup, statistic = "pvalue", plot = FALSE, verbose = FALSE)$qval
+  link.df$qv.del = fdrtool::fdrtool(link.df$pv.del, statistic = "pvalue", plot = FALSE, verbose = FALSE)$qval
   ## Annotate and merge bins
   link.annotate.f <- function(df) {
-    cat(df$chr[1], "\n")
+    ##cat(df$chr[1], "\n")
     link.df = link.df[which(link.df$chr == df$chr[1]), ]
     link.v = rep("none", nrow(df))
-    link.v[c(FALSE, link.df$qv.dup <= fdr.th) | c(link.df$qv.dup <= fdr.th, FALSE) | 
-           (df$qv <= fdr.th & df$z > 0)] = "dup"
-    link.v[c(FALSE, link.df$qv.del <= fdr.th) | c(link.df$qv.del <= fdr.th, FALSE) | 
-           (df$qv <= fdr.th & df$z < 0)] = "del"
+    link.v[c(FALSE, link.df$qv.dup <= fdr.th) | c(link.df$qv.dup <= fdr.th, FALSE) | (df$qv <= fdr.th & df$z > 0)] = "dup"
+    link.v[c(FALSE, link.df$qv.del <= fdr.th) | c(link.df$qv.del <= fdr.th, FALSE) | (df$qv <= fdr.th & df$z < 0)] = "del"
     rl = rle(link.v)
     rlv = rl$values
-    rlv[rlv != "none"] = paste(link.df$chr[1], rlv[rlv != "none"], 1:sum(rlv != 
-                                                     "none"))
+    rlv[rlv != "none"] = paste(link.df$chr[1], rlv[rlv != "none"], 1:sum(rlv != "none"))
     df$link = rep(rlv, rl$lengths)
     return(df)
   }
-  res.df = dplyr::do(dplyr::group_by(res.df, chr), link.annotate.f(.))
+  ##res.df = dplyr::do(dplyr::group_by(res.df, chr), link.annotate.f(.))
+  res.df = lapply(unique(res.df$chr), function(chr.i)link.annotate.f(res.df[which(res.df$chr==chr.i),]))
+  res.df = plyr::ldply(res.df, identity)
   res.df = res.df[which(res.df$link != "none"), ]
   if (nrow(res.df) > 0) {
     merge.event.f <- function(df.f) {
-      df.o = with(df.f, data.frame(start = min(start), end = max(end), nb.bin.cons = nrow(df.f)))
+      df.o = with(df.f, data.frame(chr = chr, start = min(start), end = max(end), nb.bin.cons = nrow(df.f)))
       cbind(df.o,
             t(apply(df.f[, intersect(colnames(df.f), col.mean), drop = FALSE], 2, fun3)),
             t(apply(df.f[, intersect(colnames(df.f), col.mean.log), drop = FALSE], 2, fun3, log.x=TRUE))
             )
     }
-    res.df = as.data.frame(dplyr::do(dplyr::group_by(res.df, link, chr), merge.event.f(.)))
+    ##res.df = as.data.frame(dplyr::do(dplyr::group_by(res.df, link, chr), merge.event.f(.)))
+    res.df = lapply(unique(res.df$link), function(l.i) merge.event.f(res.df[which(res.df$link==l.i),]))
+    res.df = plyr::ldply(res.df, identity)
   } else {
     res.df = NULL
   }
-  res.df$link = NULL
+  ##res.df$link = NULL
   return(res.df)
 } 
