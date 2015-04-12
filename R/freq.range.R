@@ -26,6 +26,7 @@ freq.range <- function(range.df, plot=FALSE){
   }
   fr.df = freq.chr.gr(range.df)
   if(plot){
+    chr = nb = prop = gen.kb = NULL ## Uglily silence R checks
     f.df = fr.df %>% dplyr::group_by(chr, start, end) %>% dplyr::summarize(nb=sum(nb), prop=sum(prop), gen.kb=head((end-start)/1e3, 1)) %>% dplyr::arrange(chr)
     print(suppressWarnings(ggplot2::ggplot(f.df, ggplot2::aes(x=signif(prop,3), y=gen.kb, fill=chr)) + ggplot2::xlab("proportion of samples") + 
           ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() +
