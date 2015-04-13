@@ -74,7 +74,7 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
         bin.for.norm = colnames(bc)[d.o.i]
         norm.coeff = norm.tm.opt(bc.g, ref.col = bc.g[, cont.sample])
         bc.t = bc.i * norm.coeff
-        msd = mean.sd.outlierR(bc.t, 1e-06)
+        msd = mean.sd.outlierR(bc.t)
         if(norm[1]=="2pass" & sum(as.numeric(bc.i) > 0) >= 5){
           med.samps = order(abs(bc.t-msd$m))[1:(length(bc.i)*.5)]
           d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i[med.samps]), bc[med.samps,], use = "pairwise.complete.obs")))
@@ -84,7 +84,7 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
           bin.for.norm = colnames(bc)[d.o.i]
           norm.coeff = norm.tm.opt(bc.g, ref.col = bc.g[, cont.sample])
           bc.t = bc.i * norm.coeff
-          msd = mean.sd.outlierR(bc.t, 1e-06)
+          msd = mean.sd.outlierR(bc.t)
         }
         if (any(!is.na(bc.t))) {
           norm.stats[bin.ii, 4:7] = round(c(msd$m, msd$sd, msd$nb.remove, d.max), 3)

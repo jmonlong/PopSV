@@ -83,7 +83,7 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
 
     ## Get or compute mean/sd in reference
     if (is.null(msd.f)) {
-      msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,], pv.max.ol = 1e-05)), mc.cores=nb.cores)
+      msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,])), mc.cores=nb.cores)
       msd = matrix(unlist(msd), nrow=3)
       rownames(msd) = c("m","sd","nb.remove")
     } else {
