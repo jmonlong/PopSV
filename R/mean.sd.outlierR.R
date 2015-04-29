@@ -70,5 +70,5 @@ mean.sd.outlierR <- function(x, pv.max.ol = 1e-06) {
     x.rm = xs
   }
   
-  return(list(m = trim.mean(x.rm), sd = sd.mad(x.rm), nb.remove = length(x) - sum(!is.na(x.rm))))
+  return(list(m = max(1,trim.mean(x.rm)), sd = max(1,sd.mad(x.rm)), nb.remove = length(x) - sum(!is.na(x.rm))))
 } 
