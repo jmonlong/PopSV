@@ -17,7 +17,7 @@
 ##' \item{msd}{the mean, standard deviation and number of removed outlier samples in each bin.}
 ##' @author Jean Monlong
 ##' @export
-z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc.gc.norm.gz", nb.cores = 1, chunk.size=NULL, out.prefix=NULL) {
+z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc.gc.norm.gz", nb.cores = 1, chunk.size=NULL, out.prefix=NULL, samp.cluster.pv=1e-4) {
   
   if (z.poisson) {
     z.comp.f <- function(x, mean.c, sd.c) {
@@ -83,7 +83,7 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
 
     ## Get or compute mean/sd in reference
     if (is.null(msd.f)) {
-      msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,])), mc.cores=nb.cores)
+      msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,],pv.max.ol=samp.cluster.pv)), mc.cores=nb.cores)
       msd = matrix(unlist(msd), nrow=3)
       rownames(msd) = c("m","sd","nb.remove")
     } else {
