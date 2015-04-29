@@ -7,7 +7,7 @@
 ##' @return a vector similar to 'x' but with NAs for outliers.
 ##' @author Jean Monlong
 ##' @keywords internal
-mean.sd.outlierR <- function(x, pv.max.ol = 1e-05) {
+mean.sd.outlierR <- function(x, pv.max.ol = 1e-06) {
   
   sd.mad <- function(x) {
     if (all(x == 0, na.rm = TRUE)) {
@@ -20,7 +20,7 @@ mean.sd.outlierR <- function(x, pv.max.ol = 1e-05) {
       return(sd.res)
     }
   }
-  trim.mean <- function(x, probs=c(.2,.8)){
+  trim.mean <- function(x, probs=c(.4,.6)){
     qq = quantile(x,probs=probs, na.rm=TRUE)
     x[x<qq[1] | x>qq[2]] = NA
     m = mean(x, na.rm=TRUE)

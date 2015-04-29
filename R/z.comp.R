@@ -17,7 +17,7 @@
 ##' \item{msd}{the mean, standard deviation and number of removed outlier samples in each bin.}
 ##' @author Jean Monlong
 ##' @export
-z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc.gc.norm.gz", nb.cores = 1, chunk.size=NULL, out.prefix=NULL, samp.cluster.pv=1e-4) {
+z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc.gc.norm.gz", nb.cores = 1, chunk.size=NULL, out.prefix=NULL, samp.cluster.pv=1e-6) {
   
   if (z.poisson) {
     z.comp.f <- function(x, mean.c, sd.c) {
