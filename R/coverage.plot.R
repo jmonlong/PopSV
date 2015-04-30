@@ -52,7 +52,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
   } else if(boxplot){
     gp.o = ggplot2::ggplot(bc.ref, ggplot2::aes(x=pos, y=value)) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::geom_boxplot(ggplot2::aes(group=pos), fill="lightblue",alpha=.7)
   } else {
-    gp.o = ggplot2::ggplot(bc.ref, ggplot2::aes(x=pos, y=value)) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::geom_violin(ggplot2::aes(group=pos), fill="lightblue",alpha=.7)
+    gp.o = ggplot2::ggplot(bc.ref, ggplot2::aes(x=pos, y=value)) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::geom_violin(ggplot2::aes(group=pos), fill="lightblue",alpha=.7, scale="width")
   }
   
   

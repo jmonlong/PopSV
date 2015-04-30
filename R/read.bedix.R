@@ -15,6 +15,9 @@
 ##' @import data.table
 read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE) {
 
+  if(!is.character(file)){
+    file = as.character(file)
+  }
   if(!file.exists(file)){
     file = paste0(file, ".bgz")
   }

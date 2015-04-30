@@ -4,7 +4,7 @@
 \alias{normQC}
 \title{Normalized bin count QC metrics}
 \usage{
-normQC(bc.df, n.subset = 10000, nb.cores = 1)
+normQC(bc.df, n.subset = 10000, nb.cores = 1, plot = FALSE)
 }
 \arguments{
 \item{bc.df}{matrix with bin counts (bins x samples).}
@@ -12,6 +12,8 @@ normQC(bc.df, n.subset = 10000, nb.cores = 1)
 \item{n.subset}{number of bins to use for the analysis. Default is 10 000. Bins are selected randomly.}
 
 \item{nb.cores}{the number of cores to use. Default is 1.}
+
+\item{plot}{Should some graphs be outputed ? Default is FALSE.}
 }
 \value{
 a list with

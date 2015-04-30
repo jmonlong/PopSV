@@ -12,6 +12,8 @@ test_that("Writes and reads entire files",{
   expect_equal(length(comp.index.files(c("test.tsv","test2.tsv"))), 2)
   df = read.bedix("test.tsv.bgz")
   expect_equal(df$bc, b1.df$bc)
+  expect_equal(df$chr, b1.df$chr)
+  expect_equal(df$start, b1.df$start)
   expect_equal(file.remove(c("test.tsv.bgz","test2.tsv.bgz","test.tsv.bgz.tbi","test2.tsv.bgz.tbi")), rep(TRUE,4))
 })
 
@@ -30,12 +32,18 @@ test_that("Reads subsets",{
   ii = sort(sample.int(10))
   df = read.bedix("test.tsv.bgz", b1.df[ii,])
   expect_equal(df$bc, b1.df$bc[ii])
+  expect_equal(df$chr, b1.df$chr[ii])
+  expect_equal(df$start, b1.df$start[ii])
   ii = sort(sample.int(100))
   df = read.bedix("test.tsv.bgz", b1.df[ii,])
   expect_equal(df$bc, b1.df$bc[ii])
+  expect_equal(df$chr, b1.df$chr[ii])
+  expect_equal(df$start, b1.df$start[ii])
   ii = sort(sample.int(500))
   df = read.bedix("test.tsv.bgz", b1.df[ii,])
   expect_equal(df$bc, b1.df$bc[ii])
+  expect_equal(df$chr, b1.df$chr[ii])
+  expect_equal(df$start, b1.df$start[ii])
   file.remove("test.tsv.bgz","test.tsv.bgz.tbi")
 })
 
@@ -101,7 +109,6 @@ test_that("Checks for bins missing columns",{
   file.remove("test.tsv.bgz","test.tsv.bgz.tbi")
 })
 
-
 test_that("Returns null if no data in the queried region", {
   write.table(b1.df, file="test.tsv", quote=FALSE, sep="\t", row.names=FALSE)
   expect_equal(length(comp.index.files("test.tsv")), 1)
@@ -109,5 +116,16 @@ test_that("Returns null if no data in the queried region", {
   b1.df$chr = 22
   df = read.bedix("test.tsv.bgz", b1.df)
   expect_true(is.null(df))
+  file.remove("test.tsv.bgz","test.tsv.bgz.tbi")
+})
+
+test_that("Factors doesn't cause errors",{
+  write.table(b1.df, file="test.tsv", quote=FALSE, sep="\t", row.names=FALSE)
+  expect_equal(length(comp.index.files("test.tsv")), 1)
+  ii = sort(sample.int(10))
+  df = read.bedix(factor("test.tsv.bgz"), b1.df[ii,])
+  expect_equal(df$bc, b1.df$bc[ii])
+  expect_equal(df$chr, b1.df$chr[ii])
+  expect_equal(df$start, b1.df$start[ii])
   file.remove("test.tsv.bgz","test.tsv.bgz.tbi")
 })

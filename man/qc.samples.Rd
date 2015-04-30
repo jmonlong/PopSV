@@ -4,8 +4,8 @@
 \alias{qc.samples}
 \title{Join and QC of samples}
 \usage{
-qc.samples(files.df, bin.df, ref.samples = NULL, nb.ref.samples = NULL,
-  outfile.prefix, plot = TRUE, appendIndex.outfile = TRUE,
+qc.samples(files.df, bin.df, outfile.prefix, ref.samples = NULL,
+  nb.ref.samples = NULL, plot = TRUE, appendIndex.outfile = TRUE,
   chunk.size = 1e+05, col.bc = "bc.gc.gz", nb.cores = 1)
 }
 \arguments{
@@ -17,13 +17,13 @@ present  after running 'initFileNames' function. Files should exist if
 \item{bin.df}{a data.frame with the information about the bins. Columns 'chr', 'start'
 and 'end' are required.}
 
+\item{outfile.prefix}{the prefix of the name of the output file. The suffix '.bgz' will
+be appended if compressed ('appendIndex.outfile=TRUE').}
+
 \item{ref.samples}{a vector with the names of the samples planned to be used
 as reference.}
 
 \item{nb.ref.samples}{the number of reference samples desired. Default is the size of 'ref.samples'.}
-
-\item{outfile.prefix}{the prefix of the name of the output file. The suffix '.bgz' will
-be appended if compressed ('appendIndex.outfile=TRUE').}
 
 \item{plot}{should PCA graphs be outputed. Default is TRUE.}
 
