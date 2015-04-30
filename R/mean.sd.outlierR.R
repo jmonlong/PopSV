@@ -7,7 +7,7 @@
 ##' @return a vector similar to 'x' but with NAs for outliers.
 ##' @author Jean Monlong
 ##' @keywords internal
-mean.sd.outlierR <- function(x, pv.max.ol = 1e-06) {
+mean.sd.outlierR <- function(x, pv.max.ol = 1e-05) {
   
   sd.mad <- function(x) {
     if (all(x == 0, na.rm = TRUE)) {
