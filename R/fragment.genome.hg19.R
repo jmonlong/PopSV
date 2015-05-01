@@ -31,7 +31,7 @@ fragment.genome.hp19 <- function(bin.size = 1000, chr.prefix=FALSE, XY.chr=FALSE
   fragment.chr <- function(chr.i) {
     starts = as.integer(seq(0, seql.chrs[chr.i], bin.size))
     ends = as.integer(starts + bin.size - 1)
-    ends[length(ends)] = as.integer(seql.chrs[chr.i])
+    ends[length(ends)] = as.integer(seql.chrs[chr.i])-1
     data.frame(chr = chrs[chr.i], start = starts, end = ends)
   }
   
