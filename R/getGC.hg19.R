@@ -21,7 +21,7 @@ getGC.hg19 <- function(bins.df) {
         } else {
             chrs = df$chr
         }
-        seq.l = Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, chrs, df$start+1, df$end+1)
+        seq.l = Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, chrs, df$start, df$end)
         lf = Biostrings::letterFrequency(seq.l, letters = c("G", "C"))
         df$GCcontent = rowSums(lf)/(df$end - df$start + 1)
         df[which(!is.na(df$GCcontent)), ]
