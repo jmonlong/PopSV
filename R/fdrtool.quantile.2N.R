@@ -68,8 +68,7 @@ fdrtool.quantile.2N <- function(z, plot = TRUE, min.prop.null = 0.95) {
         pars["p"] * pnorm(z, 0, pars["s1"]) + (1 - pars["p"]) * pnorm(z, 0, pars["s2"])
     }
     
-    res = list(pval = rep(NA, length(z)), qval = rep(NA, length(z)), sigma.est.dup = NA, 
-        sigma.est.del = NA)
+    res = list(pval = rep(NA, length(z)), qval = rep(NA, length(z)), sigma.est.dup = NA, sigma.est.del = NA)
     z[which(is.infinite(z))] = NA  ## Remove infinite values
     non.na.i = which(!is.na(z) & z != 0)
     z.non.na = z[non.na.i]
@@ -84,6 +83,7 @@ fdrtool.quantile.2N <- function(z, plot = TRUE, min.prop.null = 0.95) {
         p = find.par(z.dup)
     }
     res$pval[non.na.i[z.non.na > 0]] = 2 * p2norm(-abs(z.dup), p$par)
+    res$sigma.est.dup = p$par["s1"]
     ## Deletion
     z.del = z.non.na[z.non.na < 0]
     z.del = sample(c(-1, 1), length(z.del), replace = TRUE) * z.del
@@ -93,6 +93,7 @@ fdrtool.quantile.2N <- function(z, plot = TRUE, min.prop.null = 0.95) {
         p = find.par(z.del)
     }
     res$pval[non.na.i[z.non.na < 0]] = 2 * p2norm(-abs(z.del), p$par)
+    res$sigma.est.del = p$par["s1"]
     
     if (any(res$pval == 0, na.rm = TRUE)) 
         res$pval[which(res$pval == 0)] = .Machine$double.xmin
