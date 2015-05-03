@@ -64,7 +64,7 @@ mergeConsBin.z <- function(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06, s
   res.df = with(res.df, dplyr::arrange(res.df, chr, start))
   pvLink.f <- function(df) {
     z.link = apply(rbind(df$z[-1], df$z[-nrow(df)]), 2, sort)
-    data.frame(chr=df$chr,start=df$start[-nrow(df)],end=df$end[-1],pv.dup = compute.pv(z.link[1, ], z.null = z.null[1, ]), pv.del = compute.pv(z.link[2,], z.null = z.null[2, ], alt.greater = FALSE))
+    data.frame(start=df$start[-nrow(df)],end=df$end[-1],pv.dup = compute.pv(z.link[1, ], z.null = z.null[1, ]), pv.del = compute.pv(z.link[2,], z.null = z.null[2, ], alt.greater = FALSE))
   }
   link.df = lapply(unique(res.df$chr), function(chr.i)data.frame(chr=chr.i, pvLink.f(res.df[which(res.df$chr==chr.i),])))
   link.df = plyr::ldply(link.df, identity)
