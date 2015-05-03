@@ -37,7 +37,7 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     if(header){
       col.n = read.table(file, nrows=1, sep=sep, header=FALSE, as.is=TRUE)
     }
-    dt = data.table::fread(file,nrows=chunk.end-chunk.start+1, skip=chunk.start-1+as.numeric(header), header=FALSE, sep=sep)
+    dt = suppressWarnings(data.table::fread(file,nrows=chunk.end-chunk.start+1, skip=chunk.start-1+as.numeric(header), header=FALSE, sep=sep))
     data.table::setnames(dt, as.character(col.n))
     dt
   }
@@ -71,8 +71,8 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     ## Read chunk
     if (is.data.frame(files.df)) {
       bc.1 = read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),subset(files.df, sample == samples[1])[, col])
-      bc.l = parallel::mclapply(subset(files.df, sample %in% samples)[, col], function(fi) {
-        read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),fi)[, 4, with = FALSE]
+      bc.l = parallel::mclapply(samples, function(samp.i) {
+        read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),as.character(files.df[which(files.df$sample==samp.i), col]))[, 4, with = FALSE]
       }, mc.cores = nb.cores)
       bc.l = matrix(unlist(bc.l), ncol=length(bc.l))
     } else {
@@ -83,7 +83,7 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
 
     ## Get or compute mean/sd in reference
     if (is.null(msd.f)) {
-      msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,], pv.max.ol = 1e-06)), mc.cores=nb.cores)
+      msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,])), mc.cores=nb.cores)
       msd = matrix(unlist(msd), nrow=3)
       rownames(msd) = c("m","sd","nb.remove")
     } else {

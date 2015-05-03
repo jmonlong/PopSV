@@ -120,26 +120,25 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     res.df$qv = fdr$qval
     
     ## Remove large aberrations
-    aber.large = mergeConsBin.reduce(res.df[which(res.df$qv < 0.05), ], stitch.dist = 10 * bin.width)
-    aber.large = subset(aber.large, end - start > 1e+07)
-    if (nrow(aber.large) > 0 | !is.null(ref.dist.weight)) {
-      if (nrow(aber.large) > 0) {
-        aber.gr = with(aber.large, GenomicRanges::GRanges(chr, IRanges::IRanges(start, 
-          end)))
-        res.gr = with(res.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, 
-          end)))
-        res.aber.large = res.df[which(GenomicRanges::overlapsAny(res.gr, aber.gr)), ]
-        res.df = res.df[which(!GenomicRanges::overlapsAny(res.gr, aber.gr)), ]
-      }
-      fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 
-                                         0.01), ref.dist.weight = ref.dist.weight, plot = FALSE)
-      res.df$pv = fdr$pval
-      res.df$qv = fdr$qval
-      if (nrow(aber.large) > 0) {
-        res.df = rbind(res.df, res.aber.large)
-      }
-    }
-    res.df = res.df[which(res.df$qv < FDR.th), ]
+    ## aber.large = mergeConsBin.reduce(res.df[which(res.df$qv < 0.05), ], stitch.dist = 10 * bin.width)
+    ## aber.large = subset(aber.large, end - start > 1e+07)
+    ## if (nrow(aber.large) > 0 | !is.null(ref.dist.weight)) {
+    ##   if (nrow(aber.large) > 0) {
+    ##     aber.gr = with(aber.large, GenomicRanges::GRanges(chr, IRanges::IRanges(start, 
+    ##       end)))
+    ##     res.gr = with(res.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, 
+    ##       end)))
+    ##     res.aber.large = res.df[which(GenomicRanges::overlapsAny(res.gr, aber.gr)), ]
+    ##     res.df = res.df[which(!GenomicRanges::overlapsAny(res.gr, aber.gr)), ]
+    ##   }
+    ##   fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 
+    ##                                      0.01), ref.dist.weight = ref.dist.weight, plot = FALSE)
+    ##   res.df$pv = fdr$pval
+    ##   res.df$qv = fdr$qval
+    ##   if (nrow(aber.large) > 0) {
+    ##     res.df = rbind(res.df, res.aber.large)
+    ##   }
+    ## }
   } else if (z.th[1] == "consbins") {
     res.df = z.thres.cons.bins(res.df, plot = !is.null(out.pdf), pvalues = TRUE)$z.df
   } else if (z.th[1] == "sdest2N") {
@@ -149,7 +148,6 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     fdr = fdrtool.quantile.2N(res.df$z, plot = !is.null(out.pdf), min.prop.null = min.normal.prop)
     res.df$pv = fdr$pval
     res.df$qv = fdr$qval
-    res.df = res.df[which(res.df$qv < FDR.th), ]
   } else {
     stop("'z.th=': available thresholding approaches are : 'stitch', 'zscores'.")
   }
@@ -157,6 +155,7 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   if (merge.cons.bins[1] != "no") {
     
     if (merge.cons.bins[1] == "stitch") {
+      res.df = res.df[which(res.df$qv < FDR.th), ]
       if(is.null(stitch.dist)) {
         stitch.dist = bin.width + 1
       }

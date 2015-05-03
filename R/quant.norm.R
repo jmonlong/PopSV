@@ -38,7 +38,7 @@ quant.norm <- function(bc.df, nb.cores = 1, norm.stats.comp = TRUE) {
     if (norm.stats.comp) {
         norm.stats[, 4:6] = matrix(as.numeric(unlist(parallel::mclapply(1:nrow(bc.norm), 
             function(rr) {
-                msd = mean.sd.outlierR(as.numeric(bc.norm[rr, all.samples]), 1e-06)
+                msd = mean.sd.outlierR(as.numeric(bc.norm[rr, all.samples]))
                 return(c(msd$m, msd$sd, msd$nb.remove))
             }, mc.cores = nb.cores))), nrow(bc.norm))
     } else {

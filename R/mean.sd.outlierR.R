@@ -11,18 +11,52 @@ mean.sd.outlierR <- function(x, pv.max.ol = 1e-06) {
   if(any(x<0, na.rm=TRUE)){
     stop("Bin counts cannot be negative; negative value inputed.")
   }
-  
-  sd.mad <- function(x) {
-    if (all(x == 0, na.rm = TRUE)) 
-      return(sd(rpois(length(x), 0.5)))
-    sd.res = mad(x, na.rm = TRUE)
-    if (sd.res == 0) 
-      return(sd(rpois(length(x), 0.5))) else return(sd.res)
-  }
-  trim.mean <- function(x, probs=c(.2,.8)){
+
+  mean.sd.outlierR <- function(x, pv.max.ol = 1e-05) {
+    
+    sd.mad <- function(x) {
+      if (all(x == 0, na.rm = TRUE)) {
+        return(sd(rpois(length(x), 1)))
+      }
+      sd.res = mad(x, na.rm = TRUE)
+      if (sd.res == 0) {
+        return(sd(rpois(length(x), 1)))
+      } else {
+        return(sd.res)
+      }
+    }
+  trim.mean <- function(x, probs=c(.4,.6)){
     qq = quantile(x,probs=probs, na.rm=TRUE)
     x[x<qq[1] | x>qq[2]] = NA
-    mean(x, na.rm=TRUE)
+    m = mean(x, na.rm=TRUE)
+    if(m==0){
+      return(1)
+    }
+    return(m)
+  }
+  fit2norm.msd <- function(z) {
+    mix.obj <- function(p, x) {
+      e <- p[1] * dnorm((x-p[2])/p[4])/p[4] + (1 - p[1]) * dnorm((x-p[3])/p[5])/ p[5]
+      if (any(e <= 0, na.rm = TRUE) | p[1] < 0 | p[1] > 1) 
+      Inf else -sum(log(e))
+    }
+    lmix2a <- deriv(~-log(p * dnorm((x-m1)/s1)/s1 + (1 - p) * dnorm((x-m2)/s2)/s2), c("p", "m1","m2", "s1", "s2"), function(x, p, m1, m2, s1, s2) NULL)
+    mix.gr <- function(pa, x) {
+      p <- pa[1]
+      m1 <- pa[2]
+      m2 <- pa[3]
+      s1 <- pa[4]
+      s2 <- pa[5]
+      colSums(attr(lmix2a(x, p, m1, m2, s1, s2), "gradient"))
+    }
+    p0 = c(p=.9, m1=median(z), m2=mean(z), s1=mad(z)/2, s2=sd(z))
+    results = optim(p0, mix.obj, mix.gr, x = z)
+    if (results$par[1] < 0.5) {
+      results$par[1] = 1 - results$par[1]
+      results$par[2:3] = results$par[3:2]
+      results$par[4:5] = results$par[5:4]
+    }
+    results
   }
   grubbs.sw <- function(x, type = 10, opposite = FALSE, two.sided = TRUE, max.pv = 0.01, max.step = 10) {
     grubbs.t <- function(x, type = 10, opposite = FALSE, two.sided = TRUE) {
@@ -64,6 +98,8 @@ mean.sd.outlierR <- function(x, pv.max.ol = 1e-06) {
   } else {
     x.rm = xs
   }
-  
-  return(list(m = trim.mean(x.rm), sd = sd.mad(x.rm), nb.remove = length(x) - sum(!is.na(x.rm))))
+  return(list(m = max(1,trim.mean(x.rm)), sd = max(1,sd.mad(x.rm)), nb.remove = length(x) - sum(!is.na(x.rm))))
+  ## Mixture of Gaussian, more flexible/robust but 20 times slower...
+  ##msd = fit2norm.msd(na.omit(x.rm))
+  ##return(list(m = max(1,msd$par[2]), sd = max(1,msd$par[4]), nb.remove = length(x) - sum(!is.na(x.rm))))
 } 
