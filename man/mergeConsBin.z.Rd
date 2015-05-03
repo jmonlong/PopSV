@@ -4,7 +4,8 @@
 \alias{mergeConsBin.z}
 \title{Merge abnormal consecutive bins}
 \usage{
-mergeConsBin.z(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06)
+mergeConsBin.z(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06,
+  stitch.dist = 10000)
 }
 \arguments{
 \item{res.df}{a data.frame with the Z-scores. Columns 'chr', 'start', 'end' and 'z'
@@ -16,6 +17,8 @@ are required.}
 Usually, computed during P-value estimation by 'fdrtool.quantile'.}
 
 \item{nb.sim}{the number of simulated Z-scores for the P-value computation.}
+
+\item{stitch.dist}{the stitching distance, i.e. the maximum distance at which two bins will be merged.}
 }
 \value{
 a data.frame similar to the input 'res.df' but with an extra 'nb.bin.cons'

@@ -162,7 +162,7 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
       }
       res.df = mergeConsBin.reduce(res.df, stitch.dist = stitch.dist)
     } else if (merge.cons.bins[1] == "zscores") {
-      res.df = mergeConsBin.z(res.df, fdr.th = FDR.th, sd.null = max(c(fdr$sigma.est.dup,fdr$sigma.est.del)))
+      res.df = mergeConsBin.z(res.df, fdr.th = FDR.th, sd.null = max(c(fdr$sigma.est.dup,fdr$sigma.est.del)), stitch.dist = stitch.dist)
     } else {
       stop("'merge.cons.bins=' : available bin merging approaches are : 'stitch', 'zscores'.")
     }
