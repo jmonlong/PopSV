@@ -18,6 +18,12 @@ test_that("Robust to NAs", {
   expect_true(!is.na(msd$m))
   expect_true(!is.null(msd$sd))
   expect_true(!is.na(msd$sd))
+  x[1:100] = NA
+  msd = mean.sd.outlierR(x)  
+  expect_true(!is.null(msd$m))
+  expect_true(is.na(msd$m))
+  expect_true(!is.null(msd$sd))
+  expect_true(is.na(msd$sd))
 })
 
 test_that("Works different distributions", {
