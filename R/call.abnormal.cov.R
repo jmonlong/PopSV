@@ -105,7 +105,7 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     pdf(out.pdf, 13, 10)
   }
   
-  res.df = res.df[which(!is.na(res.df$z) & !is.infinite(res.df$z)),]
+  res.df = res.df[which(!is.na(res.df$z) & !is.infinite(res.df$z) & res.df$z!=0),]
   bin.width = median(round(res.df$end - res.df$start + 1), na.rm=TRUE)
   ## Pvalue/Qvalue estimation
   if (all(is.na(res.df$z)))

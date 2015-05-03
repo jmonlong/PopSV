@@ -100,6 +100,7 @@ mergeConsBin.z <- function(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06, s
   }
   
   red.i = chr = . = NULL  ## Uglily appease R checks
+  res.df = res.df[which(!is.na(res.df$red.i)),]
   res.df = as.data.frame(dplyr::do(dplyr::group_by(res.df, red.i, chr), merge.event.f(.)))
   res.df$red.i = NULL
   return(res.df)
