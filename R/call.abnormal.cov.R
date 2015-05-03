@@ -106,7 +106,7 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   }
   
   res.df = res.df[which(!is.na(res.df$z) & !is.infinite(res.df$z)),]
-  bin.width = median(round(res.df$end - res.df$start + 1))
+  bin.width = median(round(res.df$end - res.df$start + 1), na.rm=TRUE)
   ## Pvalue/Qvalue estimation
   if (all(is.na(res.df$z)))
     return(NULL)
@@ -151,14 +151,14 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   } else {
     stop("'z.th=': available thresholding approaches are : 'stitch', 'zscores'.")
   }
-  
+    
   if (merge.cons.bins[1] != "no") {
+    if(is.null(stitch.dist)) {
+      stitch.dist = bin.width + 1
+    }
     
     if (merge.cons.bins[1] == "stitch") {
       res.df = res.df[which(res.df$qv < FDR.th), ]
-      if(is.null(stitch.dist)) {
-        stitch.dist = bin.width + 1
-      }
       res.df = mergeConsBin.reduce(res.df, stitch.dist = stitch.dist)
     } else if (merge.cons.bins[1] == "zscores") {
       res.df = mergeConsBin.z(res.df, fdr.th = FDR.th, sd.null = max(c(fdr$sigma.est.dup,fdr$sigma.est.del)), stitch.dist = stitch.dist)
