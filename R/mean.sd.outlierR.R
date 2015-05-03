@@ -8,55 +8,58 @@
 ##' @author Jean Monlong
 ##' @keywords internal
 mean.sd.outlierR <- function(x, pv.max.ol = 1e-06) {
-    
-    sd.mad <- function(x) {
-        if (all(x == 0, na.rm = TRUE)) 
-            return(sd(rpois(length(x), 0.5)))
-        sd.res = mad(x, na.rm = TRUE)
-        if (sd.res == 0) 
-            return(sd(rpois(length(x), 0.5))) else return(sd.res)
+  if(any(x<0, na.rm=TRUE)){
+    stop("Bin counts cannot be negative; negative value inputed.")
+  }
+  
+  sd.mad <- function(x) {
+    if (all(x == 0, na.rm = TRUE)) 
+      return(sd(rpois(length(x), 0.5)))
+    sd.res = mad(x, na.rm = TRUE)
+    if (sd.res == 0) 
+      return(sd(rpois(length(x), 0.5))) else return(sd.res)
+  }
+  trim.mean <- function(x, probs=c(.2,.8)){
+    qq = quantile(x,probs=probs, na.rm=TRUE)
+    x[x<qq[1] | x>qq[2]] = NA
+    mean(x, na.rm=TRUE)
+  }
+  grubbs.sw <- function(x, type = 10, opposite = FALSE, two.sided = TRUE, max.pv = 0.01, max.step = 10) {
+    grubbs.t <- function(x, type = 10, opposite = FALSE, two.sided = TRUE) {
+      gt = outliers::grubbs.test(x, type, opposite, two.sided)
+      gt$outlier = outliers::outlier(x)
+      gt$outlier.i = which(outliers::outlier(x, logical = TRUE))[1]
+      return(gt)
     }
-    trim.mean <- function(x, probs=c(.2,.8)){
-      qq = quantile(x,probs=probs, na.rm=TRUE)
-      x[x<qq[1] | x>qq[2]] = NA
-      mean(x, na.rm=TRUE)
-    }
-    grubbs.sw <- function(x, type = 10, opposite = FALSE, two.sided = TRUE, max.pv = 0.01, max.step = 10) {
-      grubbs.t <- function(x, type = 10, opposite = FALSE, two.sided = TRUE) {
-        gt = outliers::grubbs.test(x, type, opposite, two.sided)
-        gt$outlier = outliers::outlier(x)
-        gt$outlier.i = which(outliers::outlier(x, logical = TRUE))[1]
-        return(gt)
+    pv = outliers = NULL
+    step = 1
+    continue = TRUE
+    while (continue & step <= max.step) {
+      gt = grubbs.t(as.numeric(x), type, opposite, two.sided)
+      if (gt$p.value > max.pv | all(is.na(gt$statistic))) {
+        continue = FALSE
+      } else {
+        pv = c(pv, gt$p.value)
+        outliers = c(outliers, gt$outlier.i)
+        x[outliers[step]] = NA
       }
-      pv = outliers = NULL
-      step = 1
-      continue = TRUE
-      while (continue & step <= max.step) {
-        gt = grubbs.t(as.numeric(x), type, opposite, two.sided)
-        if (gt$p.value > max.pv | all(is.na(gt$statistic))) {
-          continue = FALSE
-        } else {
-          pv = c(pv, gt$p.value)
-          outliers = c(outliers, gt$outlier.i)
-          x[outliers[step]] = NA
-        }
-        step = step + 1
-      }
-      return(list(x = x, pv = pv, outliers = outliers, max.pv = max.pv))
+      step = step + 1
     }
-    
-    xs = sort(x)
-    dd = diff(xs)
-    gt = grubbs.sw(dd, max.pv = pv.max.ol)
-    if (!is.null(gt$outliers)) {
-      cut.pos = c(0, sort(gt$outliers), length(xs))
-      gp.sizes = diff(cut.pos)
-      cm = which.max(gp.sizes)
-      x.rm = rep(NA, length(xs))
-      x.rm[(cut.pos[cm] + 1):cut.pos[cm + 1]] = xs[(cut.pos[cm] + 1):cut.pos[cm + 1]]
-    } else {
-      x.rm = xs
-    }
-    
-    return(list(m = trim.mean(x.rm), sd = sd.mad(x.rm), nb.remove = length(x) - sum(!is.na(x.rm))))
+    return(list(x = x, pv = pv, outliers = outliers, max.pv = max.pv))
+  }
+  
+  xs = sort(x)
+  dd = diff(xs)
+  gt = grubbs.sw(dd, max.pv = pv.max.ol)
+  if (!is.null(gt$outliers)) {
+    cut.pos = c(0, sort(gt$outliers), length(xs))
+    gp.sizes = diff(cut.pos)
+    cm = which.max(gp.sizes)
+    x.rm = rep(NA, length(xs))
+    x.rm[(cut.pos[cm] + 1):cut.pos[cm + 1]] = xs[(cut.pos[cm] + 1):cut.pos[cm + 1]]
+  } else {
+    x.rm = xs
+  }
+  
+  return(list(m = trim.mean(x.rm), sd = sd.mad(x.rm), nb.remove = length(x) - sum(!is.na(x.rm))))
 } 
