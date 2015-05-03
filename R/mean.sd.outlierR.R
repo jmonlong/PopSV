@@ -12,19 +12,17 @@ mean.sd.outlierR <- function(x, pv.max.ol = 1e-06) {
     stop("Bin counts cannot be negative; negative value inputed.")
   }
 
-  mean.sd.outlierR <- function(x, pv.max.ol = 1e-05) {
-    
-    sd.mad <- function(x) {
-      if (all(x == 0, na.rm = TRUE)) {
-        return(sd(rpois(length(x), 1)))
-      }
-      sd.res = mad(x, na.rm = TRUE)
-      if (sd.res == 0) {
-        return(sd(rpois(length(x), 1)))
-      } else {
-        return(sd.res)
-      }
+  sd.mad <- function(x) {
+    if (all(x == 0, na.rm = TRUE)) {
+      return(sd(rpois(length(x), 1)))
     }
+    sd.res = mad(x, na.rm = TRUE)
+    if (sd.res == 0) {
+      return(sd(rpois(length(x), 1)))
+    } else {
+      return(sd.res)
+    }
+  }
   trim.mean <- function(x, probs=c(.4,.6)){
     qq = quantile(x,probs=probs, na.rm=TRUE)
     x[x<qq[1] | x>qq[2]] = NA
@@ -38,7 +36,7 @@ mean.sd.outlierR <- function(x, pv.max.ol = 1e-06) {
     mix.obj <- function(p, x) {
       e <- p[1] * dnorm((x-p[2])/p[4])/p[4] + (1 - p[1]) * dnorm((x-p[3])/p[5])/ p[5]
       if (any(e <= 0, na.rm = TRUE) | p[1] < 0 | p[1] > 1) 
-      Inf else -sum(log(e))
+        Inf else -sum(log(e))
     }
     lmix2a <- deriv(~-log(p * dnorm((x-m1)/s1)/s1 + (1 - p) * dnorm((x-m2)/s2)/s2), c("p", "m1","m2", "s1", "s2"), function(x, p, m1, m2, s1, s2) NULL)
     mix.gr <- function(pa, x) {

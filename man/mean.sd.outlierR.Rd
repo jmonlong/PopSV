@@ -4,7 +4,7 @@
 \alias{mean.sd.outlierR}
 \title{Mean and standard diviation after outlier removal}
 \usage{
-\method{mean}{sd.outlierR}(x, pv.max.ol = 1e-05)
+\method{mean}{sd.outlierR}(x, pv.max.ol = 1e-06)
 }
 \arguments{
 \item{x}{a vector of numeric values.}
