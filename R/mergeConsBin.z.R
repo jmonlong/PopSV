@@ -23,9 +23,9 @@ mergeConsBin.z <- function(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06, s
   fun3 <- function(x, FUN = mean, log.x=FALSE) {
     if(log.x){x = log(x)}
     if (length(x) > 2) {
-      res.x = FUN(x[2:(length(x)-1)])
+      res.x = FUN(x[2:(length(x)-1)], na.rm=TRUE)
     } else if (length(x) == 2) {
-      res.x = FUN(x)
+      res.x = FUN(x, na.rm=TRUE)
     } else {
       res.x = x
     }
