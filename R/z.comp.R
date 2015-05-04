@@ -1,15 +1,14 @@
 ##' Z-score computation from bin count and/or mean/sd metrics on the reference samples
 ##'
 ##' @title Z-score computation
-##' @param files.df a data.frame with the file paths.
-##' @param samples the samples to analyze.
-##' @param msd.f the path to the file with mean/sd bin count on reference samples. 
+##' @param bc.f the path to the normalized bin count file.
+##' @param files.df a data.frame with the file paths. 
+##' @param ref.samples a vector with the samples to use as reference. If 'NULL' (default) all samples in the bin count file are used as reference.
 ##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
 ##' Details). Default is FALSE.
-##' @param col the column in 'files.df' that define the bin count file path.
 ##' @param nb.cores the number of cores to use.
 ##' @param chunk.size the chunk size. If NULL (Default), no chunks are used.
-##' @param out.prefix the prefix for the output files. Suffix '-z.tsv', '-fc.tsv' and '-msd.tsv' will de added if in chunk mode ('chunk.size!=NULL').
+##' @param out.msd.f the name of the file to write the mean/sd information. If 'NULL' no file is created.
 ##' @return a list with
 ##' \item{z}{a data.frame with the Z-scores for each bin and sample (bin x sample).}
 ##' \item{fc}{a data.frame with the fold-change compared to the average bin count in
@@ -17,7 +16,11 @@
 ##' \item{msd}{the mean, standard deviation and number of removed outlier samples in each bin.}
 ##' @author Jean Monlong
 ##' @export
-z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc.gc.norm.gz", nb.cores = 1, chunk.size=NULL, out.prefix=NULL) {
+z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores = 1, chunk.size=NULL, out.msd.f="ref-msd.tsv") {
+
+  if(!file.exists(bc.f)){
+    stop("Bin count file not found.")
+  }
   
   if (z.poisson) {
     z.comp.f <- function(x, mean.c, sd.c) {
@@ -42,14 +45,20 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
     dt
   }
 
-  ## One sample or data.table object to get number of rows
-  if (is.data.frame(files.df)) {
-    bc.1 = data.table::fread(subset(files.df, sample == samples[1])[, col], header = TRUE)
-  } else {
-    bc.1 = data.table::fread(files.df, header = TRUE, select=1)
-  }
+  ## One column to get number of rows
+  bc.1 = data.table::fread(files.df, header = TRUE, select=1)
   nrows = nrow(bc.1)
   rm(bc.1)
+
+  ## Sample names
+  headers = as.character(read.table(bc.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE))
+  if(!is.null(ref.samples)){
+    if(!all(ref.samples %in% headers)){
+      stop("Some specified reference samples are not present in the bin count file.")
+    }
+  } else {
+    ref.samples = setdiff(headers, c("chr","start","end"))
+  }
   
   ## Compute chunk index
   if(!is.null(chunk.size)){
@@ -57,74 +66,38 @@ z.comp <- function(files.df, samples, msd.f = NULL, z.poisson = FALSE, col = "bc
   } else {
     chunks = list(1:nrows)
   }
-  
-  if (!is.null(msd.f)) {
-    msd.all = as.data.frame(data.table::fread(msd.f, select = 1:5, header = TRUE))
-    msd.col.ids = 1:nrow(msd.all)
-    names(msd.col.ids) = paste(msd.all$chr, as.integer(msd.all$start), as.integer(msd.all$end), sep = "-")
-    msd.all = t(as.matrix(msd.all[, -(1:3)]))
-  }
-
+   
   ## For each chunk
   for(ch.ii in 1:length(chunks)){
 
     ## Read chunk
-    if (is.data.frame(files.df)) {
-      bc.1 = read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),subset(files.df, sample == samples[1])[, col])
-      bc.l = parallel::mclapply(samples, function(samp.i) {
-        read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),as.character(files.df[which(files.df$sample==samp.i), col]))[, 4, with = FALSE]
-      }, mc.cores = nb.cores)
-      bc.l = matrix(unlist(bc.l), ncol=length(bc.l))
-    } else {
-      bc.l = read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),files.df)
-      bc.1 = bc.l[, 1:3, with = FALSE]
-      bc.l = as.matrix(bc.l[, samples, with = FALSE])
-    }
-
+    bc.l = read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),files.df)
+    bc.1 = bc.l[, 1:3, with = FALSE]
+    bc.l = as.matrix(bc.l[, ref.samples, with = FALSE])
+    
     ## Get or compute mean/sd in reference
-    if (is.null(msd.f)) {
-      msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,])), mc.cores=nb.cores)
-      msd = matrix(unlist(msd), nrow=3)
-      rownames(msd) = c("m","sd","nb.remove")
-    } else {
-      msd = msd.all[, msd.col.ids[paste(bc.1$chr, as.integer(bc.1$start), as.integer(bc.1$end), sep = "-")]]
-    }
+    msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,])), mc.cores=nb.cores)
+    msd = matrix(unlist(msd), nrow=3)
+    rownames(msd) = c("m","sd","nb.remove")
     
     z = parallel::mclapply(1:ncol(bc.l), function(cc) z.comp.f(bc.l[,cc], mean.c = msd[1, ], sd.c = msd[2, ]), mc.cores=nb.cores)
     z = matrix(unlist(z), ncol=length(z))
     fc = bc.l/msd[1, ]
-    colnames(z) = colnames(fc) = samples
+    colnames(z) = colnames(fc) = ref.samples
     z = data.frame(bc.1[, 1:3, with = FALSE], z)
     fc = data.frame(bc.1[, 1:3, with = FALSE], fc)
-
+    
     ## Write output files
     if(!is.null(chunk.size)){
-      if (is.data.frame(files.df)) {
-        write.split.samples(list(z=z, fc=fc), files.df, samples, res.n=c("z","fc"), files.col=c("z","fc"), compress.index=TRUE)
-      } else {
-        write.table(z, file=paste0(out.prefix, "-z.tsv"), sep="\t", row.names=FALSE, quote=FALSE, append=ch.ii>1, col.names=ch.ii==1)
-        write.table(fc, file=paste0(out.prefix, "-fc.tsv"), sep="\t", row.names=FALSE, quote=FALSE, append=ch.ii>1, col.names=ch.ii==1)
-      }
+      write.split.samples(list(z=z, fc=fc), files.df, ref.samples, res.n=c("z","fc"), files.col=c("z","fc"), compress.index=FALSE, append=ch.ii>1)
     }
     
     ## Write mean/sd file
-    if (is.null(msd.f)) {
-      msd = data.frame(as.data.frame(bc.1[, 1:3, with=FALSE]), t(msd))
-    } else {
-      msd = NULL
-    }
-    if(!is.null(chunk.size) & !is.null(msd)){
-      write.table(msd, file=paste0(out.prefix, "-msd.tsv"), sep="\t", row.names=FALSE, quote=FALSE, append=ch.ii>1, col.names=ch.ii==1)
+    msd = data.frame(as.data.frame(bc.1[, 1:3, with=FALSE]), t(msd))
+    if(!is.null(chunk.size) & !is.null(out.msd.f)){
+      write.table(msd, file=out.msd.f, sep="\t", row.names=FALSE, quote=FALSE, append=ch.ii>1, col.names=ch.ii==1)
     }
     
-  }
-
-  if(!is.null(chunk.size)){
-    z = paste0(out.prefix, "-z.tsv")
-    fc = paste0(out.prefix, "-fc.tsv")
-    if (is.null(msd.f)) {
-      msd = paste0(out.prefix, "-msd.tsv")
-    } 
   }
   
   return(list(z = z, fc = fc, msd = msd, z.poisson = z.poisson))

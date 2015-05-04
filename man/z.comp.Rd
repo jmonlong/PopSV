@@ -4,27 +4,24 @@
 \alias{z.comp}
 \title{Z-score computation}
 \usage{
-z.comp(files.df, samples, msd.f = NULL, z.poisson = FALSE,
-  col = "bc.gc.norm.gz", nb.cores = 1, chunk.size = NULL,
-  out.prefix = NULL)
+z.comp(bc.f, files.df, ref.samples = NULL, z.poisson = FALSE,
+  nb.cores = 1, chunk.size = NULL, out.msd.f = "ref-msd.tsv")
 }
 \arguments{
+\item{bc.f}{the path to the normalized bin count file.}
+
 \item{files.df}{a data.frame with the file paths.}
 
-\item{samples}{the samples to analyze.}
-
-\item{msd.f}{the path to the file with mean/sd bin count on reference samples.}
+\item{ref.samples}{a vector with the samples to use as reference. If 'NULL' (default) all samples in the bin count file are used as reference.}
 
 \item{z.poisson}{Should the Z-score be computed as an normal-poisson hybrid (see
 Details). Default is FALSE.}
-
-\item{col}{the column in 'files.df' that define the bin count file path.}
 
 \item{nb.cores}{the number of cores to use.}
 
 \item{chunk.size}{the chunk size. If NULL (Default), no chunks are used.}
 
-\item{out.prefix}{the prefix for the output files. Suffix '-z.tsv', '-fc.tsv' and '-msd.tsv' will de added if in chunk mode ('chunk.size!=NULL').}
+\item{out.msd.f}{the name of the file to write the mean/sd information. If 'NULL' no file is created.}
 }
 \value{
 a list with
