@@ -88,13 +88,11 @@ z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores
     fc = data.frame(bc.1[, 1:3, with = FALSE], fc)
     
     ## Write output files
-    if(!is.null(chunk.size)){
-      write.split.samples(list(z=z, fc=fc), files.df, ref.samples, res.n=c("z","fc"), files.col=c("z","fc"), compress.index=FALSE, append=ch.ii>1)
-    }
+    write.split.samples(list(z=z, fc=fc), files.df, ref.samples, res.n=c("z","fc"), files.col=c("z","fc"), compress.index=FALSE, append=ch.ii>1)
     
     ## Write mean/sd file
     msd = data.frame(as.data.frame(bc.1[, 1:3, with=FALSE]), t(msd))
-    if(!is.null(chunk.size) & !is.null(out.msd.f)){
+    if(!is.null(out.msd.f)){
       write.table(msd, file=out.msd.f, sep="\t", row.names=FALSE, quote=FALSE, append=ch.ii>1, col.names=ch.ii==1)
     }
     
