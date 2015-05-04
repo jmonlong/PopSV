@@ -46,7 +46,7 @@ z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores
   }
 
   ## One column to get number of rows
-  bc.1 = data.table::fread(files.df, header = TRUE, select=1)
+  bc.1 = data.table::fread(bc.f, header = TRUE, select=1)
   nrows = nrow(bc.1)
   rm(bc.1)
 
@@ -71,7 +71,7 @@ z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores
   for(ch.ii in 1:length(chunks)){
 
     ## Read chunk
-    bc.l = read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),files.df)
+    bc.l = read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),bc.f)
     bc.1 = bc.l[, 1:3, with = FALSE]
     bc.l = as.matrix(bc.l[, ref.samples, with = FALSE])
     
