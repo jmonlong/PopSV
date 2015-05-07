@@ -4,10 +4,12 @@
 \alias{fragment.genome.hp19}
 \title{Fragment hg19 genome}
 \usage{
-fragment.genome.hp19(bin.size = 1000)
+fragment.genome.hp19(bin.size = 1000, slid.window = bin.size)
 }
 \arguments{
 \item{bin.size}{the size of the bins}
+
+\item{slid.window}{the size of the sliding window. Default is the size of the bin, i.e. not overlapping windows.}
 }
 \value{
 a data.frame with columns 'chr', 'start' and 'end'.
