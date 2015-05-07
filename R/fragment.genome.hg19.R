@@ -16,7 +16,9 @@ fragment.genome.hp19 <- function(bin.size = 1000, slid.window=bin.size) {
     fragment.chr <- function(chr.i) {
         starts = as.integer(seq(1, seql.1.22[chr.i], slid.window))
         ends = as.integer(starts + bin.size - 1)
-        ends[length(ends)] = as.integer(seql.1.22[chr.i])
+        if(any(ends>as.integer(seql.1.22[chr.i]))){
+          ends[which(ends>as.integer(seql.1.22[chr.i]))] = as.integer(seql.1.22[chr.i])
+        }
         data.frame(chr = chr.i, start = starts, end = ends)
     }
     plyr::ldply(lapply(1:22, fragment.chr), identity)
