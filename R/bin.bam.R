@@ -96,7 +96,7 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
       df$chunk = NULL
       write.table(df, file = outfile.prefix, quote = FALSE, row.names = FALSE, 
                   sep = "\t", append = ch.nb > 1, col.names = ch.nb == 1)
-      return(data.frame(chunk = ch.nb, nb.reads = sum(df$bc, na.rm = TRUE)))
+      return(data.frame(chunk = ch.nb, nb.reads = sum(as.numeric(df$bc), na.rm = TRUE)))
     } else {
       return(df)
     }
@@ -116,9 +116,9 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
   }
   if(is.null(outfile.prefix)) {
     bc.df$chunk = NULL
-    res.l = list(bc = bc.df, nb.reads = sum(bc.df$bc, na.rm = TRUE))
+    res.l = list(bc = bc.df, nb.reads = sum(as.numeric(bc.df$bc), na.rm = TRUE))
   } else {
-    res.l = list(bc = final.file, nb.reads = sum(bc.df$nb.reads, na.rm = TRUE))
+    res.l = list(bc = final.file, nb.reads = sum(as.numeric(bc.df$nb.reads), na.rm = TRUE))
   }
   if(res.l$nb.reads==0 & !no.checks){
     stop("no reads found with these parameters (binning, mapping) in:",bam.file,". Suspicious, maybe investigate.")
