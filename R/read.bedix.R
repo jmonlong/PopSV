@@ -69,9 +69,14 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
   }
   bed.df = bed.df[order(bed.df$chr, bed.df$start),]
 
+  bed.bins.names = with(bed.df, paste(chr,start,end,sep="-"))
+  if(any(dup <- duplicated(bed.bins.names))){
+    bed.df = bed.df[which(!dup),]
+    bed.bins.names = bed.bins.names[which(!dup)]
+  }
+
   if(exact.match){
     bins.names = paste(as.character(GenomicRanges::seqnames(subset.reg)), GenomicRanges::start(subset.reg),GenomicRanges::end(subset.reg),sep="-")
-    bed.bins.names = with(bed.df, paste(chr,start,end,sep="-"))
     bed.df = bed.df[which(bed.bins.names %in% bins.names),]
   }
   
