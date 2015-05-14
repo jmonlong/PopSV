@@ -58,11 +58,11 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     bc.df$end = df$end
     if (nb.cores > 1) {
       bc.l = parallel::mclapply(as.character(files.df[, col.bc]), function(fi) {
-        read.bedix(fi, df)[, 4]
+        read.bedix(fi, df,exact.match=TRUE)[, 4]
       }, mc.cores = nb.cores)
     } else {
       bc.l = lapply(as.character(files.df[, col.bc]), function(fi) {
-        read.bedix(fi, df)[, 4]
+        read.bedix(fi, df,exact.match=TRUE)[, 4]
       })
     }
     if (is.null(med.med) & is.null(med.samp)) {
@@ -135,7 +135,7 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     bin.df$chunk = rep(1:nb.chunks, each = chunk.size)[1:nrow(bin.df)]
     analyze.chunk <- function(df) {
       ch.nb = as.numeric(df$chunk[1])
-      df.o = read.bedix(as.character(files.df[1, col.bc]), df)
+      df.o = read.bedix(as.character(files.df[1, col.bc]), df,exact.match=TRUE)
       read.bc.samples(df.o, files.df, nb.cores, med.med, med.samp, file = outfile.prefix, 
                       append.f = ch.nb > 1, sub.bc = chunk.size/nb.chunks)
     }

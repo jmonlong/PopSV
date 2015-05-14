@@ -29,7 +29,7 @@ quick.count <- function(files.df, bins.df, nb.cores = 1, col.files = NULL, nb.ra
     }, mc.cores = nb.cores)
   } else {
     bc.l = parallel::mclapply(files.df$sample, function(samp) {
-      bc.s = read.bedix(files.df[files.df$sample == samp, col.files], bins.df)
+      bc.s = read.bedix(files.df[files.df$sample == samp, col.files], bins.df,exact.match=TRUE)
       bc.s[, 4]
     }, mc.cores = nb.cores)
   }

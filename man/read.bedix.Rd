@@ -4,7 +4,8 @@
 \alias{read.bedix}
 \title{Retrieve a subset of an indexed BED file.}
 \usage{
-read.bedix(file, subset.reg = NULL, header = TRUE, as.is = TRUE)
+read.bedix(file, subset.reg = NULL, header = TRUE, as.is = TRUE,
+  exact.match = FALSE)
 }
 \arguments{
 \item{file}{the name of the file which the data are to be read from.
@@ -18,6 +19,8 @@ If a data.frame, it must have columns named 'chr', 'start' and 'end'.}
 \item{as.is}{controls the conversion of columns. Default is TRUE, i.e. columns are
 converted into 'character', 'numeric', 'integer', etc. If FALSE, some columns might
 be converted into factors (e.g. 'character' columns).}
+
+\item{exact.match}{Should the input bins be exactly matched in the output file. If FALSE (default), overlapping bins in 'file' will also be returned.}
 }
 \value{
 a data.frame with the retrieved BED information.

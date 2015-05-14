@@ -9,11 +9,12 @@
 ##' @param as.is controls the conversion of columns. Default is TRUE, i.e. columns are
 ##' converted into 'character', 'numeric', 'integer', etc. If FALSE, some columns might
 ##' be converted into factors (e.g. 'character' columns).
+##' @param exact.match Should the input bins be exactly matched in the output file. If FALSE (default), overlapping bins in 'file' will also be returned.
 ##' @return a data.frame with the retrieved BED information.
 ##' @author Jean Monlong
 ##' @export
 ##' @import data.table
-read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE) {
+read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.match=FALSE) {
 
   if(!is.character(file)){
     file = as.character(file)
@@ -67,5 +68,12 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE) {
     bed.df = read.chunk(subset.reg)
   }
   bed.df = bed.df[order(bed.df$chr, bed.df$start),]
+
+  if(exact.match){
+    bins.names = paste(as.character(GenomicRanges::seqnames(subset.reg)), GenomicRanges::start(subset.reg),GenomicRanges::end(subset.reg),sep="-")
+    bed.bins.names = with(bed.df, paste(chr,start,end,sep="-"))
+    bed.df = bed.df[which(bed.bins.names %in% bins.names),]
+  }
+  
   return(bed.df)
 } 

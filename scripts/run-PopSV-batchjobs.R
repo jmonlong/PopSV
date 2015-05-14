@@ -109,7 +109,7 @@ save(bins.df, file="bins.RData")
 bcNormTN.f <- function(chunk.id, file.bc, file.bin, cont.sample){
     load(file.bin)
     library(PopSV)
-    bc.df = read.bedix(file.bc, subset(bins.df, bg.chunk==subset(bins.df, sm.chunk==chunk.id)$bg.chunk[1]))
+    bc.df = read.bedix(file.bc, subset(bins.df, bg.chunk==subset(bins.df, sm.chunk==chunk.id)$bg.chunk[1]), exact.match=TRUE)
     tn.norm(bc.df, cont.sample, bins=subset(bins.df, sm.chunk==chunk.id)$bin)
 }
 batchMap(bcNormTN.reg, bcNormTN.f,unique(bins.df$sm.chunk), more.args=list(file.bc=samp.qc.o$bc, file.bin="bins.RData",cont.sample=samp.qc.o$cont.sample))
