@@ -72,7 +72,7 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
         ref.col = cont.bc[id.cont[ns[-(1:7)]], "bc"], bc.mean.norm = as.numeric(ns[4]), 
         chrs = test.bc[id.test[ns[-(1:7)]], "chr"])
       bc.n = test.bc[id.test[bin], "bc"] * norm.coeff
-      return(c(bc = bc.n, z = z.comp(bc.n, as.numeric(ns[5]), as.numeric(ns[6])), 
+      return(c(bc = bc.n, z = z.comp.f(bc.n, as.numeric(ns[5]), as.numeric(ns[6])), 
                fc = bc.n/as.numeric(ns[5])))
     }
   } else {
@@ -81,7 +81,7 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
       norm.coeff = norm.tm.opt(test.bc[id.test[ns[-(1:7)]], "bc", drop = FALSE], 
         ref.col = cont.bc[id.cont[ns[-(1:7)]], "bc"])
       bc.n = test.bc[id.test[bin], "bc"] * norm.coeff
-      return(c(bc = bc.n, z = z.comp(bc.n, as.numeric(ns[5]), as.numeric(ns[6])), 
+      return(c(bc = bc.n, z = z.comp.f(bc.n, as.numeric(ns[5]), as.numeric(ns[6])), 
                fc = bc.n/as.numeric(ns[5])))
     }
   }
