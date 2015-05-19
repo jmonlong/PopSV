@@ -108,10 +108,12 @@ fdrtool.quantile.2N <- function(z, plot = TRUE, min.prop.null = 0.95) {
         print(ggplot2::ggplot(plot.df, ggplot2::aes(x = pv)) + ggplot2::geom_histogram() + 
             ggplot2::xlab("P-value") + ggplot2::xlim(0, 1) + ggplot2::ylab("number of bins") + 
             ggplot2::theme_bw())
-        print(ggplot2::ggplot(plot.df[which(plot.df$qv < 0.1), ], ggplot2::aes(x = cut(qv, 
-            breaks = c(-Inf, 0.001, 0.01, 0.5, 0.1)))) + ggplot2::geom_bar() + ggplot2::xlab("Q-value") + 
-            ggplot2::ylab("number of bins") + ggplot2::theme_bw())
-    }
+        if(any(plot.df$qv<.1)){
+          print(ggplot2::ggplot(plot.df[which(plot.df$qv < 0.1), ], ggplot2::aes(x = cut(qv, 
+                                                                                   breaks = c(-Inf, 0.001, 0.01, 0.5, 0.1)))) + ggplot2::geom_bar() + ggplot2::xlab("Q-value") + 
+                ggplot2::ylab("number of bins") + ggplot2::theme_bw())
+        }
+      }
     
     return(res)
 } 
