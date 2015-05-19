@@ -43,7 +43,7 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
   colnames(cont.bc)[4] = "bc"
   id.cont = 1:nrow(cont.bc)
   names(id.cont) = paste(cont.bc$chr, as.integer(cont.bc$start), sep = "-")
-  
+
   if (z.poisson) {
     z.comp.f <- function(x, mean.c, sd.c) {
       z.n = (x - mean.c)/sd.c
@@ -57,39 +57,39 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
       (x - mean.c)/sd.c
     }
   }
-  
-  res.df = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 3)), 
+
+  res.df = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 3)),
     nrow(test.bc))
   colnames(res.df) = c("chr", "start", "end", "bc", "z", "fc")
   res.df$chr = test.bc$chr
   res.df$start = test.bc$start
   res.df$end = test.bc$end
-  
+
   if (aberrant.cases) {
     test.bin <- function(ns) {
       bin = paste(ns[1], as.integer(ns[2]), sep = "-")
-      norm.coeff = norm.tm.opt(test.bc[id.test[ns[-(1:7)]], "bc", drop = FALSE], 
-        ref.col = cont.bc[id.cont[ns[-(1:7)]], "bc"], bc.mean.norm = as.numeric(ns[4]), 
+      norm.coeff = norm.tm.opt(test.bc[id.test[ns[-(1:7)]], "bc", drop = FALSE],
+        ref.col = cont.bc[id.cont[ns[-(1:7)]], "bc"], bc.mean.norm = as.numeric(ns[4]),
         chrs = test.bc[id.test[ns[-(1:7)]], "chr"])
       bc.n = test.bc[id.test[bin], "bc"] * norm.coeff
-      return(c(bc = bc.n, z = z.comp.f(bc.n, as.numeric(ns[5]), as.numeric(ns[6])), 
-               fc = bc.n/as.numeric(ns[5])))
+      return(c(bc = bc.n, z = z.comp.f(bc.n, as.numeric(ns[4]), as.numeric(ns[5])),
+               fc = bc.n/as.numeric(ns[4])))
     }
   } else {
     test.bin <- function(ns) {
       bin = paste(ns[1], as.integer(ns[2]), sep = "-")
-      norm.coeff = norm.tm.opt(test.bc[id.test[ns[-(1:7)]], "bc", drop = FALSE], 
+      norm.coeff = norm.tm.opt(test.bc[id.test[ns[-(1:7)]], "bc", drop = FALSE],
         ref.col = cont.bc[id.cont[ns[-(1:7)]], "bc"])
       bc.n = test.bc[id.test[bin], "bc"] * norm.coeff
-      return(c(bc = bc.n, z = z.comp.f(bc.n, as.numeric(ns[5]), as.numeric(ns[6])), 
-               fc = bc.n/as.numeric(ns[5])))
+      return(c(bc = bc.n, z = z.comp.f(bc.n, as.numeric(ns[4]), as.numeric(ns[5])),
+               fc = bc.n/as.numeric(ns[4])))
     }
   }
-  
+
   con = file(norm.stats.f, "r")
   headers = unlist(strsplit(readLines(con, n = 1), "\t"))
   while (length((lines = readLines(con, n = chunk.size))) > 0) {
-    norm.chunk = matrix(unlist(strsplit(lines, "\t")), ncol = length(headers), 
+    norm.chunk = matrix(unlist(strsplit(lines, "\t")), ncol = length(headers),
       byrow = TRUE)
     colnames(norm.chunk) = headers
     norm.chunk = norm.chunk[which(norm.chunk[, 4] != "NA"), ]
@@ -107,6 +107,6 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
     }
     res.df = files.out
   }
-  
+
   return(res.df)
-} 
+}
