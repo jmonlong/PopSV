@@ -64,25 +64,19 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
   res.df$chr = test.bc$chr
   res.df$start = test.bc$start
   res.df$end = test.bc$end
-
+  
   if (aberrant.cases) {
-    test.bin <- function(ns) {
-      bin = paste(ns[1], as.integer(ns[2]), sep = "-")
-      norm.coeff = norm.tm.opt(test.bc[id.test[ns[-(1:7)]], "bc", drop = FALSE],
-        ref.col = cont.bc[id.cont[ns[-(1:7)]], "bc"], bc.mean.norm = as.numeric(ns[4]),
-        chrs = test.bc[id.test[ns[-(1:7)]], "chr"])
-      bc.n = test.bc[id.test[bin], "bc"] * norm.coeff
-      return(c(bc = bc.n, z = z.comp.f(bc.n, as.numeric(ns[4]), as.numeric(ns[5])),
-               fc = bc.n/as.numeric(ns[4])))
+    norm.bin <- function(bc.b, bc.t, bc.c, bc.mean, chrs) {
+      norm.coeff = norm.tm.opt(as.matrix(bc.t),
+        ref.col = bc.c, bc.mean.norm = bc.mean,
+        chrs = chrs)
+      bc.b * norm.coeff
     }
   } else {
-    test.bin <- function(ns) {
-      bin = paste(ns[1], as.integer(ns[2]), sep = "-")
-      norm.coeff = norm.tm.opt(test.bc[id.test[ns[-(1:7)]], "bc", drop = FALSE],
-        ref.col = cont.bc[id.cont[ns[-(1:7)]], "bc"])
-      bc.n = test.bc[id.test[bin], "bc"] * norm.coeff
-      return(c(bc = bc.n, z = z.comp.f(bc.n, as.numeric(ns[4]), as.numeric(ns[5])),
-               fc = bc.n/as.numeric(ns[4])))
+    norm.bin <- function(bc.b, bc.t, bc.c, bc.mean=NULL, chrs=NULL) {
+      norm.coeff = norm.tm.opt(as.matrix(bc.t),
+        ref.col = bc.c)
+      bc.b * norm.coeff
     }
   }
 
@@ -93,8 +87,24 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
       byrow = TRUE)
     colnames(norm.chunk) = headers
     norm.chunk = norm.chunk[which(norm.chunk[, 4] != "NA"), ]
+
+    bct = matrix(test.bc$bc[id.test[unlist(norm.chunk[,-(1:7)])]],nrow(norm.chunk))
+    bcc = matrix(cont.bc$bc[id.cont[unlist(norm.chunk[,-(1:7)])]],nrow(norm.chunk))
+
+    chrs=NULL
+    if(aberrant.cases){
+      chrs = matrix(test.bc$chr[id.test[unlist(norm.chunk[,-(1:7)])]],nrow(norm.chunk))
+    }
+    
     bins = paste(norm.chunk[, 1], as.integer(norm.chunk[, 2]), sep = "-")
-    res.df[id.test[bins], 4:6] = t(apply(norm.chunk, 1, test.bin))
+    id.bins = id.test[bins]
+    bct.bin = test.bc$bc[id.bins]
+    bc.means = as.numeric(norm.chunk[,4])
+    res.df$bc[id.bins] = sapply(1:nrow(norm.chunk), function(ii){
+      norm.bin(bct.bin[ii], bct[ii,], bcc[ii,], bc.mean=bc.means[ii], chrs=chrs[ii,])
+    })
+    res.df$z[id.bins] = z.comp.f(res.df$bc[id.bins], bc.means, as.numeric(norm.chunk[,5]))
+    res.df$fc[id.bins] = res.df$bc[id.bins] / bc.means
   }
   close(con)
 
