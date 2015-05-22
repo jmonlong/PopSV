@@ -110,7 +110,7 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
 
     ##qv.normal = qvalue::qvalue(res.df$pv.normal)
     ##
-    return(list(prop.non.normal.bin = mean(res.df$pv.normal<.01),
+    return(list(prop.nonNorm.bin = mean(res.df$pv.normal<.01),
                 prop.nonRand.rank = mean(res.df$nb.rank)/length(samples),
                 prop.nonNorm.z.mean = mean(non.norm.z),
                 prop.nonNorm.z.max = max(non.norm.z),
