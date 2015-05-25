@@ -29,13 +29,14 @@ qc.sample <- function(bins.df, files.df=NULL, cnv.df=NULL, ref.samples=NULL, n.s
     samples = files.df$sample
     d.geom = as.matrix(dist(t(bc.df[,samples])))
     colnames(d.geom) = samples
-    ## d.o = rowMeans(d.pw[,ref.samples])/mean(d.pw[,ref.samples])
-    d.o = apply(d.pw[,ref.samples], 1, function(d.f) mean(d.f[d.f<quantile(d.f, probs=.1, na.rm=TRUE)], na.rm=TRUE)) / mean(d.pw[d.pw<quantile(d.pw, probs=.1, na.rm=TRUE)], na.rm=TRUE)
+    ## d.o = rowMeans(d.geom[,ref.samples])/mean(d.geom[,ref.samples])
+    d.o = apply(d.geom[,ref.samples], 1, function(d.f) mean(d.f[d.f<quantile(d.f, probs=.1, na.rm=TRUE)], na.rm=TRUE)) / mean(d.geom[d.geom<quantile(d.geom, probs=.1, na.rm=TRUE)], na.rm=TRUE)
     res.bc = data.frame(sample=samples, dist.bc.ref=d.o)
   }
 
   res.cnv = NULL
   if(!is.null(cnv.df)){
+    nb.bin.cons = fc = NULL ## Uglily silence R checks
     res.cnv = dplyr::summarize(dplyr::group_by(cnv.df, sample), single.bin.prop=mean(nb.bin.cons==1, na.rm=TRUE), cn2.prop = mean(abs(fc[which(nb.bin.cons>2)])<.25, na.rm=TRUE))
   }
 
