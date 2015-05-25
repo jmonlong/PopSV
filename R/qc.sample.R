@@ -27,6 +27,7 @@ qc.sample <- function(bins.df, files.df=NULL, cnv.df=NULL, ref.samples=NULL, n.s
   if(!is.null(files.df)){
     bc.df = quick.count(files.df, bins.df, col.files="bc.gc.gz", nb.rand.bins=n.subset, nb.cores=nb.cores)
     samples = files.df$sample
+    bc.df = med.norm(bc.df, nb.cores=nb.cores, norm.stats.comp=FALSE)$bc.norm
     d.geom = as.matrix(dist(t(bc.df[,samples])))
     colnames(d.geom) = samples
     ## d.o = rowMeans(d.geom[,ref.samples])/mean(d.geom[,ref.samples])
