@@ -40,8 +40,10 @@ qc.sample <- function(bins.df, files.df=NULL, cnv.df=NULL, ref.samples=NULL, n.s
     nb.bin.cons = fc = NULL ## Uglily silence R checks
     res.cnv = dplyr::summarize(dplyr::group_by(cnv.df, sample), single.bin.prop=mean(nb.bin.cons==1, na.rm=TRUE), cn2.prop = mean(abs(fc[which(nb.bin.cons>2)])<.25, na.rm=TRUE))
   }
-  
-  res = merge(res.bc, res.cnv, all=TRUE)
-  rownames(res) = NULL
+
+  if(!is.null(files.df) & !is.null(cnv.df)){
+    res = merge(res.bc, res.cnv, all=TRUE)
+    rownames(res) = NULL
+  }
   return(res)
 }
