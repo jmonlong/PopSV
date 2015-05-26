@@ -21,32 +21,36 @@
 ##' @author Jean Monlong
 ##' @export
 tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.support.bins = TRUE, norm = c("1pass", "2pass", "bootstrap")) {
-  
+
   all.samples = setdiff(colnames(bc), c("chr", "start", "end"))
   rownames(bc) = paste(bc$chr, as.integer(bc$start), sep = "-")
-  if (is.null(bins)) 
+  if (is.null(bins))
     bins = rownames(bc)
-  
+
   if (save.support.bins) {
-    norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 
+    norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric",
       4), rep("character", nb.support.bins)), length(bins))
-    colnames(norm.stats) = c("chr", "start", "end", "m", "sd", "nb.remove", "d.max", 
+    colnames(norm.stats) = c("chr", "start", "end", "m", "sd", "nb.remove", "d.max",
               paste("b", 1:nb.support.bins, sep = ""))
   } else {
-    norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 
+    norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric",
       4)), length(bins))
     colnames(norm.stats) = c("chr", "start", "end", "m", "sd", "nb.remove", "d.max")
   }
-  bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))), 
+  bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))),
     length(bins))
   colnames(bc.norm) = c("chr", "start", "end", all.samples)
   norm.stats$chr = bc.norm$chr = bc[bins, "chr"]
   norm.stats$start = bc.norm$start = bc[bins, "start"]
   norm.stats$end = bc.norm$end = bc[bins, "end"]
-  
+
+  denorm.factor = runif(length(all.samples), 1,1.5)
+  denorm.factor[which(all.samples==cont.sample)] = 1
   bc = t(as.matrix(bc[, all.samples]))
+  bc = denorm.factor * bc
+
   for (bin.ii in 1:length(bins)) {
-    
+
     bin = bins[bin.ii]
     bc.i = bc[, bin]
     if (any(!is.na(bc.i) & bc.i != 0)) {
@@ -88,15 +92,15 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
         }
         if (any(!is.na(bc.t))) {
           norm.stats[bin.ii, 4:7] = round(c(msd$m, msd$sd, msd$nb.remove, d.max), 3)
-          if (save.support.bins) 
+          if (save.support.bins)
           norm.stats[bin.ii, 8:ncol(norm.stats)] = bin.for.norm
           bc.norm[bin.ii, -(1:3)] = round(bc.t, 2)
         }
       }
     }
-    
+
   }
-  
-  return(list(norm.stats = norm.stats, bc.norm = bc.norm, nb.support.bins = nb.support.bins, 
+
+  return(list(norm.stats = norm.stats, bc.norm = bc.norm, nb.support.bins = nb.support.bins,
               cont.sample = cont.sample))
-} 
+}
