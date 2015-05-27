@@ -22,16 +22,20 @@ quick.count <- function(files.df, bins.df, nb.cores = 1, col.files = NULL, nb.ra
   }
 
   if (is.null(col.files)) {
-    bc.l = parallel::mclapply(files.df$sample, function(samp) {
+    bins.df = bin.bam(files.df$bam[1], bins.df, appendIndex.outfile = FALSE, ...)$bc
+    bc.l = parallel::mclapply(files.df$sample[-1], function(samp) {
       bc.s = bin.bam(files.df$bam[files.df$sample == samp], bins.df, appendIndex.outfile = FALSE, 
         ...)
       bc.s$bc$bc
     }, mc.cores = nb.cores)
+    bc.l = c(list(bins.df$bc), bc.l)
   } else {
-    bc.l = parallel::mclapply(files.df$sample, function(samp) {
+    bins.df = read.bedix(files.df[1, col.files], bins.df)
+    bc.l = parallel::mclapply(files.df$sample[-1], function(samp) {
       bc.s = read.bedix(files.df[files.df$sample == samp, col.files], bins.df)
       bc.s[, 4]
     }, mc.cores = nb.cores)
+    bc.l = c(list(bins.df[,4]), bc.l)
   }
   bc.df = matrix(unlist(bc.l), ncol=length(bc.l))
   colnames(bc.df) =  as.character(files.df$sample)
