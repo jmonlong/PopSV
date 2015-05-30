@@ -110,7 +110,7 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
     }
 
     ## Worst sample Z distribution density
-    z.worst.dens = density(as.numeric(z[which.maz(non.norm.z),]), na.rm=TRUE)
+    z.worst.dens = density(as.numeric(z[which.max(non.norm.z),]), na.rm=TRUE)
     z.worst.dens = data.frame(z=z.worst.dens$x,density=z.worst.dens$y)
 
     ##qv.normal = qvalue::qvalue(res.df$pv.normal)
