@@ -26,6 +26,7 @@
 ##' \item{prop.non.norm.z.mean}{average (across samples) proportion of bins with non-random Z-scores.}
 ##' \item{prop.non.norm.z.max}{maximum (i.e for worst sample) proportion of bins with non-random Z-scores.}
 ##' \item{prop.non.norm.z}{proportion of bins with non-random Z-scores, for each sample.}
+##' \item{z.worst.dens}{a data.frame with the density of the worst Z distribution.}
 ##' \item{n.subset}{number of bins used for the analysis.}
 ##' @param bc.df matrix with bin counts (bins x samples).
 ##' @param n.subset number of bins to use for the analysis. Default is 10 000. Bins are selected randomly.
@@ -108,6 +109,10 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
       print(ggplot2::ggplot(reshape::melt(zt), ggplot2::aes(x=value)) + ggplot2::geom_density() + ggplot2::theme_bw() + ggplot2::xlim(-zlim,zlim) + ggplot2::facet_wrap(~X2, scales="free") + ggplot2::xlab("Z-score"))
     }
 
+    ## Worst sample Z distribution density
+    z.worst.dens = density(as.numeric(z[which.maz(non.norm.z),]), na.rm=TRUE)
+    z.worst.dens = data.frame(z=z.worst.dens$x,density=z.worst.dens$y)
+
     ##qv.normal = qvalue::qvalue(res.df$pv.normal)
     ##
     return(list(prop.nonNorm.bin = mean(res.df$pv.normal<.01),
@@ -116,5 +121,6 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
                 prop.nonNorm.z.max = max(non.norm.z),
                 prop.nonNorm.z = non.norm.z,
                 pca.dmm = 1-pca.dmm,
+                z.worst.dens = z.worst.dens,
                 n.subset = n.subset))
 }

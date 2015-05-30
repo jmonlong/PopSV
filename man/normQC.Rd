@@ -22,6 +22,7 @@ a list with
 \item{prop.non.norm.z.mean}{average (across samples) proportion of bins with non-random Z-scores.}
 \item{prop.non.norm.z.max}{maximum (i.e for worst sample) proportion of bins with non-random Z-scores.}
 \item{prop.non.norm.z}{proportion of bins with non-random Z-scores, for each sample.}
+\item{z.worst.dens}{a data.frame with the density of the worst Z distribution.}
 \item{n.subset}{number of bins used for the analysis.}
 }
 \description{
