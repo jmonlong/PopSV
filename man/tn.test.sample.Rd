@@ -6,7 +6,7 @@
 \usage{
 tn.test.sample(test.sample, files.df, cont.sample, bc.ref.f, norm.stats.f,
   write.out.file = TRUE, compress.index = TRUE, z.poisson = FALSE,
-  aberrant.cases = FALSE)
+  aberrant.cases = FALSE, append = FALSE)
 }
 \arguments{
 \item{test.sample}{the name of the sample to test.}
@@ -33,6 +33,8 @@ Details). Default is FALSE.}
 is performed on cases to deal with potential large chromosomal aberrations. In practice,
 it is recommended for cancer but can be turned off if less than ~20% of the genome is expected
 to be affected.}
+
+\item{append}{should the results be appended to existing files. Default is FALSE.}
 }
 \value{
 a data.frame with columns :

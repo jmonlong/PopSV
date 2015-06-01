@@ -24,6 +24,7 @@
 ##' is performed on cases to deal with potential large chromosomal aberrations. In practice,
 ##' it is recommended for cancer but can be turned off if less than ~20% of the genome is expected
 ##' to be affected.
+##' @param append should the results be appended to existing files. Default is FALSE.
 ##' @return a data.frame with columns :
 ##' \item{chr, start, end}{the location of the bin}
 ##' \item{bc}{the normalized bin count}
@@ -31,7 +32,7 @@
 ##' \item{fc}{the fold-change compared to the average bin count in the reference samples}
 ##' @author Jean Monlong
 ##' @export
-tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.stats.f, write.out.file=TRUE, compress.index=TRUE, z.poisson = FALSE, aberrant.cases = FALSE) {
+tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.stats.f, write.out.file=TRUE, compress.index=TRUE, z.poisson = FALSE, aberrant.cases = FALSE, append=FALSE) {
   chunk.size = 1000
   test.bc = read.table(files.df$bc.gc.gz[which(files.df$sample == test.sample)], colClasses = c("character", "integer", "integer", "numeric"), header = TRUE)
   id.test = 1:nrow(test.bc)
@@ -64,7 +65,7 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
   res.df$chr = test.bc$chr
   res.df$start = test.bc$start
   res.df$end = test.bc$end
-  
+
   if (aberrant.cases) {
     norm.bin <- function(bc.bin.arg, test.bc.arg, cont.bc.arg, bc.mean.arg, chrs.arg) {
       norm.coeff = norm.tm.opt(as.matrix(test.bc.arg),
@@ -95,7 +96,7 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
     if(aberrant.cases){
       chrs.chunk = matrix(test.bc$chr[id.test[unlist(norm.chunk[,-(1:7)])]],nrow(norm.chunk))
     }
-    
+
     id.bins = id.test[paste(norm.chunk[, 1], as.integer(norm.chunk[, 2]), sep = "-")]
     bc.mean.chunk = as.numeric(norm.chunk[,4])
     res.df$bc[id.bins] = sapply(1:nrow(norm.chunk), function(ii){
@@ -108,8 +109,8 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
 
   if(write.out.file){
     files.out = c(files.df[which(files.df$sample == test.sample), "z"], files.df[which(files.df$sample == test.sample), "fc"])
-    write.table(res.df[,c("chr","start","end","z")], file = files.out[1], row.names = FALSE, quote = FALSE, sep = "\t")
-    write.table(res.df[,c("chr","start","end","fc")], file = files.out[2], row.names = FALSE, quote = FALSE, sep = "\t")
+    write.table(res.df[,c("chr","start","end","z")], file = files.out[1], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
+    write.table(res.df[,c("chr","start","end","fc")], file = files.out[2], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
     if (compress.index) {
       comp.index.files(files.out)
     }

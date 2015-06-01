@@ -1,4 +1,4 @@
-## FTE : FOR TOY EXAMPLE: lines marked with this flag should be adapted to the analysis. Here I used smaller numbers to run a small toy example. '=>' shows what should be used instead for an analysis in practice.
+## FTE : FOR TOY EXAMPLE: lines marked with this flag should be adapted to the analysis. Here I used smaller numbers to run a small toy example. '=>' shows what should be used instead for an real analysis.
 
 ## Installation
 ## devtools::install_github("jmonlong/PopSV")
@@ -6,7 +6,7 @@
 library(BatchJobs)
 library(PopSV)
 
-setwd("../../PopSV-toyex") ## FTE: set working directory path => put WD of the project
+setwd("../../PopSV-toyex") ## FTE: set working directory path => put working directory of the project
 bam.files = read.table("bams.tsv", as.is=TRUE, header=TRUE)
 bin.size = 1e3
 
@@ -32,16 +32,18 @@ submitJobs(getGC.reg, findNotDone(getGC.reg), resources=list(walltime="1:0:0", n
 showStatus(getGC.reg)
 
 
-## 3) Get bin counts in each sample
+## 3) Get bin counts in each sample and correct for GC bias
 ## system("rm -rf getBC-files")
 getBC.reg <- makeRegistry(id="getBC")
 getBC.f <- function(file.i, gc.reg, files.df){
-    library(PopSV)
-    bins.df = loadResult(gc.reg,1)
-    bin.bam(files.df$bam[file.i], bins.df, files.df$bc[file.i])
+  library(PopSV)
+  bins.df = loadResult(gc.reg,1)
+  bb.o = bin.bam(files.df$bam[file.i], bins.df, files.df$bc[file.i])
+  correct.GC(files.df$bc.gz[file.i], bins.df, files.df$bc.gc[file.i])
+  bb.o
 }
 batchMap(getBC.reg, getBC.f,1:nrow(files.df), more.args=list(gc.reg=getGC.reg, files.df=files.df))
-submitJobs(getBC.reg, findNotDone(getBC.reg), resources=list(walltime="10:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
+submitJobs(getBC.reg, findNotDone(getBC.reg), resources=list(walltime="20:0:0", nodes="1", cores="1"), wait=function(retries) 100, max.retries=10)
 showStatus(getBC.reg)
 
 ## OPTIONAL QC: check the total number of reads counted in all samples
@@ -51,54 +53,35 @@ qplot(reduceResultsVector(getBC.reg, fun=function(job, res)res$nb.reads)) + xlab
 dev.off()
 ##
 
-
-## 4) GC correction
-## TODO: Merge this step with the previous one !
-## system("rm -rf gcCor-files")
-gcCor.reg <- makeRegistry(id="gcCor")
-gcCor.f <- function(file.i, gc.reg, files.df){
-    library(PopSV)
-    gc.df = loadResult(gc.reg,1)
-    correct.GC(files.df$bc.gz[file.i], gc.df, files.df$bc.gc[file.i])
-}
-batchMap(gcCor.reg, gcCor.f,1:nrow(files.df), more.args=list(gc.reg=getGC.reg, files.df=files.df))
-submitJobs(gcCor.reg, findNotDone(gcCor.reg), resources=list(walltime="3:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
-showStatus(gcCor.reg)
-
-
-## 5) Sample QC and reference sample definition
-## You may(should) have an idea of which samples can be used as reference (e.g. normal in a cancer project; controls in a case/control project; eventually every samples)
-ref.samples = subset(files.df, group=="normal")$sample ## Here I had this information in the original bam info file in a 'group' column.
-
-## If you have too many reference samples (lucky you) and want to find, say, 200 of them to use for the analysis, use 'nb.ref.samples=200' parameter in 'qc.samples(...)'
-
-## OPTIONAL: If you suspect important batch effects that could create distinct groups of samples, the samples can be clustered first. Eventually analysis can be run separately on each cluster. THIS IS USUALLY NOT NECESSARY but is safe to check..
+## OPTIONAL QC : If you suspect important batch effects that could create distinct groups of samples, the samples can be clustered first. Eventually analysis can be run separately on each cluster. THIS IS USUALLY NOT NECESSARY but is safe to check..
 bc.rand = quick.count(subset(files.df, group=="normal"), bins.df, nb.cores=3, col.files="bc.gc.gz", nb.rand.bins=1e3) ## Gets counts for all samples on a subset of 1000 bins
 qc.samples.cluster(bc.rand) ## Run locally because it opens an interactive web browser apllication
 ## END OPTIONAL
 
+## 4) Sample QC and reference sample definition
+## You may(should) have an idea of which samples can be used as reference (e.g. normal in a cancer project; controls in a case/control project; eventually every samples)
+ref.samples = subset(files.df, group=="normal")$sample ## Here I had this information in the original bam info file in a 'group' column.
+## If you have too many reference samples (lucky you) and want to find, say, 200 of them to use for the analysis, use 'nb.ref.samples=200' parameter in 'qc.samples(...)'
 bc.all.f = "bc-gcCor-all.tsv"
 sampQC.pdf.f = "sampQC.pdf"
 ## system("rm -rf sampQC-files")
 sampQC.reg <- makeRegistry(id="sampQC")
-sampQC.f <- function(bc.all.f, gc.reg, files.df, ref.samples, sampQC.pdf.f){
-    library(PopSV)
-    gc.df = loadResult(gc.reg,1)
-    pdf(sampQC.pdf.f)
-    qc.o= qc.samples(files.df, gc.df, ref.samples, outfile.prefix=bc.all.f, nb.cores=6)
-    dev.off()
-    qc.o
+sampQC.f <- function(bc.all.f, bins.f, files.df, ref.samples, sampQC.pdf.f, nbc){
+  library(PopSV)
+  load(bins.f)
+  pdf(sampQC.pdf.f)
+  qc.o= qc.samples(files.df, bins.df, ref.samples, outfile.prefix=bc.all.f, nb.cores=nbc)
+  dev.off()
+  qc.o
 }
-batchMap(sampQC.reg, sampQC.f,bc.all.f, more.args=list(gc.reg=getGC.reg, files.df=files.df, ref.samples = ref.samples, sampQC.pdf.f=sampQC.pdf.f))
-submitJobs(sampQC.reg, 1, resources=list(walltime="3:0:0", nodes="1", cores="6",queue="sw"), wait=function(retries) 100, max.retries=10)
+batchMap(sampQC.reg, sampQC.f,bc.all.f, more.args=list(bins.f="bins.RData", files.df=files.df, ref.samples = ref.samples, sampQC.pdf.f=sampQC.pdf.f, nbc=3))
+submitJobs(sampQC.reg, 1, resources=list(walltime="3:0:0", nodes="1", cores="3",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(sampQC.reg)
 samp.qc.o = loadResult(sampQC.reg, 1)
 
 
-## 6) Normalize and compute Z scores
-
-## 6a - Using targeted normalization (Recommended)
-
+## 5) Normalize and compute Z scores
+## 5a - Using targeted normalization (Recommended)
 #### Normalize reference samples
 ## system("rm -rf bcNormTN-files")
 bcNormTN.reg <- makeRegistry(id="bcNormTN")
@@ -116,6 +99,8 @@ batchMap(bcNormTN.reg, bcNormTN.f,unique(bins.df$sm.chunk), more.args=list(file.
 ### End of the "nice guy interactive node" part
 submitJobs(bcNormTN.reg, findJobs(bcNormTN.reg) , resources=list(walltime="10:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(bcNormTN.reg)
+
+## Write normalized bin counts and reference metrics
 out.files = paste("ref", c("bc-norm.tsv", "msd.tsv"), sep="-")
 file.remove(out.files)
 tmp = reduceResultsList(bcNormTN.reg, fun=function(res, job){
@@ -123,43 +108,43 @@ tmp = reduceResultsList(bcNormTN.reg, fun=function(res, job){
     write.table(res$norm.stats, file=out.files[2], sep="\t", row.names=FALSE, quote=FALSE, append=file.exists(out.files[2]), col.names=!file.exists(out.files[2]))
 })
 
-#### Compute Z-scores in reference samples
+## 6) Compute Z-scores in reference samples
 ## system("rm -rf zRef-files")
 zRef.reg <- makeRegistry(id="zRef")
-zRef.f <- function(file.bc, samples, msd.f, files.df){
-    library(PopSV)
-    res = z.comp(file.bc, samples, msd.f, nb.cores=3)
-    write.split.samples(res, files.df, samples, res.n=c("z","fc"), files.col=c("z","fc"), compress.index=TRUE)
+zRef.f <- function(bc.f, files.df){
+  library(PopSV)
+  z.comp(bc.f=bc.f, files.df=files.df, nb.cores=3, z.poisson=TRUE, chunk.size=1e4)
 }
-batchMap(zRef.reg, zRef.f,out.files[1], more.args=list(samples=ref.samples, msd.f=out.files[2], files.df=files.df))
+batchMap(zRef.reg, zRef.f,out.files[1], more.args=list(files.df=files.df))
 submitJobs(zRef.reg, 1, resources=list(walltime="6:0:0", nodes="1", cores="3",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(zRef.reg)
 
-#### Normalization and Z-score computation for other samples
+## 7) Normalization and Z-score computation for other samples
 ## system("rm -rf callCases-files")
 callCases.reg <- makeRegistry(id="callCases")
 callCases.f <- function(samp, cont.sample, files.df, norm.stats.f, bc.ref.f){
   library(PopSV)
-  tn.test.sample(samp, files.df, cont.sample, bc.ref.f, norm.stats.f)
+  tn.test.sample(samp, files.df, cont.sample, bc.ref.f, norm.stats.f, z.poisson=TRUE)
 }
 batchMap(callCases.reg, callCases.f,setdiff(files.df$sample, ref.samples), more.args=list(cont.sample=samp.qc.o$cont.sample, files.df=files.df, norm.stats.f=out.files[2], bc.ref.f=samp.qc.o$bc))
-submitJobs(callCases.reg, 1, resources=list(walltime="6:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
+submitJobs(callCases.reg, findNotDone(callCases.reg), resources=list(walltime="20:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(callCases.reg)
 
 
-
-## 7) Abnormal bin calling
+## 8) Abnormal bin calling
 ## system("rm -rf abCovCallCases-files")
 abCovCallCases.reg <- makeRegistry(id="abCovCallCases")
-abCovCallCases.f <- function(samp, files.df, norm.stats.f){
+abCovCallCases.f <- function(samp, files.df, norm.stats.f, bin.size){
   library(PopSV)
-  call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"/",samp,"-abCovCall.pdf"), FDR.th=.01, merge.cons.bins="stitch", z.th="sdest2N", norm.stats=norm.stats.f)
+  call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"/",samp,"-sdest2N-abCovCall.pdf"), FDR.th=.01, merge.cons.bins="stitch", z.th="sdest2N", norm.stats=norm.stats.f, stitch.dist=bin.size*2+1)
 }
-batchMap(abCovCallCases.reg, abCovCallCases.f,files.df$sample, more.args=list(files.df=files.df, norm.stats.f=out.files[2]))
-submitJobs(abCovCallCases.reg, findNotDone(abCovCallCases.reg) , resources=list(walltime="1:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
+batchMap(abCovCallCases.reg, abCovCallCases.f, files.df$sample, more.args=list(files.df=files.df, norm.stats.f=out.files[2], bin.size=bin.size))
+submitJobs(abCovCallCases.reg, findNotDone(abCovCallCases.reg) , resources=list(walltime="2:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(abCovCallCases.reg)
 
 res.df = plyr::ldply(reduceResultsList(abCovCallCases.reg), identity)
+res.df$.id = NULL
+save(res.df, file="cnvs-FDR01-mergeStitch-thSdest2N.RData")
 
 ## Open locally because the output opens an interactive web browser application
 sv.summary.interactive(res.df)

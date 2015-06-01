@@ -5,7 +5,8 @@
 \title{Z-score computation}
 \usage{
 z.comp(bc.f, files.df, ref.samples = NULL, z.poisson = FALSE,
-  nb.cores = 1, chunk.size = NULL, out.msd.f = "ref-msd.tsv")
+  nb.cores = 1, chunk.size = NULL, out.msd.f = "ref-msd.tsv",
+  append = FALSE)
 }
 \arguments{
 \item{bc.f}{the path to the normalized bin count file.}
@@ -22,6 +23,8 @@ Details). Default is FALSE.}
 \item{chunk.size}{the chunk size. If NULL (Default), no chunks are used.}
 
 \item{out.msd.f}{the name of the file to write the mean/sd information. If 'NULL' no file is created.}
+
+\item{append}{should the Z-scores be appended to existing files. Default is FALSE.}
 }
 \value{
 a list with

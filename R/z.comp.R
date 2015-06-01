@@ -2,13 +2,14 @@
 ##'
 ##' @title Z-score computation
 ##' @param bc.f the path to the normalized bin count file.
-##' @param files.df a data.frame with the file paths. 
+##' @param files.df a data.frame with the file paths.
 ##' @param ref.samples a vector with the samples to use as reference. If 'NULL' (default) all samples in the bin count file are used as reference.
 ##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
 ##' Details). Default is FALSE.
 ##' @param nb.cores the number of cores to use.
 ##' @param chunk.size the chunk size. If NULL (Default), no chunks are used.
 ##' @param out.msd.f the name of the file to write the mean/sd information. If 'NULL' no file is created.
+##' @param append should the Z-scores be appended to existing files. Default is FALSE.
 ##' @return a list with
 ##' \item{z}{a data.frame with the Z-scores for each bin and sample (bin x sample).}
 ##' \item{fc}{a data.frame with the fold-change compared to the average bin count in
@@ -16,12 +17,12 @@
 ##' \item{msd}{the mean, standard deviation and number of removed outlier samples in each bin.}
 ##' @author Jean Monlong
 ##' @export
-z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores = 1, chunk.size=NULL, out.msd.f="ref-msd.tsv") {
+z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores = 1, chunk.size=NULL, out.msd.f="ref-msd.tsv", append=FALSE) {
 
   if(!file.exists(bc.f)){
     stop("Bin count file not found.")
   }
-  
+
   if (z.poisson) {
     z.comp.f <- function(x, mean.c, sd.c) {
       z.n = (x - mean.c)/sd.c
@@ -59,14 +60,14 @@ z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores
   } else {
     ref.samples = setdiff(headers, c("chr","start","end"))
   }
-  
+
   ## Compute chunk index
   if(!is.null(chunk.size)){
     chunks = tapply(1:nrows, rep(1:ceiling(nrows/chunk.size), each=chunk.size)[1:nrows], identity)
   } else {
     chunks = list(1:nrows)
   }
-   
+
   ## For each chunk
   for(ch.ii in 1:length(chunks)){
 
@@ -74,32 +75,32 @@ z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores
     bc.l = read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),bc.f)
     bc.1 = bc.l[, 1:3, with = FALSE]
     bc.l = as.matrix(bc.l[, ref.samples, with = FALSE])
-    
+
     ## Get or compute mean/sd in reference
     msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,])), mc.cores=nb.cores)
     msd = matrix(unlist(msd), nrow=3)
     rownames(msd) = c("m","sd","nb.remove")
-    
+
     z = parallel::mclapply(1:ncol(bc.l), function(cc) z.comp.f(bc.l[,cc], mean.c = msd[1, ], sd.c = msd[2, ]), mc.cores=nb.cores)
     z = matrix(unlist(z), ncol=length(z))
     fc = bc.l/msd[1, ]
     colnames(z) = colnames(fc) = ref.samples
     z = data.frame(bc.1[, 1:3, with = FALSE], z)
     fc = data.frame(bc.1[, 1:3, with = FALSE], fc)
-    
+
     ## Write output files
-    write.split.samples(list(z=z, fc=fc), files.df, ref.samples, res.n=c("z","fc"), files.col=c("z","fc"), compress.index=FALSE, append=ch.ii>1)
-    
+    write.split.samples(list(z=z, fc=fc), files.df, ref.samples, res.n=c("z","fc"), files.col=c("z","fc"), compress.index=FALSE, append=append | ch.ii>1)
+
     ## Write mean/sd file
     msd = data.frame(as.data.frame(bc.1[, 1:3, with=FALSE]), t(msd))
     if(!is.null(out.msd.f)){
-      write.table(msd, file=out.msd.f, sep="\t", row.names=FALSE, quote=FALSE, append=ch.ii>1, col.names=ch.ii==1)
+      write.table(msd, file=out.msd.f, sep="\t", row.names=FALSE, quote=FALSE, append=append | ch.ii>1, col.names=!append & ch.ii==1)
     }
-    
+
   }
-  
+
   return(list(z = z, fc = fc, msd = msd, z.poisson = z.poisson))
 }
 
-## To test: one sample only; chunks; msd input or not 
+## To test: one sample only; chunks; msd input or not
 ## To add: Check consistency in parameters in the beginning
