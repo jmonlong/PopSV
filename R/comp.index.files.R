@@ -4,14 +4,20 @@
 ##' @param outprefix the prefix to use to name the output files. By default, the original file names.
 ##' @param rm.input Should the original input file be removed after compression/indexing ? Default is TRUE.
 ##' @param overwrite.out Should a compressed file be overwritten if it already exists ? Default is TRUE.
+##' @param reorder should the files be read a reordered before compression/indexation. Default is FALSE.
 ##' @return a character vector confirming the creation of the new files.
 ##' @author Jean Monlong
 ##' @export
-comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrite.out = TRUE) {
+comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrite.out = TRUE, reorder=FALSE) {
   if(any(!file.exists(files))){
     stop(files[which(!file.exists(files))], ": file not found")
   }
   sapply(1:length(files), function(file.ii) {
+    if(reorder){
+      dt = data.table::fread(files[file.ii])
+      data.table::setkey(dt, chr, start)
+      write.table(dt, file=files[file.ii], quote=FALSE, row.names=FALSE, sep="\t")
+    }
     final.file = paste(outprefix[file.ii], ".bgz", sep = "")
     Rsamtools::bgzip(files[file.ii], dest = final.file, overwrite = TRUE)
     if (rm.input) 
