@@ -1,7 +1,7 @@
 ## FTE : FOR TOY EXAMPLE: lines marked with this flag should be adapted to the analysis. Here I used smaller numbers to run a small toy example. '=>' shows what should be used instead for an real analysis.
 
 ## Installation
-## devtools::install_github("jmonlong/PopSV")
+## devtools::install_github("jmonlong/PopSV", ref="forPaperXY")
 
 library(BatchJobs)
 library(PopSV)
