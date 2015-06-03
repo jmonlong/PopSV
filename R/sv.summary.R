@@ -58,11 +58,12 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
 
   pdf$col = cut(pdf$nb.bin.cons, breaks=c(0,1,2,3,5,10,Inf))
   output$cn.perSize =  ggplot2::ggplot(pdf, ggplot2::aes(x=cn, fill=col)) +
-    ggplot2::geom_bar() + ggplot2::theme_bw() + ggplot2::scale_x_continuous(breaks=seq(0,5,1), labels=c(seq(0,4,1),">5"), limits=c(0,5.2)) + ggplot2::scale_fill_brewer(name="type",palette="Set1") +
+    ggplot2::geom_bar() + ggplot2::theme_bw() + ggplot2::scale_x_continuous(breaks=seq(0,5,1), labels=c(seq(0,4,1),">5"), limits=c(0,5.2)) + ggplot2::scale_fill_brewer(name="size",palette="Set1") +
       ggplot2::theme(legend.position=c(.5,1),legend.justification=c(.5,1)) + ggplot2::xlab("Copy Number estimates") + ggplot2::ylab("number of calls")
 
 
   f.df = dplyr::summarize(dplyr::group_by(freq.df, chr, start, end), nb=sum(nb), prop=sum(prop), gen.kb=head((end-start)/1e3, 1))
+  f.df = dplyr::summarize(dplyr::group_by(f.df, chr, nb, prop), gen.kb=sum(gen.kb))
   output$freq = ggplot2::ggplot(dplyr::arrange(f.df, chr), ggplot2::aes(x=nb,  y=gen.kb, fill=chr)) + ggplot2::xlab("number of samples") +
     ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() + ggplot2::ylab("abnormal genome (Kb)") +
       ggplot2::guides(fill=FALSE) + ggplot2::scale_fill_manual(values=rep(RColorBrewer::brewer.pal(9,"Set1"),3))
