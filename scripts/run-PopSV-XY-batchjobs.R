@@ -87,10 +87,11 @@ samp.qc.o = loadResult(sampQC.reg, 1)
 ## The normalization step can be run simultaneously for the 3 parts. However, step 6 and 7 (z-scores and cases) should be run one at a time, starting by the automsome part (because the results of the X and XY parts will be appended to the files created in the first part).
 
 ### To be nice, this part could be run on an interactive node
-bins.df = loadResult(getGC.reg,1)
+bins.df = load("bins.RData")
 bins.df = chunk.bin(bins.df, bg.chunk.size=2e4, sm.chunk.size=1e4, large.chr.chunks=TRUE) ## FTE: smaller chunks => 'bg.chunk.size=1e5' recommended
 bins.sm.chunks = unique(bins.df$sm.chunk)
 save(bins.df, file="bins.RData")
+### End of the "nice guy interactive node" part
 
 ###
 ##  All samples on autosomes
@@ -103,11 +104,11 @@ bcNormTN122.reg <- makeRegistry(id="bcNormTN122")
 bcNormTN122.f <- function(chunk.id, file.bc, file.bin, cont.sample){
     load(file.bin)
     library(PopSV)
-    bc.df = read.bedix(file.bc, subset(bins.df, bg.chunk==subset(bins.df, sm.chunk==chunk.id)$bg.chunk[1] & chr %in% 1:22))
+    bins.df = subset(bins.df, chr %in% 1:22)
+    bc.df = read.bedix(file.bc, subset(bins.df, bg.chunk==subset(bins.df, sm.chunk==chunk.id)$bg.chunk[1]))
     tn.norm(bc.df, cont.sample, bins=subset(bins.df, sm.chunk==chunk.id)$bin)
 }
 batchMap(bcNormTN122.reg, bcNormTN122.f,bins.sm.chunks, more.args=list(file.bc=samp.qc.o$bc, file.bin="bins.RData",cont.sample=samp.qc.o$cont.sample))
-### End of the "nice guy interactive node" part
 submitJobs(bcNormTN122.reg, findJobs(bcNormTN122.reg) , resources=list(walltime="10:0:0", nodes="1", cores="1",queue="sw"), wait=function(retries) 100, max.retries=10)
 showStatus(bcNormTN122.reg)
 
@@ -230,7 +231,7 @@ tmp = reduceResultsList(bcNormTNXYM.reg, fun=function(res, job){
 zRefXYM.reg <- makeRegistry(id="zRefXYM")
 zRefXYM.f <- function(bc.f, files.df){
   library(PopSV)
-  z.comp(bc.f=bc.f, files.df=files.df, nb.cores=3, z.poisson=TRUE, chunk.size=1e4, out.msd.f=NULL, append=TRUE)
+  z.comp(bc.f=bc.f, files.df=files.df, nb.cores=3, z.poisson=TRUE, chunk.size=1e4, out.msd.f=NULL, append=TRUE, compress.index=FALSE)
 }
 batchMap(zRefXYM.reg, zRefXYM.f,out.files.XYM[1], more.args=list(files.df=files.df))
 submitJobs(zRefXYM.reg, 1, resources=list(walltime="6:0:0", nodes="1", cores="3",queue="sw"), wait=function(retries) 100, max.retries=10)
