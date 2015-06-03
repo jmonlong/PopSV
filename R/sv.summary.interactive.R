@@ -41,7 +41,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
                                 shiny::numericInput("cnMin", "Minimum CN shown", 0, 0, Inf, 1),
                                 shiny::numericInput("cnMax", "Maximum CN shown", 5, 1, Inf, 1)),
         shiny::conditionalPanel(condition = "input.conditionPanels == 'Frequency across the genome'",
-                                shiny::selectInput("chr","Chromosome",c("all",1:22)),shiny::radioButtons("fchr.rep","Representation",c("Stacked","Sample"))),
+                                shiny::selectInput("chr","Chromosome",c("all",1:22,"X","Y")),shiny::radioButtons("fchr.rep","Representation",c("Stacked","Sample"))),
         shiny::conditionalPanel(condition = "input.conditionPanels == 'Frequency across the genome' | input.conditionPanels == 'Frequency distribution'",
                                 shiny::radioButtons("freq.rep","Frequency:", c("Number of samples"="nb","Proportion of samples"="prop"))),
         shiny::conditionalPanel(condition = "input.conditionPanels == 'Frequency distribution'",
@@ -163,9 +163,9 @@ sv.summary.interactive <- function(res.df, height="500px"){
       output$freq.chr = shiny::renderPlot({
         if(input$chr=="all"){
           chr.df = freq.df()
-          chr.df$chr = factor(chr.df$chr, levels=1:22)
+          chr.df$chr = factor(chr.df$chr, levels=c(1:22,"X","Y"))
           pdf = plot.df()
-          pdf$chr = factor(pdf$chr, levels=1:22)
+          pdf$chr = factor(pdf$chr, levels=c(1:22,"X","Y"))
           facet.o = ggplot2::facet_wrap(~chr,scales="free")
         } else {
           chr.df = freq.df()
