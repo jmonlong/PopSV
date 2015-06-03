@@ -24,7 +24,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
   }
 
   res.df$gen.kb = with(res.df, (end-start)/1e3)
-  if(any(colnames(res.df)=="mean.cov"){
+  if(any(colnames(res.df)=="mean.cov")){
     if(any(is.na(res.df$mean.cov))){
       res.df$mean.cov[which(is.na(res.df$mean.cov))] = Inf
     }
