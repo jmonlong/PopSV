@@ -9,6 +9,7 @@
 ##' @author Jean Monlong
 ##' @export
 comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrite.out = TRUE, reorder=FALSE) {
+  chr = start = NULL ## Uglily appeases R checks
   if(any(!file.exists(files))){
     stop(files[which(!file.exists(files))], ": file not found")
   }
@@ -20,10 +21,10 @@ comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrit
     }
     final.file = paste(outprefix[file.ii], ".bgz", sep = "")
     Rsamtools::bgzip(files[file.ii], dest = final.file, overwrite = TRUE)
-    if (rm.input) 
+    if (rm.input)
       file.remove(files[file.ii])
     Rsamtools::indexTabix(final.file, format = "bed")
     ##message(paste(final.file, "created and indexed."))
     return(final.file)
   })
-} 
+}

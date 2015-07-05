@@ -7,3 +7,4 @@ Homogenize other normalization outputs
 One test function for testing one "case" (once reference and
    normalization is computed)
 Update pipeline script: local and BatchJobs
+Unit tests for the merging functions

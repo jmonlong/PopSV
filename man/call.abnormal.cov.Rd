@@ -5,7 +5,7 @@
 \title{Call abnormal bins}
 \usage{
 call.abnormal.cov(z = NULL, files.df = NULL, samp, out.pdf = NULL,
-  FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "no"),
+  FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"),
   stitch.dist = NULL, z.th = c("sdest", "consbins", "sdest2N"), fc = NULL,
   norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL,
   ref.dist.weight = NULL)

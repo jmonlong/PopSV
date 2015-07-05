@@ -67,7 +67,7 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
   res.df$end = test.bc$end
 
   if (aberrant.cases) {
-    norm.bin <- function(bc.bin.arg, test.bc.arg, cont.bc.arg, bc.mean.arg, chrs.arg) {
+    norm.bin <- function(bc.bin.arg, test.bc.arg, cont.bc.arg, bc.mean.arg=NULL, chrs.arg=NULL) {
       norm.coeff = norm.tm.opt(as.matrix(test.bc.arg),
         ref.col = cont.bc.arg, bc.mean.norm = bc.mean.arg,
         chrs = chrs.arg)
