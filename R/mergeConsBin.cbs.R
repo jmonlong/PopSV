@@ -26,16 +26,11 @@ mergeConsBin.cbs <- function(df, pv.th=.01) {
   }
 
   cna.o = with(df, DNAcopy::CNA(z, chr, start))
-  cna.s = DNAcopy::segment(cna.o, alpha=pv.th, undo.splits="prune")
+  cna.s = DNAcopy::segment(cna.o, alpha=pv.th, undo.splits="prune", verbose=0)
 
+  ## Merge segments
   gr.f = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end), z = z))
-  dup.gr = with(df[which(df$z > 0), ], GenomicRanges::GRanges(chr, IRanges::IRanges(start,
-    end)))
-  del.gr = with(df[which(df$z < 0), ], GenomicRanges::GRanges(chr, IRanges::IRanges(start,
-    end)))
   df$red.i = NA
-
-  ## Merge duplications
   gr.seg = with(cna.s$output, GenomicRanges::GRanges(chrom, IRanges::IRanges(loc.start, loc.end)))
   ol.o = GenomicRanges::findOverlaps(gr.f, gr.seg)
   df$red.i[IRanges::queryHits(ol.o)] = paste0("seg", IRanges::subjectHits(ol.o))
