@@ -80,7 +80,7 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), ref.dist.weight =
         pv = qv = NULL  ## Uglily appease R checks
         plot.df = data.frame(z = z, pv = res$pval, qv = res$qval)
         print(ggplot2::ggplot(plot.df[which(abs(plot.df$z) < quantile(abs(plot.df$z), 
-            probs = 0.95) + 1), ], ggplot2::aes(x = z)) + ggplot2::geom_histogram() + 
+            probs = 0.95, na.rm=TRUE) + 1), ], ggplot2::aes(x = z)) + ggplot2::geom_histogram() + 
             ggplot2::xlab("Z-score") + ggplot2::ylab("number of bins") + ggplot2::theme_bw())
         print(ggplot2::ggplot(plot.df, ggplot2::aes(x = pv)) + ggplot2::geom_histogram() + 
             ggplot2::xlab("P-value") + ggplot2::xlim(0, 1) + ggplot2::ylab("number of bins") + 

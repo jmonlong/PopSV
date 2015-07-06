@@ -45,18 +45,15 @@ test_that("Fragmented calls recovered", {
   cnv.s = round(runif(1,1,nrow(z.df)-20))
   cnv.w1 = round(runif(1,1,10))
   cnv.w2 = round(runif(1,1,10))
-  z.df$z[cnv.s:(cnv.s+cnv.w1-1)] = runif(cnv.w1, 2,100)
-  z.df$z[(cnv.s+cnv.w1+1):(cnv.s+cnv.w1+cnv.w2)] = runif(cnv.w2, 2,100)
+  z.df$z[cnv.s:(cnv.s+cnv.w1-1)] = runif(cnv.w1, 10,100)
+  z.df$z[(cnv.s+cnv.w1+1):(cnv.s+cnv.w1+cnv.w2)] = runif(cnv.w2, 10,100)
   fdr = fdrtool.quantile(z.df$z,quant.int=seq(.6,.99,.01), plot = FALSE)
   z.df$pv = fdr$pval
   z.df$qv = fdr$qval
-  
   z.m = mergeConsBin.reduce(subset(z.df, qv<.01))
-  expect_true(sum(z.m$chr==z.df$chr[cnv.s] & z.m$start>z.df$start[cnv.s-2] & z.m$start<z.df$start[cnv.s+cnv.w1+cnv.w2])==2)
+  expect_true(sum(z.m$chr==z.df$chr[cnv.s] & z.m$start>z.df$start[cnv.s-2] & z.m$start<z.df$start[cnv.s+cnv.w1+cnv.w2])>1)
   z.m = mergeConsBin.reduce(subset(z.df, qv<.01), stitch.dist = 1e6)
   expect_true(sum(z.m$chr==z.df$chr[cnv.s] & z.m$start>z.df$start[cnv.s-2] & z.m$start<z.df$start[cnv.s+cnv.w1+cnv.w2])==1)
   z.m = mergeConsBin.z(z.df, stitch.dist = 1e6, nb.sim=1e3)
-  expect_true(sum(z.m$chr==z.df$chr[cnv.s] & z.m$start>z.df$start[cnv.s-2] & z.m$start<z.df$start[cnv.s+cnv.w1+cnv.w2])==1)
-  z.m = mergeConsBin.cbs(z.df)
   expect_true(sum(z.m$chr==z.df$chr[cnv.s] & z.m$start>z.df$start[cnv.s-2] & z.m$start<z.df$start[cnv.s+cnv.w1+cnv.w2])==1)
 })
