@@ -2,7 +2,6 @@
 ##' @title P-values estimation from mixture of 2 centered normal
 ##' @param z a vector with the Z-scores
 ##' @param plot should some graphs be displayed. Default if FALSE.
-##' @param min.prop.null the minimum proportion of the genome expected to be normal.Recommended: 0.8 for 'normal' samples, 0.4 (default) for tumor samples.
 ##' @return a list with
 ##' \item{pval}{the vector of P-values}
 ##' \item{qval}{the vector of Q-values / FDR estimates}
@@ -10,7 +9,7 @@
 ##' \item{sigma.est.del}{the estimated null distribution variance for negative Z-scores}
 ##' @author Jean Monlong
 ##' @keywords internal
-fdrtool.quantile.2N <- function(z, plot = TRUE, min.prop.null = 0.95) {
+fdrtool.quantile.2N <- function(z, plot = TRUE) {
   
   localMax <- function(x, min.max.prop = 0.1) {
     d = density(x, na.rm = TRUE)
@@ -26,7 +25,7 @@ fdrtool.quantile.2N <- function(z, plot = TRUE, min.prop.null = 0.95) {
       e <- p[1] * dnorm(x/p[2])/((pnorm(z0, 0, p[2]) - pnorm(-z0, 0, p[2])) * 
                                  p[2]) + (1 - p[1]) * dnorm(x/p[3])/((pnorm(z0, 0, p[3]) - pnorm(-z0, 
                                                                                                  0, p[3])) * p[3])
-      if (any(e <= 0, na.rm = TRUE) | p[1] < 0 | p[1] > 1) 
+      if (any(e <= 0, na.rm = TRUE) | p[1] < 0 | p[1] > 1 | p[2]>2*z0 | p[3]>2*z0) 
       Inf else -sum(log(e))
     }
     lmix2a <- deriv(~-log(p * dnorm(x/s1)/((pnorm(z0, 0, s1) - pnorm(-z0, 0, 
@@ -51,24 +50,41 @@ fdrtool.quantile.2N <- function(z, plot = TRUE, min.prop.null = 0.95) {
     c(rnorm(pars["p"] * nb.sims, 0, pars["s1"]), rnorm((1 - pars["p"]) * nb.sims, 
                                                        0, pars["s2"]))
   }
-  find.par <- function(z, z0.int = seq(quantile(abs(z), probs = min.prop.null), 
-                            min(10,quantile(abs(z), probs = 0.99)), 0.2)) {
-    p.df = plyr::ldply(z0.int, function(z0) {
-      p = fit2norm.sd.cens(z, z0 = z0)
-      zsim = sim2norm.sd(p$par)
-      dz = density(z[abs(z) < z0], from = -z0, to = z0, n = 512)
-      dzsim = density(zsim[abs(zsim) < z0], from = -z0, to = z0, n = 512)
-      data.frame(z0 = z0, dens.diff = sum(abs(dz$y - dzsim$y))/sum(dzsim$y), 
-                 p = p$par[1], s1 = p$par[2], s2 = p$par[3])
-    })
-    dd = localMax(p.df$dens.diff)
-    list(par = unlist(p.df[which.min(abs(p.df$dens.diff - min(dd$lM))), ]))
+  find.par <- function(z) {
+    findPar <- function(z0){
+      do.call(rbind, lapply(z0,function(z0){
+        p = fit2norm.sd.cens(z, z0 = z0)
+        zsim = sim2norm.sd(p$par)
+        dz = density(z[abs(z) < z0], from = -z0, to = z0, n = 512)
+        dzsim = density(zsim[abs(zsim) < z0], from = -z0, to = z0, n = 512)
+        data.frame(z0 = z0, dens.diff = sum(abs(dz$y - dzsim$y))/sum(dzsim$y), 
+                   p = p$par[1], s1 = p$par[2], s2 = p$par[3])
+      }))
+    }
+    step = c(.2,.5,1)
+    continue = TRUE
+    cpt = 0
+    first.scan = findPar(2:8)
+    z0 = first.scan$z0[which.min(first.scan$dens.diff)]
+    p.c = first.scan[which.min(first.scan$dens.diff),]
+    while(continue & cpt < 8){
+      message(z0)
+      p.l = findPar(z0-step)
+      p.u = findPar(z0+step)
+      if(sum(p.l$dens.diff<p.c$dens.diff)>sum(p.u$dens.diff<p.c$dens.diff)){
+        z0 = z0-step[sum(p.l$dens.diff<p.c$dens.diff)]
+        p.c = p.l[sum(p.l$dens.diff<p.c$dens.diff),]
+      } else if(sum(p.l$dens.diff<p.c$dens.diff)<sum(p.u$dens.diff<p.c$dens.diff)){
+        z0 = z0+step[sum(p.u$dens.diff<p.c$dens.diff)]
+        p.c = p.u[sum(p.u$dens.diff<p.c$dens.diff),]
+      } else {
+        continue = FALSE
+      }
+      cpt = cpt + 1
+    }
+    list(par = unlist(p.c))
   }
   p2norm <- function(z, pars) {
-    if(pars["p"]>.9){
-      pars["s1"] = pars["s1"]*(2-pars["p"])
-      pars["p"]=1
-    }
     pars["p"] * pnorm(z, 0, pars["s1"]) + (1 - pars["p"]) * pnorm(z, 0, pars["s2"])
   }
   
@@ -99,13 +115,30 @@ fdrtool.quantile.2N <- function(z, plot = TRUE, min.prop.null = 0.95) {
   res$pval[non.na.i[z.non.na < 0]] = 2 * p2norm(-abs(z.del), p$par)
   res$sigma.est.del = p$par["s1"]
   
-  if (any(res$pval == 0, na.rm = TRUE)) 
-  res$pval[which(res$pval == 0)] = .Machine$double.xmin
+  if (any(res$pval == 0, na.rm = TRUE)) {
+    res$pval[which(res$pval == 0)] = .Machine$double.xmin
+  }
   res$qval = p.adjust(res$pval, method = "fdr")
   
   if (plot & any(!is.na(res$pval))) {
     pv = qv = NULL  ## Uglily appease R checks
     plot.df = data.frame(z = z, pv = res$pval, qv = res$qval)
+
+    z.lim = c(-res$sigma.est.del, res$sigma.est.dup)*ifelse(mean(res$pval<.01)>.1,8,5)
+    null.df = data.frame(y=c(dnorm(seq(z.lim[1],0,.05),0,res$sigma.est.del),dnorm(seq(0,z.lim[2],.05),0,res$sigma.est.dup)), z=c(seq(z.lim[1],0,.05),seq(0,z.lim[2],.05)))
+    null.df$y = null.df$y * mean(z> -4*res$sigma.est.del & z<4*res$sigma.est.dup)
+    
+    print(ggplot2::ggplot(plot.df, ggplot2::aes(x = z)) +
+          ggplot2::geom_histogram(ggplot2::aes(y=..density..)) + 
+          ggplot2::xlab("Z-score") + ggplot2::ylab("number of bins") + ggplot2::theme_bw() +
+          ggplot2::geom_line(ggplot2::aes(y=y), data=null.df, linetype=2, colour="red") + 
+          ggplot2::xlim(z.lim))
+
+    print(ggplot2::ggplot(plot.df, ggplot2::aes(x = pv, fill=cut(qv, breaks = c(-Inf, 0.001, 0.01, 0.5, 0.1,1)))) + ggplot2::geom_histogram() + 
+          ggplot2::xlab("P-value") + ggplot2::xlim(0, 1) + ggplot2::ylab("number of bins") +
+          ggplot2::scale_fill_hue(name="Q-value") + 
+          ggplot2::theme_bw() + ggplot2::theme(legend.position="bottom"))
+
     print(ggplot2::ggplot(plot.df[which(abs(plot.df$z) < quantile(abs(plot.df$z), 
                                                                   probs = 0.95) + 1), ], ggplot2::aes(x = z)) + ggplot2::geom_histogram() + 
           ggplot2::xlab("Z-score") + ggplot2::ylab("number of bins") + ggplot2::theme_bw())
