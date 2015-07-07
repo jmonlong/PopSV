@@ -65,6 +65,10 @@ fdrtool.quantile.2N <- function(z, plot = TRUE, min.prop.null = 0.95) {
     list(par = unlist(p.df[which.min(abs(p.df$dens.diff - min(dd$lM))), ]))
   }
   p2norm <- function(z, pars) {
+    if(pars["p"]>.9){
+      pars["s1"] = pars["s1"]*(2-pars["p"])
+      pars["p"]=1
+    }
     pars["p"] * pnorm(z, 0, pars["s1"]) + (1 - pars["p"]) * pnorm(z, 0, pars["s2"])
   }
   
