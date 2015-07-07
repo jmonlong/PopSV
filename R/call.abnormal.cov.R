@@ -35,10 +35,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05,
-                              merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL,
-                              z.th = c("sdest", "consbins", "sdest2N"),
-                              fc = NULL, norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, ref.dist.weight = NULL) {
+call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL, z.th = c("sdest", "consbins", "sdest2N"), fc = NULL, norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, ref.dist.weight = NULL) {
 
   if(!is.null(z)){
     ## load Z-scores and FC coefficients
@@ -142,10 +139,7 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   } else if (z.th[1] == "consbins") {
     res.df = z.thres.cons.bins(res.df, plot = !is.null(out.pdf), pvalues = TRUE)$z.df
   } else if (z.th[1] == "sdest2N") {
-    if (min.normal.prop > 0.98) {
-      stop("Maximum value accepted for 'min.normal.prop' is 0.98.")
-    }
-    fdr = fdrtool.quantile.2N(res.df$z, plot = !is.null(out.pdf), min.prop.null = min.normal.prop)
+    fdr = fdrtool.quantile.2N(res.df$z, plot = !is.null(out.pdf))
     res.df$pv = fdr$pval
     res.df$qv = fdr$qval
   } else {

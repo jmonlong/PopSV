@@ -30,21 +30,13 @@ test_that("Normal Z-scores + outliers leads to flat P-values using quantile appr
 })
 
 test_that("Normal Z-scores leads to flat P-values using quantile 2N approach",{
-  fdr = fdrtool.quantile.2N(z.df$z,plot = FALSE, min.prop.null = .9)
-  expect_true(flatness(fdr$pval)<.1)
-  fdr = fdrtool.quantile.2N(z.df$z, plot = FALSE, min.prop.null = .6)
-  expect_true(flatness(fdr$pval)<.1)
-  fdr = fdrtool.quantile.2N(z.df$z, plot = FALSE, min.prop.null = .4)
+  fdr = fdrtool.quantile.2N(z.df$z,plot = FALSE)
   expect_true(flatness(fdr$pval)<.1)
 })
 
 test_that("Normal Z-scores + outliers leads to flat P-values using quantile 2N approach",{
   z.df$z[sample.int(nrow(z.df),100)] = runif(100,-100,100)
-  fdr = fdrtool.quantile.2N(z.df$z,plot = FALSE, min.prop.null = .9)
-  expect_true(flatness(fdr$pval)<.1)
-  fdr = fdrtool.quantile.2N(z.df$z, plot = FALSE, min.prop.null = .6)
-  expect_true(flatness(fdr$pval)<.1)
-  fdr = fdrtool.quantile.2N(z.df$z, plot = FALSE, min.prop.null = .4)
+  fdr = fdrtool.quantile.2N(z.df$z,plot = FALSE)
   expect_true(flatness(fdr$pval)<.1)
 })
 

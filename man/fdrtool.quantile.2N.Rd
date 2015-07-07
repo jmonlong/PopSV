@@ -4,14 +4,12 @@
 \alias{fdrtool.quantile.2N}
 \title{P-values estimation from mixture of 2 centered normal}
 \usage{
-fdrtool.quantile.2N(z, plot = TRUE, min.prop.null = 0.95)
+fdrtool.quantile.2N(z, plot = TRUE)
 }
 \arguments{
 \item{z}{a vector with the Z-scores}
 
 \item{plot}{should some graphs be displayed. Default if FALSE.}
-
-\item{min.prop.null}{the minimum proportion of the genome expected to be normal.Recommended: 0.8 for 'normal' samples, 0.4 (default) for tumor samples.}
 }
 \value{
 a list with
