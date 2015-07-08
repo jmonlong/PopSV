@@ -76,6 +76,12 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     fc.f = subset(files.df, sample==samp)$fc
     if(!file.exists(fc.f)) fc.f = paste0(fc.f, ".bgz")
     fc = read.table(fc.f, header=TRUE, as.is=TRUE)
+    ## Check the order is consistent in both files
+    rand.ii = sample.int(nrow(res.df),100)
+    if(nrow(res.df)!=nrow(fc) | any(res.df$start[rand.ii]!=fc$start[rand.ii]) | any(res.df$chr[rand.ii]!=fc$chr[rand.ii])){
+      stop("Z-score and fold-change (fc) files are not in the same order. Maybe recompute them ?")
+    }
+    ##
     res.df$fc = fc$fc
     rm(fc)
   } else {
