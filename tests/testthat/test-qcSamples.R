@@ -7,7 +7,7 @@ samps.f = paste0(samps, "-bc.tsv")
 samp.med = c(1000,2000,3000,5000)
 sapply(1:4, function(ii){
   bin.df = bin.df[order(bin.df$chr, bin.df$start),]
-  bin.df$bc = rnorm(100,samp.med[ii],100)
+  bin.df$bc = round(rnorm(100,samp.med[ii],100),2)
   write.table(bin.df, file=samps.f[ii], row.names=FALSE, quote=FALSE, sep="\t")
 })
 files.df = data.frame(sample=samps, bc.gc.gz=comp.index.files(samps.f))
