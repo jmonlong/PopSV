@@ -42,7 +42,11 @@ test_that("Z-pairs merge output looks good", {
 })
 
 test_that("Fragmented calls recovered", {
+  z.df$z = rnorm(nrow(z.df))
   cnv.s = round(runif(1,1,nrow(z.df)-20))
+  while(length(unique(z.df$chr[(cnv.s-5):(cnv.s+20)]))>1){
+    cnv.s = round(runif(1,1,nrow(z.df)-20))
+  }
   cnv.w1 = round(runif(1,1,10))
   cnv.w2 = round(runif(1,1,10))
   z.df$z[cnv.s:(cnv.s+cnv.w1-1)] = runif(cnv.w1, 10,100)
@@ -51,9 +55,9 @@ test_that("Fragmented calls recovered", {
   z.df$pv = fdr$pval
   z.df$qv = fdr$qval
   z.m = mergeConsBin.reduce(subset(z.df, qv<.01))
-  expect_true(sum(z.m$chr==z.df$chr[cnv.s] & z.m$start>z.df$start[cnv.s-2] & z.m$start<z.df$start[cnv.s+cnv.w1+cnv.w2])>1)
+  expect_true(sum(z.m$chr==z.df$chr[cnv.s] & z.m$start>z.df$start[cnv.s-2] & z.m$start<z.df$start[cnv.s+cnv.w1+cnv.w2+1])>1)
   z.m = mergeConsBin.reduce(subset(z.df, qv<.01), stitch.dist = 1e6)
-  expect_true(sum(z.m$chr==z.df$chr[cnv.s] & z.m$start>z.df$start[cnv.s-2] & z.m$start<z.df$start[cnv.s+cnv.w1+cnv.w2])==1)
+  expect_true(sum(z.m$chr==z.df$chr[cnv.s] & z.m$start>z.df$start[cnv.s-2] & z.m$start<z.df$start[cnv.s+cnv.w1+cnv.w2+1])==1)
   z.m = mergeConsBin.z(z.df, stitch.dist = 1e6, nb.sim=1e3)
-  expect_true(sum(z.m$chr==z.df$chr[cnv.s] & z.m$start>z.df$start[cnv.s-2] & z.m$start<z.df$start[cnv.s+cnv.w1+cnv.w2])==1)
+  expect_true(sum(z.m$chr==z.df$chr[cnv.s] & z.m$start>z.df$start[cnv.s-2] & z.m$start<z.df$start[cnv.s+cnv.w1+cnv.w2+1])==1)
 })
