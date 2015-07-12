@@ -79,7 +79,7 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
     ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() + ggplot2::ylab("abnormal genome (Kb)") +
       ggplot2::guides(fill=FALSE) + ggplot2::scale_fill_manual(values=rep(RColorBrewer::brewer.pal(9,"Set1"),3))
 
-  info.df = rbind(info.df, data.frame(variable="freq<10%-propBp", value=sum(f.df$gen.kb[which(f.df$prop<.1)])/sum(f.df$gen.kp), stringsAsFactors=FALSE))
+  info.df = rbind(info.df, data.frame(variable="freq<10%-propBp", value=sum(f.df$gen.kb[which(f.df$prop<.1)])/sum(f.df$gen.kb), stringsAsFactors=FALSE))
 
   if(!is.null(out.pdf)){
     pdf(out.pdf, 9,6)
