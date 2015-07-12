@@ -14,7 +14,9 @@ sv.summary(res.df, out.pdf = NULL, print = TRUE)
 \item{print}{Should the graphs be displayed ? If 'out.pdf' though, this parameter is not used as no graph will be displayed.}
 }
 \value{
-A list of ggplot graphs
+A list with :
+\item{graphs.l}{a list of ggplot graphs}
+\item{info.df}{a data.frame with different summary statistics}
 }
 \description{
 Summary of regions with abnormal coverage as detected by 'call.abnomal.cov'.

@@ -3,7 +3,9 @@
 ##' @param res.df the data.frame with the results.
 ##' @param out.pdf the name for the output PDF file to create. If NULL (default), the graphs are either displayed directly or returned as a list.
 ##' @param print Should the graphs be displayed ? If 'out.pdf' though, this parameter is not used as no graph will be displayed.
-##' @return A list of ggplot graphs
+##' @return A list with :
+##' \item{graphs.l}{a list of ggplot graphs}
+##' \item{info.df}{a data.frame with different summary statistics}
 ##' @author Jean Monlong
 ##' @export
 sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
@@ -29,6 +31,8 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
   samp.o = aggregate(gen.kb~sample, data=res.df, sum)
   res.df$sample = factor(res.df$sample, levels=samp.o$sample[order(samp.o$gen.kb)])
 
+  info.df = data.frame(variable="kb-meanPerSamp",value=mean(samp.o$gen.kb), stringsAsFactors=FALSE)
+
   freq.df = rbind(data.frame(type="deletion",freq.chr.gr(res.df[which(res.df$fc<1),])),
           data.frame(type="duplication",freq.chr.gr(res.df[which(res.df$fc>1),])))
 
@@ -40,6 +44,9 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
     ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() + ggplot2::scale_fill_brewer(name="type",palette="Set1") +
       ggplot2::theme(axis.text.x=ggplot2::element_blank(),
                      legend.position=c(0,1),legend.justification=c(0,1)) + ggplot2::ylab("abnormal genome (Kb)")
+
+  m.df = dplyr::summarize(dplyr::group_by(res.df.s,col), gen.kb=mean(gen.kb))
+  info.df = rbind(info.df, data.frame(variable=paste("kb-meanPerSamp",m.df$col,sep="-"), value=m.df$gen.kb, stringsAsFactors=FALSE))
 
   res.df$col = cut(res.df$nb.bin.cons, breaks=c(0,1,2,3,5,10,Inf))
   res.df.s = dplyr::summarize(dplyr::group_by(res.df, sample, col), gen.kb=sum(gen.kb))
@@ -72,6 +79,8 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
     ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() + ggplot2::ylab("abnormal genome (Kb)") +
       ggplot2::guides(fill=FALSE) + ggplot2::scale_fill_manual(values=rep(RColorBrewer::brewer.pal(9,"Set1"),3))
 
+  info.df = rbind(info.df, data.frame(variable="freq<10%-propBp", value=sum(f.df$gen.kb[which(f.df$prop<.1)])/sum(f.df$gen.kp), stringsAsFactors=FALSE))
+
   if(!is.null(out.pdf)){
     pdf(out.pdf, 9,6)
     lapply(output, print)
@@ -81,5 +90,5 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
     lapply(output, print)
   }
 
-  return(output)
+  return(list(graphs.l = output, info.df=info.df))
 }
