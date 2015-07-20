@@ -35,10 +35,10 @@ qc.sample <- function(bins.df, files.df=NULL, cnv.df=NULL, ref.samples=NULL, n.s
     res = data.frame(sample=samples, dist.bc.ref=d.o)
 
     if(any(colnames(bins.df)=="m")){
-      lowcov.bins = bins.df[head(order(bins.df$m),n.subset),]
-      bc.df = quick.count(files.df, bins.df, col.files="bc.gc.gz", nb.rand.bins=n.subset, nb.cores=nb.cores)
-      bc.df = med.norm(bc.df, nb.cores=nb.cores, norm.stats.comp=FALSE)$bc.norm
-      d.geom = as.matrix(dist(t(bc.df[,samples])))
+      lowcov.bins.df = bins.df[order(bins.df$m),]
+      lowcov.bins.df = lowcov.bins.df[head(which(!is.na(lowcov.bins.df$sd)),n.subset),]
+      bc.df = quick.count(files.df, lowcov.bins.df, col.files="bc.gc.gz", nb.rand.bins=n.subset, nb.cores=nb.cores)
+      d.geom = as.matrix(dist(scale(t(scale(bc.df[,samples], scale=FALSE)))))
       colnames(d.geom) = samples
       d.o = rowMeans(d.geom[,ref.samples])/mean(d.geom[,ref.samples])
       res$dist.bc.ref.lowcov = d.o
