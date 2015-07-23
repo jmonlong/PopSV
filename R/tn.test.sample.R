@@ -32,16 +32,20 @@
 ##' \item{fc}{the fold-change compared to the average bin count in the reference samples}
 ##' @author Jean Monlong
 ##' @export
-tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.stats.f, write.out.file=TRUE, compress.index=TRUE, z.poisson = FALSE, aberrant.cases = FALSE, append=FALSE) {
+tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f=NULL, norm.stats.f, write.out.file=TRUE, compress.index=TRUE, z.poisson = FALSE, aberrant.cases = FALSE, append=FALSE) {
   chunk.size = 1000
   test.bc = read.table(files.df$bc.gc.gz[which(files.df$sample == test.sample)], colClasses = c("character", "integer", "integer", "numeric"), header = TRUE)
   id.test = 1:nrow(test.bc)
   names(id.test) = paste(test.bc$chr, as.integer(test.bc$start), sep = "-")
-  ref.headers = read.table(bc.ref.f, nrows = 1, as.is = TRUE)
-  colC = ifelse(ref.headers == cont.sample, "numeric", "NULL")
-  colC[1:3] = c("character", "integer", "integer")
-  cont.bc = read.table(bc.ref.f, colClasses = colC, header = TRUE)
-  colnames(cont.bc)[4] = "bc"
+  if(!is.null(bc.ref.f)){
+    ref.headers = read.table(bc.ref.f, nrows = 1, as.is = TRUE)
+    colC = ifelse(ref.headers == cont.sample, "numeric", "NULL")
+    colC[1:3] = c("character", "integer", "integer")
+    cont.bc = read.table(bc.ref.f, colClasses = colC, header = TRUE)
+    colnames(cont.bc)[4] = "bc"
+  } else {
+    cont.bc = read.table(files.df$bc.gc.gz[which(files.df$sample == cont.sample)], colClasses = c("character", "integer", "integer", "numeric"), header = TRUE)
+  }
   id.cont = 1:nrow(cont.bc)
   names(id.cont) = paste(cont.bc$chr, as.integer(cont.bc$start), sep = "-")
 
