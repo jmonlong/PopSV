@@ -26,7 +26,10 @@ z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.
   if(is.null(bc.f) & is.null(files.col)){
     stop("Either 'bc.f' or 'files.col' must be non-NULL")
   }
-
+  if(is.null(bc.f) && !is.null(files.col) && all(grepl("\\.gz$", files.df[,files.col]))){
+    files.df[,files.col] = paste("zcat",files.df[,files.col])
+  }
+  
   if (z.poisson) {
     z.comp.f <- function(x, mean.c, sd.c) {
       z.n = (x - mean.c)/sd.c
