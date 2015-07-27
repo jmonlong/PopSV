@@ -20,10 +20,8 @@
 ##' @export
 z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores = 1, chunk.size=NULL, out.msd.f="ref-msd.tsv", append=FALSE, files.col="bc.gc.norm.gz") {
 
-  if(!is.null(bc.f)){
-    if(!file.exists(bc.f)){
-      stop("Bin count file not found.")
-    }
+  if(!is.null(bc.f) && !file.exists(bc.f)){
+    stop("Bin count file not found.")
   }
   if(is.null(bc.f) & is.null(files.col)){
     stop("Either 'bc.f' or 'files.col' must be non-NULL")
