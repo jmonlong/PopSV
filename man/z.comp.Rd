@@ -4,9 +4,9 @@
 \alias{z.comp}
 \title{Z-score computation}
 \usage{
-z.comp(bc.f, files.df, ref.samples = NULL, z.poisson = FALSE,
+z.comp(bc.f = NULL, files.df, ref.samples = NULL, z.poisson = FALSE,
   nb.cores = 1, chunk.size = NULL, out.msd.f = "ref-msd.tsv",
-  append = FALSE)
+  append = FALSE, files.col = "bc.gc.norm.gz")
 }
 \arguments{
 \item{bc.f}{the path to the normalized bin count file.}
@@ -25,6 +25,8 @@ Details). Default is FALSE.}
 \item{out.msd.f}{the name of the file to write the mean/sd information. If 'NULL' no file is created.}
 
 \item{append}{should the Z-scores be appended to existing files. Default is FALSE.}
+
+\item{files.col}{the name of the column from 'files.df' to use to get the bin counts. Used only if 'bc.f' is NULL.}
 }
 \value{
 a list with
