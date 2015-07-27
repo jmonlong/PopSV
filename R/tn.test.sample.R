@@ -112,9 +112,10 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f=NULL, no
   close(con)
 
   if(write.out.file){
-    files.out = c(files.df[which(files.df$sample == test.sample), "z"], files.df[which(files.df$sample == test.sample), "fc"])
+    files.out = c(files.df[which(files.df$sample == test.sample), "z"], files.df[which(files.df$sample == test.sample), "fc"], files.df[which(files.df$sample == test.sample), "bc.gc.norm"])
     write.table(res.df[,c("chr","start","end","z")], file = files.out[1], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
     write.table(res.df[,c("chr","start","end","fc")], file = files.out[2], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
+    write.table(res.df[,c("chr","start","end","bc")], file = files.out[3], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
     if (compress.index) {
       comp.index.files(files.out)
     }
