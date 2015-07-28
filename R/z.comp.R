@@ -26,7 +26,7 @@ z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.
   if(is.null(bc.f) & is.null(files.col)){
     stop("Either 'bc.f' or 'files.col' must be non-NULL")
   }
-  if(is.null(bc.f) && !is.null(files.col) && all(grepl("\\.gz$", files.df[,files.col]))){
+  if(is.null(bc.f) && !is.null(files.col) && all(grepl("\\.bgz$", files.df[,files.col]))){
     files.df[,files.col] = paste("zcat",files.df[,files.col])
   }
   
@@ -56,11 +56,11 @@ z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.
     read.chunk <- function(chunk.start=NULL, chunk.end=NULL){
       col.n = c("chr","start","end", files.df$sample)
       files = as.character(files.df[,files.col])
-      dt.l = mclapply(files, function(file){
+      dt.l = parallel::mclapply(files, function(file){
         suppressWarnings(data.table::fread(file,nrows=chunk.end-chunk.start+1, skip=chunk.start, header=FALSE, sep="\t"))
       }, mc.cores = nb.cores)
       bc.1 = dt.l[[1]][, 1:3, with = FALSE]
-      if(any(!unlist(mclapply(dt.l, function(dt) all(bc.1[,2,with=FALSE]==dt[,2,with=FALSE] & bc.1[,1,with=FALSE]==dt[,1,with=FALSE]), mc.cores = nb.cores)))){
+      if(any(!unlist(parallel::mclapply(dt.l, function(dt) all(bc.1[,2,with=FALSE]==dt[,2,with=FALSE] & bc.1[,1,with=FALSE]==dt[,1,with=FALSE]), mc.cores = nb.cores)))){
         stop("Different orders in the bin count files.")
       }
       dt = do.call(cbind, lapply(dt.l, function(dt) dt[,4,with=FALSE]))

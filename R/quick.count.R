@@ -37,6 +37,9 @@ quick.count <- function(files.df, bins.df, nb.cores = 1, col.files = NULL, nb.ra
     }, mc.cores = nb.cores)
     bc.l = c(list(bins.df[,4]), bc.l)
   }
+  if(any(unlist(lapply(bc.l, length))!=nrow(bins.df))){
+    stop("Inconsistent merging.", bc.l[[which(unlist(lapply(bc.l, length))!=nrow(bins.df))[1]]][1])
+  }
   bc.df = matrix(unlist(bc.l), ncol=length(bc.l))
   colnames(bc.df) =  as.character(files.df$sample)
   return(cbind( bins.df[, c("chr", "start", "end")], bc.df))
