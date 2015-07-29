@@ -4,7 +4,8 @@
 \alias{cluster.regions}
 \title{Cluster samples with abnormal regions}
 \usage{
-cluster.regions(cnv.df, cl.method = "complete", nb.cores = 3)
+cluster.regions(cnv.df, cl.method = "complete", nb.cores = 3,
+  geom.approx = FALSE)
 }
 \arguments{
 \item{cnv.df}{a data.frame with the abnormal regions for each sample. Columns 'chr', 'start', 'end' and 'sample' are required.}
@@ -12,6 +13,8 @@ cluster.regions(cnv.df, cl.method = "complete", nb.cores = 3)
 \item{cl.method}{the linkage criterion for hierarchical clustering. Default is 'complete'.}
 
 \item{nb.cores}{the number of processors to use. Default is 1.}
+
+\item{geom.approx}{should the geometric approximation be used (faster). Default is FALSE.}
 }
 \value{
 a list
@@ -19,7 +22,7 @@ a list
 \item{hc}{a 'hclust' object with the clustered samples.}
 }
 \description{
-Cluster samples with their abnormal regions.
+Cluster samples with their abnormal regions. The similarity between two samples is computed as the amount of base pairs called in both samples divided by the average of the total base pairs called in each sample. The distance is 1 - this similarity.
 }
 \author{
 Jean Monlong
