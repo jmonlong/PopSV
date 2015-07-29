@@ -14,7 +14,7 @@
 ##' @param large.chr.chunks should the big chunks be made of just some large genomic sub-regions ? Default is false. It is faster than using random bins, hence recommended when dealing with a large number of bins (e.g. > 5e5).
 ##' @export
 chunk.bin <- function(bins.df, bg.chunk.size = 1e+05, sm.chunk.size = 1000, large.chr.chunks = FALSE) {
-  bins.df = bin.df[order(bins.df$chr, bins.df$start),]
+  bins.df = bins.df[order(bins.df$chr, bins.df$start),]
   if (large.chr.chunks) {
     nb.supchunks = 50
     bins.df$bg.chunk = rep(sample(rep(1:ceiling(nrow(bins.df)/bg.chunk.size), nb.supchunks)), each = ceiling(bg.chunk.size/nb.supchunks))[1:nrow(bins.df)]
