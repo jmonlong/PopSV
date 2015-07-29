@@ -7,6 +7,7 @@
 ##' @return a list
 ##' \item{d}{a distance matrix with the distance between each pair of sample.}
 ##' \item{hc}{a 'hclust' object with the clustered samples.}
+##' \item{cnv.geom}{if the geometric approximation was used, the geometric representation of each samples as a matrix.}
 ##' @author Jean Monlong
 ##' @export
 cluster.regions <- function(cnv.df,cl.method="complete", nb.cores=3, geom.approx=FALSE){
@@ -36,7 +37,8 @@ cluster.regions <- function(cnv.df,cl.method="complete", nb.cores=3, geom.approx
     rownames(d.mat) = colnames(d.mat) = sample.names
     for(ii in 1:ncol(sc))
       d.mat[sc[1,ii],sc[2,ii]] = d.mat[sc[2,ii],sc[1,ii]] = d.l[[ii]]
+    cnv.geom = NULL
   }
   hc = hclust(as.dist(d.mat),method=cl.method)
-  return(list(d=d.mat,hc=hc))
+  return(list(d=d.mat,hc=hc, cnv.geom=cnv.geom))
 }
