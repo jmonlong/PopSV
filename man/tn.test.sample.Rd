@@ -6,7 +6,8 @@
 \usage{
 tn.test.sample(test.sample, files.df, cont.sample, bc.ref.f = NULL,
   norm.stats.f, write.out.file = TRUE, compress.index = TRUE,
-  z.poisson = FALSE, aberrant.cases = FALSE, append = FALSE)
+  z.poisson = FALSE, aberrant.cases = FALSE, append = FALSE,
+  col.file = "bc.gc.gz")
 }
 \arguments{
 \item{test.sample}{the name of the sample to test.}
@@ -35,6 +36,8 @@ it is recommended for cancer but can be turned off if less than ~20% of the geno
 to be affected.}
 
 \item{append}{should the results be appended to existing files. Default is FALSE.}
+
+\item{col.file}{the column name in 'files.df' which inform which file contains the bin counts to use. Default is 'bc.gc.gz'.}
 }
 \value{
 a data.frame with columns :
