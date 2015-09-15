@@ -51,7 +51,7 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
   res.df$col = cut(res.df$nb.bin.cons, breaks=c(0,1,2,3,5,10,Inf))
   res.df.s = dplyr::summarize(dplyr::group_by(res.df, sample, col), gen.kb=sum(gen.kb))
   output$nb.calls.perSize = ggplot2::ggplot(res.df.s, ggplot2::aes(x=sample, y=gen.kb, fill=col)) +
-    ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() + ggplot2::scale_fill_brewer(name="size",palette="Set1") +
+    ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() + ggplot2::scale_fill_brewer(name="size (bin)",palette="Set1") +
       ggplot2::theme(axis.text.x=ggplot2::element_blank(),
                      legend.position=c(0,1),legend.justification=c(0,1)) + ggplot2::ylab("abnormal genome (Kb)")
 
@@ -65,7 +65,7 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
 
   pdf$col = cut(pdf$nb.bin.cons, breaks=c(0,1,2,3,5,10,Inf))
   output$cn.perSize =  ggplot2::ggplot(pdf, ggplot2::aes(x=cn, fill=col)) +
-    ggplot2::geom_bar() + ggplot2::theme_bw() + ggplot2::scale_x_continuous(breaks=seq(0,5,1), labels=c(seq(0,4,1),">5"), limits=c(0,5.2)) + ggplot2::scale_fill_brewer(name="size",palette="Set1") +
+    ggplot2::geom_bar() + ggplot2::theme_bw() + ggplot2::scale_x_continuous(breaks=seq(0,5,1), labels=c(seq(0,4,1),">5"), limits=c(0,5.2)) + ggplot2::scale_fill_brewer(name="size (bin)",palette="Set1") +
       ggplot2::theme(legend.position=c(.5,1),legend.justification=c(.5,1)) + ggplot2::xlab("Copy Number estimates") + ggplot2::ylab("number of calls")
 
 
