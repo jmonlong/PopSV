@@ -2,27 +2,31 @@
 ##' @title Frequency computation for ranges
 ##' @param range.df a data.frame with columns 'chr', 'start' and 'end'.
 ##' @param plot should a graph with the frequency distribution be displayed.
+##' @param annotate.only If TRUE, the input ranges are annotated with the number of other overlapping ranges. If FALSE (Default), the input ranges are fragmented and the frequency computed for each sub-range.
 ##' @return a data.frame with the frequency of each sub-range
 ##' @author Jean Monlong
 ##' @export
 ##' @import magrittr
-freq.range <- function(range.df, plot=FALSE){
+freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE){
   if(!all(c("chr","start","end") %in% colnames(range.df))){
     stop("Missing column in 'range.df'. 'chr', 'start' and 'end' are required.")
   }
   nb.samp = length(unique(range.df$sample))
   freq.chr.gr <- function(cnv.o){
     gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
-    gr.d = GenomicRanges::disjoin(gr)
+    if(annotate.only) {
+      gr.d = gr
+    } else {
+      gr.d = GenomicRanges::disjoin(gr)
+      cnv.o = GenomicRanges::as.data.frame(gr.d)[,1:3]
+      colnames(cnv.o)[1] = "chr"
+    }
     ol = GenomicRanges::findOverlaps(gr.d, gr)
     thits = base::table(IRanges::queryHits(ol))
-    freq.df = data.frame(win.id = as.numeric(names(thits)), nb=as.numeric(thits))
-    win.df = GenomicRanges::as.data.frame(gr.d[as.numeric(freq.df$win.id)])[,1:3]
-    freq.df$chr = as.character(win.df$seqnames)
-    freq.df$start = as.numeric(win.df$start)
-    freq.df$end = as.numeric(win.df$end)
-    freq.df$prop = freq.df$nb / nb.samp
-    freq.df
+    cnv.o$nb = 0
+    cnv.o$nb[as.numeric(names(thits))] = as.numeric(thits)
+    cnv.o$prop = cnv.o$nb / nb.samp
+    cnv.o
   }
   fr.df = freq.chr.gr(range.df)
   if(plot){
