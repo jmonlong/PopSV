@@ -9,10 +9,12 @@
 ##' @param ref.samples the names of the reference samples.
 ##' @param boxplot should the reference be represented as boxplots. If FALSE, violin plots will be used.
 ##' @param samples the set of samples to represent.
+##' @param anno.df a data.frame with additional information (e.g. gene annotation) to be added to the graph.
+##' @param anno.col the name of 'anno.df' column to use to differentiate elements in the graph. E.g. 'geneName' to color the genes in the graph.
 ##' @return a ggplot object
 ##' @author Jean Monlong
 ##' @export
-coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, ref.samples=NULL, boxplot=FALSE , samples=NULL){
+coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, ref.samples=NULL, boxplot=FALSE , samples=NULL, anno.df=NULL, anno.col="geneName"){
 
   gr = GenomicRanges::GRanges(chr, IRanges::IRanges(start, end))
   
@@ -41,8 +43,10 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
   if(!is.null(norm.stats.f)){
     bc.ref = read.bedix(norm.stats.f, gr)
     bc.ref$pos = as.numeric(with(bc.ref, (start+end)/2))
+    max.bc = max(bc.ref$m+3*bc.ref$sd, na.rm=TRUE)
   } else {
     bc.ref = bc.all[which(bc.all$sample %in% ref.samples),]
+    max.bc = max(bc.ref$value, na.rm=TRUE)
   }
 
   ## Plot reference samples
@@ -61,5 +65,12 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
     gp.o = gp.o + ggplot2::geom_line(ggplot2::aes(y=value, group=sample),alpha=.7,data=bc.sv)
   }
 
+  if(!is.null(anno.df)){
+    anno.df = anno.df[which(anno.df$chr==chr & anno.df$end>=start & anno.df$start<=end),]
+    anno.df$y = factor(anno.df[,anno.col])
+    anno.df$y = (as.numeric(anno.df$y)-1) * max.bc / nlevels(anno.df$y) /4
+    gp.o = gp.o + geom_segment(aes_string(x="start",xend="end",y="y",yend="y",colour=anno.col), size=6, alpha=.5, data=anno.df)
+  }
+  
   gp.o  
 }
