@@ -69,7 +69,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
     anno.df = anno.df[which(anno.df$chr==chr & anno.df$end>=start & anno.df$start<=end),]
     anno.df$y = factor(anno.df[,anno.col])
     anno.df$y = (as.numeric(anno.df$y)-1) * max.bc / nlevels(anno.df$y) /4
-    gp.o = gp.o + geom_segment(aes_string(x="start",xend="end",y="y",yend="y",colour=anno.col), size=6, alpha=.5, data=anno.df)
+    gp.o = gp.o + ggplot2::geom_segment(ggplot2::aes_string(x="start",xend="end",y="y",yend="y",colour=anno.col), size=6, alpha=.5, data=anno.df)
   }
   
   gp.o  
