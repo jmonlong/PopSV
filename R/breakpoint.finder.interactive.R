@@ -40,7 +40,7 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
       shiny::headerPanel("PopSV - Breakpoint finder"),
       shiny::sidebarPanel(
         shiny::numericInput("flanks", "Flanks", 2000, step=500, min=0),
-        shiny::numericInput("bp.res", "Resolution (bp)", 1, step=bp.res, min=0),
+        shiny::numericInput("bp.res", "Resolution (bp)", bp.res, step=1, min=0),
         shiny::numericInput("map.quality", "Minimum mapping quality", 30, step=1, min=0),
         shiny::numericInput("start", "Start", start),
         shiny::numericInput("end", "End", end),
