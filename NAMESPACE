@@ -3,6 +3,7 @@
 export(aneuploidy.flag)
 export(bin.bam)
 export(breakpoint.finder)
+export(breakpoint.finder.interactive)
 export(call.abnormal.cov)
 export(chunk.bin)
 export(cluster.regions)
