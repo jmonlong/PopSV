@@ -5,7 +5,7 @@
 \title{Interactive breakpoint finder}
 \usage{
 breakpoint.finder.interactive(chr, start, end, test.sample, files.df,
-  ref.samples, proper = TRUE, map.quality = 0, nb.cores = 1)
+  ref.samples, proper = TRUE, nb.cores = 1)
 }
 \arguments{
 \item{chr}{the chromosome}
@@ -21,8 +21,6 @@ breakpoint.finder.interactive(chr, start, end, test.sample, files.df,
 \item{ref.samples}{other samples to visualize}
 
 \item{proper}{should proper mapping be counted.}
-
-\item{map.quality}{minimum mapping quality}
 
 \item{nb.cores}{number of cores}
 }

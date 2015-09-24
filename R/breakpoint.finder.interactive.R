@@ -7,12 +7,11 @@
 ##' @param files.df a data.frame with the path to the bam files
 ##' @param ref.samples other samples to visualize
 ##' @param proper should proper mapping be counted.
-##' @param map.quality minimum mapping quality
 ##' @param nb.cores number of cores
 ##' @return a data.frame with the breakpoint coordinates
 ##' @author Jean Monlong
 ##' @export
-breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, ref.samples, proper = TRUE, map.quality = 0, nb.cores=1) {
+breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, ref.samples, proper = TRUE, nb.cores=1) {
 
   gr.bam <- function(bam.file, gr, proper = TRUE, map.quality = 30) {
     bai.file = sub("bam$", "bai", bam.file, perl = TRUE)
@@ -41,6 +40,7 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
       shiny::sidebarPanel(
         shiny::numericInput("flanks", "Flanks", 2000, step=500, min=0),
         shiny::numericInput("bp.res", "Resolution (bp)", 1, step=1, min=0),
+        shiny::numericInput("map.quality", "Minimum mapping quality", 30, step=1, min=0),
         shiny::numericInput("start", "Start", start),
         shiny::numericInput("end", "End", end),
         shiny::hr(),
@@ -55,7 +55,7 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
         end.fl = end+input$flanks
         gr.f = GenomicRanges::GRanges(chr, IRanges::IRanges(st.fl, end.fl))
         reads.l = parallel::mclapply(c(test.sample,ref.samples), function(samp.i){
-          gr.bam(files.df$bam[files.df$sample==samp.i], gr.f, proper=proper, map.quality=map.quality)
+          gr.bam(files.df$bam[files.df$sample==samp.i], gr.f, proper=proper, map.quality=input$map.quality)
         }, mc.cores=nb.cores)
         gr.bk = seq(GenomicRanges::start(gr.f), GenomicRanges::end(gr.f), input$bp.res)
         gr.frag = GenomicRanges::GRanges(chr, IRanges::IRanges(gr.bk[-length(gr.bk)], width = input$bp.res))
