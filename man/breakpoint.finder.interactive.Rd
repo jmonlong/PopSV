@@ -5,7 +5,7 @@
 \title{Interactive breakpoint finder}
 \usage{
 breakpoint.finder.interactive(chr, start, end, test.sample, files.df,
-  ref.samples, proper = TRUE, nb.cores = 1)
+  ref.samples, proper = TRUE, nb.cores = 1, bp.res = 1)
 }
 \arguments{
 \item{chr}{the chromosome}
@@ -23,6 +23,8 @@ breakpoint.finder.interactive(chr, start, end, test.sample, files.df,
 \item{proper}{should proper mapping be counted.}
 
 \item{nb.cores}{number of cores}
+
+\item{bp.res}{default resolution (bp).}
 }
 \value{
 a data.frame with the breakpoint coordinates
