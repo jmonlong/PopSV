@@ -44,6 +44,8 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
         shiny::numericInput("start", "Start", start),
         shiny::numericInput("end", "End", end),
         shiny::hr(),
+        shiny::textOutput("stats"),
+        shiny::hr(),
         shiny::actionButton("exp","Done"), shiny::textOutput("export")),
       shiny::mainPanel(shiny::plotOutput("cov"))),
     
@@ -79,11 +81,16 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
         pdf + ggplot2::geom_vline(xintercept=c(input$start, input$end),linetype=2)
       })
 
+      output$stats = shiny::renderText({
+        paste0("Size: ", input$end-input$start+1," bp")
+      })
+
       output$export = shiny::renderText({
         if(input$exp){
           shiny::stopApp(data.frame(chr=chr,start=input$start, end=input$end))
         }
         ""
       })
+
     }))
 }
