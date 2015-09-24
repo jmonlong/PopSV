@@ -4,13 +4,17 @@
 \alias{coverage.plot.raw}
 \title{Plot the raw coverage in a region}
 \usage{
-coverage.plot.raw(gr, files.df, samples, proper = TRUE, map.quality = 30,
-  bp.res = 1, flanks = NULL)
+coverage.plot.raw(chr, start, end, files.df, samples, proper = TRUE,
+  map.quality = 30, bp.res = 1, flanks = NULL)
 }
 \arguments{
-\item{gr}{a 'GRanges' object corresponding to the region of interest}
+\item{chr}{chromosome}
 
-\item{files.df}{the data.frame with the path to the bam files for each sample}
+\item{start}{genomic coordinate}
+
+\item{end}{genomic coordinate}
+
+\item{files.df}{a data.frame with the path to the bam files}
 
 \item{samples}{the samples to represent}
 
@@ -19,6 +23,8 @@ coverage.plot.raw(gr, files.df, samples, proper = TRUE, map.quality = 30,
 \item{map.quality}{the minimum mapping quality. Default is 30.}
 
 \item{bp.res}{the resolution, in bp. Default is 1 bp.}
+
+\item{flanks}{the amount of bp to add in the flanks.}
 }
 \value{
 a ggplot object
