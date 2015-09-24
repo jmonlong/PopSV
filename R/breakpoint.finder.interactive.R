@@ -42,13 +42,13 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
         shiny::numericInput("flanks", "Flanks", 2000, step=500, min=0),
         shiny::numericInput("bp.res", "Resolution (bp)", bp.res, step=1, min=0),
         shiny::numericInput("map.quality", "Minimum mapping quality", 30, step=1, min=0),
-        shiny::numericInput("start", "Start", start),
-        shiny::numericInput("end", "End", end),
         shiny::hr(),
         shiny::textOutput("stats"),
         shiny::hr(),
         shiny::actionButton("exp","Done"), shiny::textOutput("export")),
-      shiny::mainPanel(shiny::plotOutput("cov"))),
+      shiny::mainPanel(shiny::plotOutput("cov"),
+                       shiny::wellPanel(shiny::sliderInput("start", "Start", start-2000,end+2000, value=start),
+                                        shiny::sliderInput("end", "End", start-2000,end+2000, value=end)))),
     
     server = function(input, output) {
 
