@@ -60,7 +60,7 @@ coverage.plot.raw <- function(chr, start, end, files.df, samples, proper=TRUE, m
   cov = cov %*% diag(mean(norm.f)/norm.f)
   colnames(cov) = samples
   rownames(cov) = GenomicRanges::start(gr.frag)
-  cov.df = reshape::melt(cov)
+  cov.df = reshape::melt.data.frame(cov)
   colnames(cov.df) = c("position","sample","cov")
   cov.df$sample = factor(cov.df$sample, levels=samples)
   cov.df$abnormal = cov.df$sample==samples[1]
