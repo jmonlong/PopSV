@@ -35,7 +35,7 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
   }
 
   shiny::runApp(list(
-    
+
     ui = shiny::fluidPage(
       shiny::headerPanel("PopSV - Breakpoint finder"),
       shiny::sidebarPanel(
@@ -49,17 +49,23 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
       shiny::mainPanel(shiny::plotOutput("cov"),
                        shiny::wellPanel(shiny::sliderInput("start", "Start", start-2000,end+2000, value=start),
                                         shiny::sliderInput("end", "End", start-2000,end+2000, value=end)))),
-    
+
     server = function(input, output) {
 
-      gp.flanks <- shiny::reactive({
+      reads.comp <- shiny::reactive({
         bkpts = c(start, end)
         st.fl = start-input$flanks
         end.fl = end+input$flanks
         gr.f = GenomicRanges::GRanges(chr, IRanges::IRanges(st.fl, end.fl))
-        reads.l = parallel::mclapply(c(test.sample,ref.samples), function(samp.i){
-          gr.bam(files.df$bam[files.df$sample==samp.i], gr.f, proper=proper, map.quality=input$map.quality)
-        }, mc.cores=nb.cores)
+        list(gr.f=gr.f, reads.l=parallel::mclapply(c(test.sample,ref.samples), function(samp.i){
+                                       gr.bam(files.df$bam[files.df$sample==samp.i], gr.f, proper=proper, map.quality=input$map.quality)
+                                     }, mc.cores=nb.cores))
+      })
+
+      gp.flanks <- shiny::reactive({
+        reads.out = reads.comp()
+        gr.f = reads.out$gr.f
+        reads.l = reads.out$reads.l
         gr.bk = seq(GenomicRanges::start(gr.f), GenomicRanges::end(gr.f), input$bp.res)
         gr.frag = GenomicRanges::GRanges(chr, IRanges::IRanges(gr.bk[-length(gr.bk)], width = input$bp.res))
         cov.l = parallel::mclapply(1:length(reads.l), function(ii) {
@@ -76,7 +82,7 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
         cov.df$abnormal = cov.df$sample==test.sample
         gp = ggplot2::ggplot(subset(cov.df,!abnormal), ggplot2::aes(x=position,y=cov, group=sample)) + ggplot2::geom_line(alpha=.8) + ggplot2::geom_line(data=subset(cov.df,abnormal), size=3) + ggplot2::theme_bw() + ggplot2::scale_size_manual(values=c(1,2))
       })
-      
+
       output$cov = shiny::renderPlot({
         pdf = gp.flanks()
         pdf + ggplot2::geom_vline(xintercept=c(input$start, input$end),linetype=2)
