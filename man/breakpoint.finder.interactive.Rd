@@ -5,7 +5,7 @@
 \title{Interactive breakpoint finder}
 \usage{
 breakpoint.finder.interactive(chr, start, end, test.sample, files.df,
-  ref.samples, proper = TRUE, nb.cores = 1, bp.res = 1)
+  ref.samples, proper = TRUE, nb.cores = 1, bp.res = 1, flanks = 2000)
 }
 \arguments{
 \item{chr}{the chromosome}
@@ -24,7 +24,9 @@ breakpoint.finder.interactive(chr, start, end, test.sample, files.df,
 
 \item{nb.cores}{number of cores}
 
-\item{bp.res}{default resolution (bp).}
+\item{bp.res}{default resolution (bp)}
+
+\item{flanks}{default flank size (bp)}
 }
 \value{
 a data.frame with the breakpoint coordinates

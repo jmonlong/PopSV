@@ -8,11 +8,12 @@
 ##' @param ref.samples other samples to visualize
 ##' @param proper should proper mapping be counted.
 ##' @param nb.cores number of cores
-##' @param bp.res default resolution (bp).
+##' @param bp.res default resolution (bp)
+##' @param flanks default flank size (bp)
 ##' @return a data.frame with the breakpoint coordinates
 ##' @author Jean Monlong
 ##' @export
-breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, ref.samples, proper = TRUE, nb.cores=1, bp.res=1) {
+breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, ref.samples, proper = TRUE, nb.cores=1, bp.res=1, flanks=2000) {
 
   gr.bam <- function(bam.file, gr, proper = TRUE, map.quality = 30) {
     bai.file = sub("bam$", "bai", bam.file, perl = TRUE)
@@ -39,16 +40,16 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
     ui = shiny::fluidPage(
       shiny::headerPanel("PopSV - Breakpoint finder"),
       shiny::sidebarPanel(
-        shiny::numericInput("flanks", "Flanks", 2000, step=500, min=0),
+        shiny::numericInput("flanks", "Flanks", flanks, step=500, min=0),
         shiny::numericInput("bp.res", "Resolution (bp)", bp.res, step=1, min=0),
-        shiny::numericInput("map.quality", "Minimum mapping quality", 30, step=1, min=0),
+        shiny::numericInput("map.quality", "Minimum mapping quality", 30, step=10, min=0),
         shiny::hr(),
         shiny::textOutput("stats"),
         shiny::hr(),
         shiny::actionButton("exp","Done"), shiny::textOutput("export")),
       shiny::mainPanel(shiny::plotOutput("cov"),
-                       shiny::wellPanel(shiny::sliderInput("start", "Start", start-2000,end+2000, value=start),
-                                        shiny::sliderInput("end", "End", start-2000,end+2000, value=end)))),
+                       shiny::wellPanel(shiny::sliderInput("start", "Start", start-2*flanks,end+2*flanks, value=start),
+                                        shiny::sliderInput("end", "End", start-2*flanks,end+2*flanks, value=end)))),
 
     server = function(input, output) {
 
