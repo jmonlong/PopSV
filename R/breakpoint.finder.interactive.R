@@ -81,6 +81,7 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
         cov.df = reshape::melt.array(cov)
         colnames(cov.df) = c("position","sample","cov")
         cov.df$abnormal = cov.df$sample==test.sample
+        abnormal = position = NULL ## Uglily appease R checks
         gp = ggplot2::ggplot(subset(cov.df,!abnormal), ggplot2::aes(x=position,y=cov, group=sample)) + ggplot2::geom_line(alpha=.8) + ggplot2::geom_line(data=subset(cov.df,abnormal), size=3) + ggplot2::theme_bw() + ggplot2::scale_size_manual(values=c(1,2))
       })
 

@@ -64,7 +64,7 @@ qc.samples.summary <- function(qc.res){
                 } else {
                     hc.o = hclust(as.dist(1-qc.res$cor.pw), method=input$cl.meth)
                 }
-                dd <- ggdendro::dendro_data.hclust(hc.o)
+                dd <- ggdendro::dendro_data(hc.o)
                 l.df = dd$labels
                 l.df$reference = factor(l.df$label %in% refs, levels=c("TRUE","FALSE"))
                 return(ggplot2::ggplot(dd$segments) +

@@ -64,7 +64,8 @@ coverage.plot.raw <- function(chr, start, end, files.df, samples, proper=TRUE, m
   colnames(cov.df) = c("position","sample","cov")
   cov.df$sample = factor(cov.df$sample, levels=samples)
   cov.df$abnormal = cov.df$sample==samples[1]
-  
+
+  abnormal = position = NULL ## Uglily appease R checks
   final.p = ggplot2::ggplot(subset(cov.df,!abnormal), ggplot2::aes(x=position,y=cov, group=sample)) + ggplot2::geom_line(alpha=.8) + ggplot2::geom_line(data=subset(cov.df,abnormal), size=3) + ggplot2::theme_bw() + ggplot2::scale_size_manual(values=c(1,2))
   if(!is.null(flanks)){
     final.p = final.p + ggplot2::geom_vline(xintercept=bkpts,linetype=2)

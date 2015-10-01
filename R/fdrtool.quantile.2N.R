@@ -68,11 +68,10 @@ fdrtool.quantile.2N <- function(z, plot = TRUE) {
     z0 = first.scan$z0[which.min(first.scan$dens.diff)]
     p.c = first.scan[which.min(first.scan$dens.diff),]
     while(continue & cpt < 8){
-      message(z0)
       p.l = findPar(z0-step)
       p.u = findPar(z0+step)
       if(sum(p.l$dens.diff<p.c$dens.diff)>sum(p.u$dens.diff<p.c$dens.diff)){
-        z0 = z0-step[sum(p.l$dens.diff<p.c$dens.diff)]
+        z0 = max(z0-step[sum(p.l$dens.diff<p.c$dens.diff)],2)
         p.c = p.l[sum(p.l$dens.diff<p.c$dens.diff),]
       } else if(sum(p.l$dens.diff<p.c$dens.diff)<sum(p.u$dens.diff<p.c$dens.diff)){
         z0 = z0+step[sum(p.u$dens.diff<p.c$dens.diff)]
