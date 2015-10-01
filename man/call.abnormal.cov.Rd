@@ -8,7 +8,7 @@ call.abnormal.cov(z = NULL, files.df = NULL, samp, out.pdf = NULL,
   FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"),
   stitch.dist = NULL, z.th = c("sdest", "consbins", "sdest2N"), fc = NULL,
   norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL,
-  ref.dist.weight = NULL)
+  ref.dist.weight = NULL, gc.df = NULL)
 }
 \arguments{
 \item{z}{the name of the file with the Z-scores for all samples OR or a
@@ -39,6 +39,8 @@ or a data.frame with the copy number estimates for all samples.}
 \item{aneu.chrs}{the names of the chromosomes to remove because flagged as aneuploid. If NULL (default) all chromosomes are analyzed.}
 
 \item{ref.dist.weight}{the weight (value between 0 and 1) based on the distance to the reference samples.}
+
+\item{gc.df}{a data.frame with the GC content in each bin, for the Z-score normalization. Columns required: chr, start, end, GCcontent. If NULL (default), no normalization is performed.}
 }
 \value{
 a data.frame with columns

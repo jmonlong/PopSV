@@ -25,6 +25,7 @@
 ##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered. Maximum value accepted is 0.98 .
 ##' @param aneu.chrs the names of the chromosomes to remove because flagged as aneuploid. If NULL (default) all chromosomes are analyzed.
 ##' @param ref.dist.weight the weight (value between 0 and 1) based on the distance to the reference samples.
+##' @param gc.df a data.frame with the GC content in each bin, for the Z-score normalization. Columns required: chr, start, end, GCcontent. If NULL (default), no normalization is performed.
 ##' @return a data.frame with columns
 ##' \item{chr, start, end}{the genomic region definition}
 ##' \item{z}{the Z-score}
@@ -35,7 +36,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL, z.th = c("sdest", "consbins", "sdest2N"), fc = NULL, norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, ref.dist.weight = NULL) {
+call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL, z.th = c("sdest", "consbins", "sdest2N"), fc = NULL, norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, ref.dist.weight = NULL, gc.df=NULL) {
 
   if(!is.null(z)){
     ## load Z-scores and FC coefficients
@@ -98,7 +99,10 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     colnames(norm.stats)[4] = "mean.cov"
     res.df = merge(res.df, norm.stats, all.x=TRUE)
   }
-
+  if(!is.null(gc.df)){
+    res.df$z = z.norm(res.df, gc.df)
+  }
+  
   ## Remove aneuploid chromosomes
   if (!is.null(aneu.chrs)) {
     res.df = res.df[which(!(res.df$chr %in% aneu.chrs)), ]
