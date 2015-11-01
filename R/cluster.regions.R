@@ -2,7 +2,7 @@
 ##' @title Cluster samples with abnormal regions
 ##' @param cnv.df a data.frame with the abnormal regions for each sample. Columns 'chr', 'start', 'end' and 'sample' are required.
 ##' @param cl.method the linkage criterion for hierarchical clustering. Default is 'complete'.
-##' @param nb.cores the number of processors to use. Default is 1. 
+##' @param nb.cores the number of processors to use. Default is 1.
 ##' @param geom.approx should the geometric approximation be used (faster). Default is FALSE.
 ##' @return a list
 ##' \item{d}{a distance matrix with the distance between each pair of sample.}
@@ -15,7 +15,7 @@ cluster.regions <- function(cnv.df,cl.method="complete", nb.cores=3, geom.approx
   sample.names = unique(cnv.df$sample)
   if(geom.approx){
     dj.gr = GenomicRanges::disjoin(cnv.gr)
-    cnv.geom = mclapply(sample.names, function(samp){
+    cnv.geom = parallel::mclapply(sample.names, function(samp){
       dj.ol = GenomicRanges::overlapsAny(dj.gr, cnv.gr[which(cnv.gr$sample==samp)])
       ifelse(dj.ol, GenomicRanges::width(dj.gr), 0)
     }, mc.cores=nb.cores)

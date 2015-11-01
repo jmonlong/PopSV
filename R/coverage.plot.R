@@ -19,7 +19,7 @@
 coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, ref.samples=NULL, boxplot=FALSE , samples=NULL, files.df=NULL, anno.df=NULL, anno.col="geneName", flanks=1e4){
 
   gr = GenomicRanges::GRanges(chr, IRanges::IRanges(start-flanks, end+flanks))
-  
+
   ## Read coverage file
   message("Bin count...")
   bc = read.bedix(bc.f, gr)
@@ -27,7 +27,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
   bc.all$pos = as.numeric(with(bc.all, (start+end)/2))
   start = min(bc.all$start[which(bc.all$end>start)])
   end = max(bc.all$end[which(bc.all$start<end)])
-  
+
   if(is.null(ref.samples)){
     ref.samples = unique(bc.all$sample)
   }
@@ -40,7 +40,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
     bc.ref = bc.all[which(bc.all$sample %in% ref.samples),]
     max.bc = max(bc.ref$value, na.rm=TRUE)
   }
-  
+
   bc.sv = NULL
   if(!is.null(sv.df) & !is.null(nrow(sv.df))){
     message("PopSV calls...")
@@ -69,8 +69,8 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
   max.bc = max(max.bc, max(bc.sv$value, na.rm=TRUE))
 
   ## Plot reference samples
-  pos = m = value = NULL ## Uglily appease R checks
-  gp.o = ggplot2::ggplot(bc.ref) + ggplot2::geom_rect(xmin=start, xmax=end, ymin=0, ymax=max.bc, fill="yellow2", aes(alpha=ggpSck), data=data.frame(ggpSck=0)) + guides(alpha=FALSE)  + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::xlab("position")
+  pos = m = value = ggpSck = NULL ## Uglily appease R checks
+  gp.o = ggplot2::ggplot(bc.ref) + ggplot2::geom_rect(xmin=start, xmax=end, ymin=0, ymax=max.bc, fill="yellow2", ggplot2::aes(alpha=ggpSck), data=data.frame(ggpSck=0)) + ggplot2::guides(alpha=FALSE)  + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::xlab("position")
   if(!is.null(norm.stats.f)) {
     gp.o = gp.o + ggplot2::geom_errorbar(ggplot2::aes(x=pos, ymin=m-3*sd,ymax=m+3*sd)) + ggplot2::geom_point(ggplot2::aes(y=m))
   } else if(boxplot){
@@ -78,18 +78,18 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
   } else {
     gp.o = gp.o + ggplot2::geom_violin(ggplot2::aes(x=pos, y=value, group=pos), fill="grey90",alpha=.7, scale="width")
   }
-  
+
   ## Add the SVs
   if(!is.null(bc.sv)){
     gp.o = gp.o + ggplot2::geom_line(ggplot2::aes(x=pos, y=value, colour=sample, group=sample),alpha=.7, size=2, data=bc.sv) + ggplot2::geom_point(ggplot2::aes(x=pos, y=value, colour=sample),size=4, data=bc.sv)
   }
-  
+
   if(!is.null(anno.df)){
     anno.df = anno.df[which(anno.df$chr==chr & anno.df$end>=start & anno.df$start<=end),]
     anno.df$y = factor(anno.df[,anno.col])
     anno.df$y = (as.numeric(anno.df$y)-1) * max.bc / nlevels(anno.df$y) /4
     gp.o = gp.o + ggplot2::geom_segment(ggplot2::aes_string(x="start",xend="end",y="y",yend="y",colour=anno.col), size=6, alpha=.5, data=anno.df)
   }
-  
-  gp.o 
+
+  gp.o
 }

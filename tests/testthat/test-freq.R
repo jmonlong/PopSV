@@ -14,7 +14,7 @@ test_that("Missing columns tigger an error", {
   expect_true(nrow(freq.range(good.df))>0)
 })
 
-test_that("The total amount of caled region is conserved", {
+test_that("The total amount of called region is conserved", {
   fr.df = freq.range(bin.df)
   expect_true(nrow(fr.df)>0)
   expect_equal(sum(bin.df$end-bin.df$start+1), sum((fr.df$end-fr.df$start+1)*fr.df$nb))

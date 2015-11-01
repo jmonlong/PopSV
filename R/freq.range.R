@@ -11,6 +11,9 @@ freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE){
   if(!all(c("chr","start","end") %in% colnames(range.df))){
     stop("Missing column in 'range.df'. 'chr', 'start' and 'end' are required.")
   }
+  if(all(colnames(range.df)!="sample")){
+    range.df$sample = 1:nrow(range.df)
+  }
   nb.samp = length(unique(range.df$sample))
   freq.chr.gr <- function(cnv.o){
     gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end), sample=sample))

@@ -10,18 +10,16 @@ mergeConsBin.cbs <- function(df, pv.th=.01) {
     return(df)
 
   col.mean = c("z", "fc", "mean.cov", "GCcontent", "lowC", "map")
-  col.mean.log = c("pv", "qv")
+  col.min = c("pv", "qv")
 
-  fun3 <- function(x, FUN = mean, log.x=FALSE) {
-    if(log.x){x = log(x)}
+  fun3 <- function(x, FUN3 = mean) {
     if (length(x) > 2) {
-      res.x = FUN(x[2:(length(x)-1)])
+      res.x = FUN3(x[2:(length(x)-1)])
     } else if (length(x) == 2) {
-      res.x = FUN(x)
+      res.x = FUN3(x)
     } else {
       res.x = x
     }
-    if(log.x){res.x = exp(res.x)}
     res.x
   }
 
@@ -29,22 +27,27 @@ mergeConsBin.cbs <- function(df, pv.th=.01) {
   cna.s = DNAcopy::segment(cna.o, alpha=pv.th, undo.splits="prune", verbose=0)
 
   ## Merge segments
-  gr.f = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end), z = z))
+  gr.f = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
   df$red.i = NA
-  gr.seg = with(cna.s$output, GenomicRanges::GRanges(chrom, IRanges::IRanges(loc.start, loc.end)))
-  ol.o = GenomicRanges::findOverlaps(gr.f, gr.seg)
-  df$red.i[IRanges::queryHits(ol.o)] = paste0("seg", IRanges::subjectHits(ol.o))
+  gr.seg = with(cna.s$output, GenomicRanges::GRanges(chrom, IRanges::IRanges(loc.start, loc.end), z=seg.mean))
+  gr.sig = with(df[which(df$qv <= pv.th),], GenomicRanges::GRanges(chr, IRanges::IRanges(start, end), z=z))
+  gr.dup = GenomicRanges::reduce(c(gr.seg[which(gr.seg$z>0)], gr.sig[which(gr.sig$z>0)]))
+  gr.del = GenomicRanges::reduce(c(gr.seg[which(gr.seg$z<0)], gr.sig[which(gr.sig$z<0)]))
+  ol.o = GenomicRanges::findOverlaps(gr.f, gr.dup)
+  df$red.i[IRanges::queryHits(ol.o)] = paste0("dup", IRanges::subjectHits(ol.o))
+  ol.o = GenomicRanges::findOverlaps(gr.f, gr.del)
+  df$red.i[IRanges::queryHits(ol.o)] = paste0("del", IRanges::subjectHits(ol.o))
 
   merge.event.f <- function(df.f) {
     df.o = with(df.f, data.frame(start = min(start), end = max(end), nb.bin.cons = nrow(df.f)))
     cbind(df.o,
           t(apply(df.f[, intersect(colnames(df.f), col.mean), drop = FALSE], 2, fun3)),
-          t(apply(df.f[, intersect(colnames(df.f), col.mean.log), drop = FALSE], 2, fun3, log.x=TRUE))
+          t(apply(df.f[, intersect(colnames(df.f), col.min), drop = FALSE], 2, fun3, FUN3=min))
           )
   }
 
   red.i = chr = . = NULL  ## Uglily appease R checks
   df.o = as.data.frame(dplyr::do(dplyr::group_by(df, red.i, chr), merge.event.f(.)))
   df.o$red.i = NULL
-  df.o[which(df.o$pv<pv.th),]
+  df.o
 }

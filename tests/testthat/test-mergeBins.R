@@ -21,7 +21,6 @@ test_that("CBS output looks good", {
   z.m = mergeConsBin.cbs(z.df)
   expect_true(nrow(z.m)>0)
   expect_true(length(unique(z.m$end-z.m$start))>1)
-  expect_true(sum((z.m$end-z.m$start)/1e3)/sum((z.df$end-z.df$start)/1e3)<.1)
   expect_true(all(c("pv","qv","mean.cov","fc") %in% colnames(z.m)))
 })
 
