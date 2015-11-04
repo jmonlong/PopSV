@@ -37,7 +37,7 @@ qc.samples.cluster <- function(bc.df, nb.rand.bins=NULL){
               shiny::hr(),
               shiny::textOutput("exportAll")
               ),
-          shiny::mainPanel(shiny::plotOutput("pca"))
+          shiny::mainPanel(shiny::plotOutput("pca", height=800))
           ),
 
       server = function(input, output) {
