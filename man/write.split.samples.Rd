@@ -4,9 +4,8 @@
 \alias{write.split.samples}
 \title{Split and write results in one file per sample}
 \usage{
-write.split.samples(res, files.df, samples, res.n = c("z", "fc"),
-  files.col = c("z", "fc"), compress.index = TRUE, nb.cores = 1,
-  append = FALSE)
+write.split.samples(res, files.df, samples, files.col = c("z", "fc"),
+  compress.index = TRUE, nb.cores = 1, append = FALSE)
 }
 \arguments{
 \item{res}{a list with the results to split/write.}
@@ -14,8 +13,6 @@ write.split.samples(res, files.df, samples, res.n = c("z", "fc"),
 \item{files.df}{a data.frame with information about each output file.}
 
 \item{samples}{the names of the samples to use.}
-
-\item{res.n}{the name of 'res' elements containing joined results.}
 
 \item{files.col}{the name of 'files.df' to use for each 'res' element.}
 

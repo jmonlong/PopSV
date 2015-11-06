@@ -12,10 +12,8 @@
 ##' @param append should the Z-scores be appended to existing files. Default is FALSE.
 ##' @param files.col the name of the column from 'files.df' to use to get the bin counts. Used only if 'bc.f' is NULL.
 ##' @return a list with
-##' \item{z}{a data.frame with the Z-scores for each bin and sample (bin x sample).}
-##' \item{fc}{a data.frame with the fold-change compared to the average bin count in
-##' the reference samples for each bin and sample (bin x sample).}
-##' \item{msd}{the mean, standard deviation and number of removed outlier samples in each bin.}
+##' \item{ref.samples}{a vector with the reference samples used.}
+##' \item{z.poisson}{was Normal-Poisson hybrid Z-score score computed.}
 ##' @author Jean Monlong
 ##' @export
 z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores = 1, chunk.size=NULL, out.msd.f="ref-msd.tsv", append=FALSE, files.col="bc.gc.norm.gz") {
@@ -29,7 +27,7 @@ z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.
   if(is.null(bc.f) && !is.null(files.col) && all(grepl("\\.bgz$", files.df[,files.col]))){
     files.df[,files.col] = paste("zcat",files.df[,files.col])
   }
-  
+
   if (z.poisson) {
     z.comp.f <- function(x, mean.c, sd.c) {
       z.n = (x - mean.c)/sd.c
@@ -116,7 +114,7 @@ z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.
     fc = data.frame(bc.1[, 1:3, with = FALSE], fc)
 
     ## Write output files
-    write.split.samples(list(z=z, fc=fc), files.df, ref.samples, res.n=c("z","fc"), files.col=c("z","fc"), compress.index=FALSE, append=append | ch.ii>1)
+    write.split.samples(list(z=z, fc=fc), files.df, ref.samples, files.col=c("z","fc"), compress.index=FALSE, append=append | ch.ii>1)
 
     ## Write mean/sd file
     msd = data.frame(as.data.frame(bc.1[, 1:3, with=FALSE]), t(msd))
@@ -126,7 +124,10 @@ z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.
 
   }
 
-  return(list(z = z, fc = fc, msd = msd, z.poisson = z.poisson))
+  files.df = files.df[which(files.df$sample %in% ref.samples),]
+  comp.index.files(c(files.df$z, files.df$fc, out.msd.f), rm.input=TRUE, reorder=TRUE)
+
+  return(list(ref.samples=ref.samples, z.poisson = z.poisson))
 }
 
 ## To test: one sample only; chunks; msd input or not

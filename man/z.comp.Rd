@@ -30,10 +30,8 @@ Details). Default is FALSE.}
 }
 \value{
 a list with
-\item{z}{a data.frame with the Z-scores for each bin and sample (bin x sample).}
-\item{fc}{a data.frame with the fold-change compared to the average bin count in
-the reference samples for each bin and sample (bin x sample).}
-\item{msd}{the mean, standard deviation and number of removed outlier samples in each bin.}
+\item{ref.samples}{a vector with the reference samples used.}
+\item{z.poisson}{was Normal-Poisson hybrid Z-score score computed.}
 }
 \description{
 Z-score computation from bin count and/or mean/sd metrics on the reference samples
