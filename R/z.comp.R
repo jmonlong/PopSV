@@ -125,7 +125,7 @@ z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.
   }
 
   files.df = files.df[which(files.df$sample %in% ref.samples),]
-  comp.index.files(c(files.df$z, files.df$fc, out.msd.f), rm.input=TRUE, reorder=TRUE)
+  comp.index.files(c(files.df$z, files.df$fc), rm.input=TRUE, reorder=TRUE)
 
   return(list(ref.samples=ref.samples, z.poisson = z.poisson))
 }
