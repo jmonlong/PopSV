@@ -4,23 +4,30 @@
 \alias{cn.plot}
 \title{Plot a region copy-number estimates}
 \usage{
-cn.plot(chr, start, end, files.df, samples = NULL, flanks = 10000,
-  highlight.region = TRUE)
+cn.plot(files.df, gr = NULL, chr = NULL, start = NULL, end = NULL,
+  samples = NULL, flanks = 10000, highlight.region = TRUE,
+  draw.lines = TRUE, nb.cores = 1)
 }
 \arguments{
-\item{chr}{the chromosome}
-
-\item{start}{the start position of the region}
-
-\item{end}{the end position of the region}
-
 \item{files.df}{a data.frame with the path to the different files associated with each sample. If 'sample' is absent from 'bc.f' the correct file from 'files.df' will be used. Default is NULL.}
+
+\item{gr}{a GRange object with the region to represent. Default is NULL.}
+
+\item{chr}{the chromosome. Used if 'gr' is NULL.}
+
+\item{start}{the start position of the region. Used if 'gr' is NULL.}
+
+\item{end}{the end position of the region. Used if 'gr' is NULL.}
 
 \item{samples}{the set of samples to represent.}
 
 \item{flanks}{the size of the flanking region. Default is 10000.}
 
 \item{highlight.region}{Should the input region highlighted. Default is TRUE.}
+
+\item{draw.lines}{Should lines be drawn to represent each sample. Default is TRUE.}
+
+\item{nb.cores}{number of cores to use. Default is 1. Increase number if many samples are to be used.}
 }
 \value{
 a ggplot object
