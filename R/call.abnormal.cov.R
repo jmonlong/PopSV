@@ -102,7 +102,7 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   if(!is.null(gc.df)){
     res.df$z = z.norm(res.df, gc.df)
   }
-  
+
   ## Remove aneuploid chromosomes
   if (!is.null(aneu.chrs)) {
     res.df = res.df[which(!(res.df$chr %in% aneu.chrs)), ]

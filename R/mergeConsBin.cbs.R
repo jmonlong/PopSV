@@ -23,20 +23,19 @@ mergeConsBin.cbs <- function(df, pv.th=.01) {
     res.x
   }
 
-  cna.o = with(df, DNAcopy::CNA(z, chr, start))
+  cna.o = with(df, DNAcopy::CNA(log10(pv), chr, start))
   cna.s = DNAcopy::segment(cna.o, alpha=pv.th, undo.splits="prune", verbose=0)
+  cna.s = cna.s$output
+  cna.s = cna.s[which(cna.s$seg.mean< -1),]
 
   ## Merge segments
   gr.f = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
   df$red.i = NA
-  gr.seg = with(cna.s$output, GenomicRanges::GRanges(chrom, IRanges::IRanges(loc.start, loc.end), z=seg.mean))
-  gr.sig = with(df[which(df$qv <= pv.th),], GenomicRanges::GRanges(chr, IRanges::IRanges(start, end), z=z))
-  gr.dup = GenomicRanges::reduce(c(gr.seg[which(gr.seg$z>0)], gr.sig[which(gr.sig$z>0)]))
-  gr.del = GenomicRanges::reduce(c(gr.seg[which(gr.seg$z<0)], gr.sig[which(gr.sig$z<0)]))
-  ol.o = GenomicRanges::findOverlaps(gr.f, gr.dup)
-  df$red.i[IRanges::queryHits(ol.o)] = paste0("dup", IRanges::subjectHits(ol.o))
-  ol.o = GenomicRanges::findOverlaps(gr.f, gr.del)
-  df$red.i[IRanges::queryHits(ol.o)] = paste0("del", IRanges::subjectHits(ol.o))
+  gr.seg = with(cna.s, GenomicRanges::GRanges(chrom, IRanges::IRanges(loc.start, loc.end)))
+  gr.seg = with(df[which(df$qv <= pv.th),], c(gr.seg, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end))))
+  gr.seg = GenomicRanges::reduce(gr.seg)
+  ol.o = GenomicRanges::findOverlaps(gr.f, gr.seg)
+  df$red.i[IRanges::queryHits(ol.o)] = IRanges::subjectHits(ol.o)
 
   merge.event.f <- function(df.f) {
     df.o = with(df.f, data.frame(start = min(start), end = max(end), nb.bin.cons = nrow(df.f)))
@@ -47,6 +46,7 @@ mergeConsBin.cbs <- function(df, pv.th=.01) {
   }
 
   red.i = chr = . = NULL  ## Uglily appease R checks
+  df = df[which(!is.na(df$red.i)),]
   df.o = as.data.frame(dplyr::do(dplyr::group_by(df, red.i, chr), merge.event.f(.)))
   df.o$red.i = NULL
   df.o
