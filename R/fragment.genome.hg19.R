@@ -9,7 +9,7 @@
 ##' @import GenomicRanges
 ##' @import GenomeInfoDb
 ##' @export
-fragment.genome.hp19 <- function(bin.size = 1000, chr.prefix=FALSE, XY.chr=FALSE) {
+fragment.genome.hg19 <- function(bin.size = 1000, chr.prefix=FALSE, XY.chr=FALSE) {
   if (!require(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE)) {
     stop("Please install BSgenome first by running:\n> source(\"http://bioconductor.org/biocLite.R\")\n> biocLite(\"BSgenome.Hsapiens.UCSC.hg19\")\n")
   }
@@ -25,7 +25,7 @@ fragment.genome.hp19 <- function(bin.size = 1000, chr.prefix=FALSE, XY.chr=FALSE
   if(chr.prefix){
     chrs = chr.chrs
   }
-  
+
   seql.chrs = seqlengths(BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)[chr.chrs]
 
   fragment.chr <- function(chr.i) {
@@ -34,6 +34,6 @@ fragment.genome.hp19 <- function(bin.size = 1000, chr.prefix=FALSE, XY.chr=FALSE
     ends[length(ends)] = as.integer(seql.chrs[chr.i])
     data.frame(chr = chrs[chr.i], start = starts, end = ends)
   }
-  
+
   plyr::ldply(lapply(1:length(chrs), fragment.chr), identity)
-} 
+}

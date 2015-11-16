@@ -1,7 +1,7 @@
 context("Merging consecutive bins with abnormal coverage")
 
 ## Creating a data.frame with bins, z scores and abnormal regions
-z.df = fragment.genome.hp19(5e5)
+z.df = fragment.genome.hg19(5e5)
 z.df$z = rnorm(nrow(z.df))
 for(ii in 1:10){
   cnv.s = round(runif(1,1,nrow(z.df)))
