@@ -1,4 +1,7 @@
-# Visualization
+---
+layout: page
+title: Visualization
+---
 
 ## Data quality before analysis
 

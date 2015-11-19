@@ -1,4 +1,8 @@
-# Analysis steps
+---
+layout: page
+title: Analysis steps
+---
+
 Examples of a analysis, for local computation or computing cluster usage, can be found on the `scripts` folder. For more information on a specific function, see the manual or access the documentation through `?the.function.name`.
 
 #### Input files
