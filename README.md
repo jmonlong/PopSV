@@ -7,6 +7,8 @@ the reference samples are detected, even if the signal is incomplete, e.g. tumor
 
 **Warning: PopSV package is still in active development.**
 
+The most recent version can be found on `forPaper` branch.
+
 ### Installation
 To install the latest development version: `devtools::install_github("jmonlong/PopSV")`. This requires `devtools` package (more information [here](https://github.com/hadley/devtools)) which can be easily installed with `install.packages("devtools")`. 
 
