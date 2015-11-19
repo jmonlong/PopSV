@@ -3,14 +3,14 @@ layout: page
 title: Analysis steps
 ---
 
-Examples of a analysis, for local computation or computing cluster usage, can be found on the `scripts` folder. For more information on a specific function, see the manual or access the documentation through `?the.function.name`.
+Examples of a analysis, for local computation or computing cluster usage, can be found on the `scripts` folder of the GitHub repository. For more information on a specific function, see the manual or access the documentation through `?the.function.name`.
 
 #### Input files
 The analysis can start directly from the BAM files. Each BAM file needs to be **sorted** and **indexed** (see [samtools](http://www.htslib.org/)).
 
 A tabular separated values (*tsv*) file with the name of the sample (in column named *sample*) and the path to the corresponding BAM (in column named *bam*) is imported and  given to the `init.filenames`. This function will create the path and file names for the different files created and used throughout the analysis.
 
-Then, the regions of interest or *bins* have to be defined. `fragment.genome.hp19` automatically fragments hg19 genome into non-overlapping consecutive windows of a specified size. However PopSV can perform with any type of windows. It is still recommended to define non-overlapping windows and, for computation reasons, no more than a total of several million of bins. If a custom definition is used it should follow the BED format with columns named *chr*, *start* and *end*.
+Then, the regions of interest or *bins* have to be defined. `fragment.genome.hp19` automatically fragments hg19 genome into non-overlapping consecutive windows of a specified size. However PopSV can perform with any type of windows. It is still recommended to define non-overlapping windows and, for computation reasons, no more than a total of 10 million of bins. If a custom definition is used it should de a `data.frame` with columns named *chr*, *start* and *end*.
 
 Finally, the GC content of each bin can be computed, for hg19, using function `getGC.hg19`. If another genome is to be used, GC content should be define following BedGraph format, i.e with columns named *chr*, *start*, *end* and *GCcontent*.
 
@@ -23,11 +23,11 @@ Eventually, this can be done externally, e.g. using [bedtools coverage](http://b
 GC bias is corrected using a LOESS model. Using this model, a normalization coefficient is computed for each bin based on its GC content. This step is performed by `correct.GC` function.
 
 #### Sample Quality Control
-The last "pre-processing" step aims at defining the set of reference samples. These samples will define "normal" coverage. A natural set of reference samples are the controls in case/control studies or normal samples in normal/tumor paired samples designs. The more the better but these samples should also be homogeneous to get optimal detection power.
+The last "pre-processing" step aims at defining the set of reference samples. These samples will define "normal" coverage. A natural set of reference samples are the controls in case/control studies or normal samples in normal/tumor paired samples designs. The more the better but these samples should also be homogeneous to get optimal detection power. If all samples are normal, they can all be used as reference. 
 
-`qc.samples.summary` opens an interactive web-browser application to explore how homogeneous the samples are. The samples are represented and clustered using the first two principal components. The user decides how many clear clusters are visible and which one will be analyzed. **This step is usually not necessary** because samples analyzed should have been sequenced with similar protocol and technologies. It mostly a safety check. Here a subset of the bins can be used, e.g. using `quick.count` function.
+`qc.samples.summary` opens an interactive web-browser application to explore how homogeneous the samples are. The samples are represented and clustered using the first two principal components. The user decides how many clear clusters are visible and which one will be analyzed. **This step is usually not necessary** because samples analyzed should have been sequenced with similar protocol and technologies. It is mostly a safety check. For this QC, a subset of the bins can be used, e.g. using `quick.count` function.
 
-`qc.samples` function will join all bin count files and produce some graphs on the set of reference samples. If too many reference samples are available (lucky you), `nb.ref.samples=` parameters can be used. 200 reference samples would be enough.
+`qc.samples` function will join all bin count files and produce some graphs on the set of reference samples. If too many reference samples are available (lucky you), `nb.ref.samples=` parameters can be used. 200 reference samples is usually enough.
 
 #### Normalization of the reference samples
 
