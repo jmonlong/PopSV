@@ -5,28 +5,34 @@ title: Cluster management in R
 
 ## *BatchJobs* package
 
-*BatchJobs* is a potent package to communicate with a cluster, i.e. send jobs, check their status, eventually rerun, retrieve the results.
-PopSV has been designed into separate steps to be ran on a computing cluster using *BatchJobs*.
+[*BatchJobs*](https://cran.r-project.org/web/packages/BatchJobs/index.html) is a potent package to communicate with a cluster, i.e. send jobs, check their status, eventually rerun, retrieve the results.
+PopSV has been designed into separate steps to be ran more easily on a computing cluster using *BatchJobs*.
 
-A one-command version is also available there. It's basically a wrapper for the basic analysis steps with some useful functions (running custom steps, stop/restart). However it's less flexible.
+A one-command version is also available [there](). It's basically a wrapper for the basic analysis steps with some useful functions (running custom steps, stop/restart). However it's less flexible.
 
 ## Installation and configuration
 
-The package can be installed through CRAN
+*BatchJobs* package can be installed through [CRAN](https://www.cran.r-project.org/)
 
 ```r
 install.packages("BatchJobs")
 ```
 
-The most important part about *BatchJobs* is its configuration for your computing cluster. It's not long but should be done carefully. And once this is done correctly, the rest follows nicely.
+The most important step is **configuring it for your computing cluster**. It's not long but should be done carefully. And once this is done correctly, the rest follows nicely.
 
-You will need to create **3 files** : a cluster template, parser functions, and a `.BatchJobs.R` configuration file. I would recommend to put these 3 files **in the root of your personal space**, i.e. `~/`. You could put them in the project folder, but then it means you have to copy them each time you create/run another project. Putting them in your root means that they will be used by default by *BatchJobs*.
+You will need to create **3 files** :
+
++ a cluster template
++ a script with parser functions
++ a `.BatchJobs.R` configuration file.
+
+I would recommend to put these 3 files **in the root of your personal space**, i.e. `~/`. You could put them in the project folder, but then it means you have to copy them each time you create/run another project. Putting them in your root means that they will always be used by default by *BatchJobs*.
 
 ### Cluster template
 
-A cluster template is a template form of a job bash script that you would send through `qsub`/`msub`. There you define the placeholder for the resources or parameters of the job. This file will be parsed by *BatchJobs*. 
+A cluster template is a template form of the bash script that you would send through `qsub`/`msub`. There you define the placeholder for the resources or parameters of the job. This file will be parsed by *BatchJobs*. 
 
-For example, we create a `guillimin.tmpl` file for our cluster [Guillimin](http://www.hpc.mcgill.ca/) like this :
+For our cluster [Guillimin](http://www.hpc.mcgill.ca/), we create a `guillimin.tmpl` file like this :
 
 ```sh
 #PBS -N <%= job.name %>
@@ -34,8 +40,7 @@ For example, we create a `guillimin.tmpl` file for our cluster [Guillimin](http:
 #PBS -o <%= log.file %>
 #PBS -l walltime=<%= resources$walltime %>
 #PBS -l nodes=<%= resources$nodes %>:ppn=<%= resources$cores %>
-#PBS -A <%= resources$supervisor.group %>
-#PBS -q <%= resources$queue %>
+#PBS -A bws-221-ae
 #PBS -V
 
 ## Run R:
@@ -43,7 +48,7 @@ For example, we create a `guillimin.tmpl` file for our cluster [Guillimin](http:
 R CMD BATCH --no-save --no-restore "<%= rscript %>" /dev/stdout
 ```
 
-Placeholders are in the form of `<%= resources$walltime %>`. *BatchJobs* will insert there the element define by `walltime` element in the `resources` list (see later). Although you most likely won't have to change these placeholders, you might need to update the lines if your cluster uses a different syntax. 
+Placeholders are in the form of `<%= resources$walltime %>`. *BatchJobs* will insert there the value defined by `walltime` element in the `resources` list (see later in `submitJobs` command). Although you most likely won't have to change these placeholders, you might need to update the lines if your cluster uses a different syntax. For example, in our cluster, we need to give an ID for our lab with `-A`.
 
 ### Parser functions
 
@@ -51,7 +56,7 @@ Parser functions are saved in a R script, called for example `makeClusterFunctio
 
 Likely you just need to check/replace `qsub`/`qdel`/`qstat` calls with the correct bash commands (sometimes `msub`/`canceljob`/`showq`).
 
-From our file, these are the lines you might need to change :
+From [our file](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/makeClusterFunctionsAdaptive.R), these are the lines you might need to change :
 
 ```sh
 res =  BatchJobs:::runOSCommandLinux("qsub", outfile, stop.on.exit.code = FALSE)
@@ -79,9 +84,9 @@ mail.to <- "<jean.monlong@mail.mcgill.ca>"
 
 ## Sending Jobs
 
-In practice, **you won't have to write this part** as we provide full pipelines. You might still need to change a bit the resources of the jobs (they might change from one cluster to another). More precisely I'm talking about the `resource=` parameter in the `submitJobs` command. After doing this, if you are not interested in more details, you can jump directly to the next section for an overview of a pipeline script.
+In practice, **you won't have to write this part** as we provide full pipelines. You might still need to **change a bit the resources of the jobs** (they might change from one cluster to another). More precisely I'm talking about the `resource=` parameter in the `submitJobs` command. After doing this, if you are not interested in more details, you can jump directly to the next section for an overview of a pipeline script.
 
-Here is a quick summary of *BatchJobs* commands used in the scripts:
+Otherwise here is a quick summary of *BatchJobs* commands used in the scripts:
 
 * `makeRegistry` creates a registry used to manipulate jobs for a particular analysis step.
 * `batchMap` adds jobs to a registry. Simply, you give it a function and a list of parameters. One job per parameter will be created to compute the output of the function using this specific parameter.
@@ -89,25 +94,36 @@ Here is a quick summary of *BatchJobs* commands used in the scripts:
 * `showStatus` outputs the status of the computations.
 * `loadResult` retrieves the output of one specific job, while `reduceResultsList` retrieves output for all jobs into a list format.
 
+For example, to run the step that retrieve the bin count in each BAM files it looks like this :
+
 ```r
 getBC.reg <- makeRegistry(id="getBC")
-getBC.f <- function(file.i, gc.reg, files.df){
+getBC.f <- function(file.i, bins.f, files.df){
   library(PopSV)
-  bins.df = loadResult(gc.reg,1)
+  load(bins.f)
   bin.bam(files.df$bam[file.i], bins.df, files.df$bc[file.i])
 }
-batchMap(getBC.reg, getBC.f,1:nrow(files.df), more.args=list(gc.reg=getGC.reg, files.df=files.df))
-submitJobs(getBC.reg, findNotDone(getBC.reg), resources=list(walltime="20:0:0", nodes="1", cores="1"), wait=function(retries) 100, max.retries=10)
+batchMap(getBC.reg, getBC.f,1:nrow(files.df), more.args=list(bins.f="bins.RData", files.df=files.df))
+submitJobs(getBC.reg, findNotDone(getBC.reg), resources=list(walltime="20:0:0", nodes="1", cores="1"))
+showStatus(getBC.reg)
 ```
 
-Here we want to get the bin counts of each sample. We create a registry called *getBC*. Then the function that will get the bin counts for a sample. Here `file.i` is the index of the sample and will be different for each job sent by *BatchJobs*. The other parameters are common to all jobs. Within the function, we load the package and useful data and run the function we want. `batchMap` creates a job per sample id and link the function we just defined. The jobs are finally submitted to the cluster with specific number of cores, wall time, ... 
+Here we want to get the bin counts of each sample. We create a registry called *getBC*. Then we define the function that will get the bin counts for a sample. The first parameter of this function (here `file.i` which is the index of the sample) will be different for each job sent by *BatchJobs*. Other parameters are common to all jobs. Within the function, we load the package and useful data and run the instructions we want. `batchMap` creates one job per sample ID and links the function we've just defined. The jobs are finally submitted to the cluster with the desired number of cores, wall time, etc
 
 We can check the status of the job with `showStatus(getBC.reg)` command. 
 
-## Pipeline worflow
+## Pipeline workflow
 
-The general idea is to have one script per analysis (e.g. bin size, project). Examples of pipeline scripts can be found in the `scripts` folder of the GitHub repository.
+### Automated run
 
-The script doesn't need to be ran each time from the start but rather ran step by step, most likely at separate times. Think about R as a new shell: in R the status of the jobs in the clusters are checked, rerun, etc. Nothing will be directly computed by this script so it can be ran in a login node.
+*Soon...*
 
-When one step sends jobs to the cluster through *BatchJobs*, the user can exit R, log out, have a coffee, think about all the time saved thanks to *BatchJobs* and then open everything again and continue. No need to rerun everything, just load the libraries and the registry of the steps to check and continue.
+### Step-by-step manual run
+
+The general idea is to have one script per analysis (e.g. bin size, project). Each such analysis should be in its own folder to avoid possible confusion between temporary files. Examples of pipeline scripts can be found in the [`scripts` folder of the GitHub repository](https://github.com/jmonlong/PopSV/tree/forPaper/scripts).
+
+Because it manipulates large data (BAM files, genome-wide coverage) and large sample sizes, PopSV was designed to create and work with intermediate files. The management of these files are mostly handle automatically. In practice all the important path and folder structure is saved in the `files.df` data.frame, originally created by  `init.filenames` function. For this reason, the results of each analysis steps are saved as the local files so that the next steps can be run later without the need for you to think about what to save etc. 
+
+So the script doesn't need to be ran each time from the start but rather ran step by step. In practice you often have to wait a couple of hours for some step to compute. Think about R as a new shell: you would open R, check the status of the jobs in the clusters, rerun them if necessary, or start the next step, etc. You can run R on this master script in a login node because nothing will be directly computed there, the real computation are sent as actual jobs.
+
+After one step sends jobs to the cluster, the user can exit R, log out, have a coffee, think about all the time saved thanks to *BatchJobs* and then open everything again later and continue. No need to rerun everything, just load the libraries and the registries (e.g. running `getBC.reg <- makeRegistry(id="getBC")` again) you want to check.
