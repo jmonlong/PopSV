@@ -3,7 +3,7 @@ title: PopSV
 email: jean.monlong@mail.mcgill.ca
 description: > # this means to ignore newlines until "baseurl:"
   Population-based detection of Copy-Number Variation from high-througput sequencing.
-baseurl: "" # the subpath of your site, e.g. /blog/
+baseurl: "/PopSV" # the subpath of your site, e.g. /blog/
 # url: "" # the base hostname & protocol for your site
 # twitter_username: jekyllrb
 github_username:  jmonlong/PopSV
