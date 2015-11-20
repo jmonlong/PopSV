@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Analysis steps</title>
+  <meta name="description" content="Population-based detection of Copy-Number Variation from high-througput sequencing.
+">
+  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:600' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="/BasicWorkflow.html">
+  <link rel="alternate" type="application/rss+xml" title="PopSV" href="/feed.xml" />
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">PopSV</a>
+
+    <nav class="site-nav">
+        
+          
+          <a class="page-link" href="/BasicWorkflow.html">Analysis steps</a>
+          
+        
+          
+          <a class="page-link" href="/ClusterManagement.html">Cluster management in R</a>
+          
+        
+          
+          <a class="page-link" href="/Visualization.html">Visualization</a>
+          
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Analysis steps</h1>
+  </header>
+
+  <article class="post-content">
+    <p>Examples of a analysis, for local computation or computing cluster usage, can be found on the <code>scripts</code> folder of the GitHub repository. For more information on a specific function, see the manual or access the documentation through <code>?the.function.name</code>.</p>
+
+<h4 id="input-files">Input files</h4>
+
+<p>The analysis can start directly from the BAM files. Each BAM file needs to be <strong>sorted</strong> and <strong>indexed</strong> (see <a href="http://www.htslib.org/">samtools</a>).</p>
+
+<p>A tabular separated values (<em>tsv</em>) file with the name of the sample (in column named <em>sample</em>) and the path to the corresponding BAM (in column named <em>bam</em>) is imported and  given to the <code>init.filenames</code>. This function will create the path and file names for the different files created and used throughout the analysis.</p>
+
+<p>Then, the regions of interest or <em>bins</em> have to be defined. <code>fragment.genome.hp19</code> automatically fragments hg19 genome into non-overlapping consecutive windows of a specified size. However PopSV can perform with any type of windows. It is still recommended to define non-overlapping windows and, for computation reasons, no more than a total of 10 million of bins. If a custom definition is used it should de a <code>data.frame</code> with columns named <em>chr</em>, <em>start</em> and <em>end</em>.</p>
+
+<p>Finally, the GC content of each bin can be computed, for hg19, using function <code>getGC.hg19</code>. If another genome is to be used, GC content should be define following BedGraph format, i.e with columns named <em>chr</em>, <em>start</em>, <em>end</em> and <em>GCcontent</em>.</p>
+
+<h4 id="counting-reads">Counting reads</h4>
+
+<p>Reads are counted in each bin to measure coverage. <code>bin.bam</code> function will count reads in each bin for a given sample.</p>
+
+<p>Eventually, this can be done externally, e.g. using <a href="http://bedtools.readthedocs.org/en/latest/content/tools/coverage.html">bedtools coverage</a>. The final count file should have these four columns: <em>chr</em>, <em>start</em>, <em>end</em> and <em>bc</em> (for bin count).</p>
+
+<h4 id="gc-bias-correction">GC bias correction</h4>
+
+<p>GC bias is corrected using a LOESS model. Using this model, a normalization coefficient is computed for each bin based on its GC content. This step is performed by <code>correct.GC</code> function.</p>
+
+<h4 id="sample-quality-control">Sample Quality Control</h4>
+
+<p>The last &quot;pre-processing&quot; step aims at defining the set of reference samples. These samples will define &quot;normal&quot; coverage. A natural set of reference samples are the controls in case/control studies or normal samples in normal/tumor paired samples designs. The more the better but these samples should also be homogeneous to get optimal detection power. If all samples are normal, they can all be used as reference. </p>
+
+<p><code>qc.samples.summary</code> opens an interactive web-browser application to explore how homogeneous the samples are. The samples are represented and clustered using the first two principal components. The user decides how many clear clusters are visible and which one will be analyzed. <strong>This step is usually not necessary</strong> because samples analyzed should have been sequenced with similar protocol and technologies. It is mostly a safety check. For this QC, a subset of the bins can be used, e.g. using <code>quick.count</code> function.</p>
+
+<p><code>qc.samples</code> function will join all bin count files and produce some graphs on the set of reference samples. If too many reference samples are available (lucky you), <code>nb.ref.samples=</code> parameters can be used. 200 reference samples is usually enough.</p>
+
+<h4 id="normalization-of-the-reference-samples">Normalization of the reference samples</h4>
+
+<p>This step is extremely important to avoid sample-specific bias being picked up as abnormal coverage. Several normalization approaches are available but, for now, targeted normalization (<code>tn.norm</code> function) should be used. Fortunately, it&#39;s the one that works best (in my experience). Other function are/will be <code>pca.norm</code> for Principal Component removal normalization, <code>quant.norm</code> for quantile normalization, <code>medvar.norm</code> for a more naive normalization of the coverage median and variance.</p>
+
+<p>The output of these functions is a data.frame with the normalized bin counts as well as, sometimes, some metrics on the normalization efficiency.</p>
+
+<h4 id="z-score-computation-for-the-reference-samples">Z-score computation for the reference samples</h4>
+
+<p>From the normalized bin counts the mean and standard deviation across reference samples is computed for each bin. A Z-score and fold-change estimate are derived for each reference sample. Function <code>z.comp</code> performs this step.</p>
+
+<h4 id="testing-other-samples">Testing other samples</h4>
+
+<p>At this point the rest of the samples can be tested using <code>tn.test.sample</code> function. Both normalization and Z-score computation are performed by the function.</p>
+
+<h4 id="abnormal-coverage-calls">Abnormal coverage calls</h4>
+
+<p>To find which bins have abnormally low/high coverage, <code>call.abnormal.cov</code> will derive P-value from the Z-score from a particular sample and use False Discovery Rate control. A stitching bin merging strategy is available and recommended through parameter <code>merge.cons.bins=&quot;stitch&quot;</code>. Other parameters are described in the function documentation, such as the strategy for P-value definition or extra tricks (usually for cancer samples, e.g. aneuploid chromosome removal). </p>
+
+<h4 id="visualizing-the-results">Visualizing the results</h4>
+
+<p>Function <code>sv.summary.interactive</code> opens an interactive web-browser application to look at the results. The number of calls across samples, distribution of copy-number estimates or frequency is visualized. The user can play with different stringency filters in order to retrieve the ones that gives the best result quality.</p>
+
+  </article>
+
+</div>
+
+    </div>
+
+  </body>
+
+</html>

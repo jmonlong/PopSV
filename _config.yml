@@ -1,0 +1,17 @@
+# Site settings
+title: PopSV
+email: jean.monlong@mail.mcgill.ca
+description: > # this means to ignore newlines until "baseurl:"
+  Population-based detection of Copy-Number Variation from high-througput sequencing.
+baseurl: "" # the subpath of your site, e.g. /blog/
+# url: "" # the base hostname & protocol for your site
+# twitter_username: jekyllrb
+github_username:  jmonlong/PopSV
+
+# Build settings
+highlighter: pygments
+markdown: redcarpet
+redcarpet:
+  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data"]
+
+exclude: ['README.md', 'LICENSE']
