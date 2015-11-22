@@ -15,7 +15,7 @@ title: PopSV
 email: jean.monlong@mail.mcgill.ca
 description: > 
   Population-based Detection of Copy-Number Variation from High-Througput Sequencing.
-baseurl: //PopSV
+baseurl: "/PopSV/"
 tagline:          'Population-based CNV detection'
 
 author:
