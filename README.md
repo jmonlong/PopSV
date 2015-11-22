@@ -26,13 +26,13 @@ biocLite("BSgenome.Hsapiens.UCSC.hg19", "Rsamtools")
 
 First the genome is fragmented and reads mapping in each bin are counted for each sample and GC corrected (1). Next, coverage of the sample is normalized (2) and each bin is tested by computing a Z-score (3), estimating p-values (4) and identifying abnormal regions (5). 
 
-A quick description of the different analysis steps and their corresponding functions can be found in [this page](BasicWorkflow.md).
+A quick description of the different analysis steps and their corresponding functions can be found in [this page](1-BasicWorkflow.md).
 
 
 ### Running on computing clusters
 
-PopSV workflow heavily uses [*BatchJobs* package](https://cran.r-project.org/web/packages/BatchJobs/index.html) to send computations to a cluster. It needs some configuration but then it saves a lot of time and the pipeline can be run easily. For more information on how to configure it and how the pipelines are using it go to [this page](ClusterManagement.md).
+PopSV workflow heavily uses [*BatchJobs* package](https://cran.r-project.org/web/packages/BatchJobs/index.html) to send computations to a cluster. It needs some configuration but then it saves a lot of time and the pipeline can be run easily. For more information on how to configure it and how the pipelines are using it go to [this page](2-ClusterManagement.md).
 
 ### FAQ
 
-Find frequently asked questions [there](FAQ.md).
+Find frequently asked questions [there](4-FAQ.md).
