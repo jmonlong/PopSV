@@ -4,7 +4,7 @@ title: Frequently Asked Questions
 permalink: /faq/
 ---
 
-*SOON*
+*Soon...*
 
 ### What bin size should I use ?
 
@@ -24,4 +24,4 @@ Yes and no...
 
 ### X and Y chromosomes are not tested by default, why ? I want them !
 
-More simple but OK...
+Because more simple but OK...
