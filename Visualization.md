@@ -1,6 +1,7 @@
 ---
 layout: page
 title: Visualization
+permalink: /visual/
 ---
 
 Soon.
