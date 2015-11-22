@@ -5,7 +5,8 @@
 \title{Plot a region coverage}
 \usage{
 coverage.plot(chr, start, end, bc.f, norm.stats.f = NULL, sv.df = NULL,
-  ref.samples = NULL, boxplot = FALSE, samples = NULL)
+  ref.samples = NULL, boxplot = FALSE, samples = NULL, files.df = NULL,
+  anno.df = NULL, anno.col = "geneName", flanks = 10000)
 }
 \arguments{
 \item{chr}{the chromosome}
@@ -25,6 +26,14 @@ coverage.plot(chr, start, end, bc.f, norm.stats.f = NULL, sv.df = NULL,
 \item{boxplot}{should the reference be represented as boxplots. If FALSE, violin plots will be used.}
 
 \item{samples}{the set of samples to represent.}
+
+\item{files.df}{a data.frame with the path to the different files associated with each sample. If 'sample' is absent from 'bc.f' the correct file from 'files.df' will be used. Default is NULL.}
+
+\item{anno.df}{a data.frame with additional information (e.g. gene annotation) to be added to the graph.}
+
+\item{anno.col}{the name of 'anno.df' column to use to differentiate elements in the graph. E.g. 'geneName' to color the genes in the graph.}
+
+\item{flanks}{the size of the flanking region. Default is 10000.}
 }
 \value{
 a ggplot object

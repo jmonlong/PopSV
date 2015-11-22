@@ -80,7 +80,7 @@ mean.sd.outlierR <- function(x, pv.max.ol = 1e-06) {
     return(list(x = x, pv = pv, outliers = outliers, max.pv = max.pv))
   }
 
-  if(all(is.na(x))){
+  if(sum(!is.na(x))<2){
     return(list(m=NA,sd=NA, nb.remove=NA))
   }
   

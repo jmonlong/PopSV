@@ -10,7 +10,7 @@
 ##' DETAILS ON MIXING DIFFERENT SAMPLES / TUMORS
 ##' @title Call abnormal bins
 ##' @param z the name of the file with the Z-scores for all samples OR or a
-##' data.frame with the Z-scores for all samples. 
+##' data.frame with the Z-scores for all samples.
 ##' @param files.df a data.frame with the paths to different sample files (bin count, Z-scores, ..). Here column 'z' and 'fc' are used to retrieve Z-scores and fold changes.
 ##' @param samp the name of the sample to analyze.
 ##' @param out.pdf the name of the output pdf file.
@@ -20,11 +20,12 @@
 ##' @param stitch.dist the maximal distance between two calls to be merged into one (if 'merge.cons.bins="stitch"'). If NULL (default), the bin size + 1 is used.
 ##' @param z.th how the threshold for abnormal Z-score is chosen. Default is 'sdest' which will use 'FDR.th=' parameter as well. 'consbins' looks at the number of consecutive bins, see Details.
 ##' @param fc the name of the file with the copy number estimates for all samples OR
-##' or a data.frame with the copy number estimates for all samples. 
+##' or a data.frame with the copy number estimates for all samples.
 ##' @param norm.stats the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.
-##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered. Maximum value accepted is 0.98 . 
+##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.5. For cancers with many large aberrations, this number can be lowered. Maximum value accepted is 0.98 .
 ##' @param aneu.chrs the names of the chromosomes to remove because flagged as aneuploid. If NULL (default) all chromosomes are analyzed.
 ##' @param ref.dist.weight the weight (value between 0 and 1) based on the distance to the reference samples.
+##' @param gc.df a data.frame with the GC content in each bin, for the Z-score normalization. Columns required: chr, start, end, GCcontent. If NULL (default), no normalization is performed.
 ##' @return a data.frame with columns
 ##' \item{chr, start, end}{the genomic region definition}
 ##' \item{z}{the Z-score}
@@ -35,10 +36,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference }
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05,
-                              merge.cons.bins = c("stitch", "zscores", "no"), stitch.dist=NULL,
-                              z.th = c("sdest", "consbins", "sdest2N"),
-                              fc = NULL, norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, ref.dist.weight = NULL) {
+call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL, z.th = c("sdest", "consbins", "sdest2N"), fc = NULL, norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, ref.dist.weight = NULL, gc.df=NULL) {
 
   if(!is.null(z)){
     ## load Z-scores and FC coefficients
@@ -79,12 +77,18 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     fc.f = subset(files.df, sample==samp)$fc
     if(!file.exists(fc.f)) fc.f = paste0(fc.f, ".bgz")
     fc = read.table(fc.f, header=TRUE, as.is=TRUE)
+    ## Check the order is consistent in both files
+    rand.ii = sample.int(nrow(res.df),100)
+    if(nrow(res.df)!=nrow(fc) | any(res.df$start[rand.ii]!=fc$start[rand.ii]) | any(res.df$chr[rand.ii]!=fc$chr[rand.ii])){
+      stop("Z-score and fold-change (fc) files are not in the same order. Maybe recompute them ?")
+    }
+    ##
     res.df$fc = fc$fc
     rm(fc)
   } else {
     stop("Either 'z' or 'files.df' pameter must be assigned.")
   }
-  
+
   if (!is.null(norm.stats)) {
     if (is.character(norm.stats) & length(norm.stats) == 1) {
       headers = read.table(norm.stats, nrows = 1, as.is = TRUE)
@@ -95,16 +99,19 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     colnames(norm.stats)[4] = "mean.cov"
     res.df = merge(res.df, norm.stats, all.x=TRUE)
   }
-  
+  if(!is.null(gc.df)){
+    res.df$z = z.norm(res.df, gc.df)
+  }
+
   ## Remove aneuploid chromosomes
   if (!is.null(aneu.chrs)) {
     res.df = res.df[which(!(res.df$chr %in% aneu.chrs)), ]
   }
-  
+
   if (!is.null(out.pdf)) {
     pdf(out.pdf, 13, 10)
   }
-  
+
   res.df = res.df[which(!is.na(res.df$z) & !is.infinite(res.df$z) & res.df$z!=0),]
   bin.width = median(round(res.df$end - res.df$start + 1), na.rm=TRUE)
   ## Pvalue/Qvalue estimation
@@ -114,24 +121,24 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
     if (min.normal.prop > 0.98) {
       stop("Maximum value accepted for 'min.normal.prop' is 0.98.")
     }
-    fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 0.01), 
+    fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 0.01),
       plot = !is.null(out.pdf))
     res.df$pv = fdr$pval
     res.df$qv = fdr$qval
-    
+
     ## Remove large aberrations
     ## aber.large = mergeConsBin.reduce(res.df[which(res.df$qv < 0.05), ], stitch.dist = 10 * bin.width)
     ## aber.large = subset(aber.large, end - start > 1e+07)
     ## if (nrow(aber.large) > 0 | !is.null(ref.dist.weight)) {
     ##   if (nrow(aber.large) > 0) {
-    ##     aber.gr = with(aber.large, GenomicRanges::GRanges(chr, IRanges::IRanges(start, 
+    ##     aber.gr = with(aber.large, GenomicRanges::GRanges(chr, IRanges::IRanges(start,
     ##       end)))
-    ##     res.gr = with(res.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, 
+    ##     res.gr = with(res.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start,
     ##       end)))
     ##     res.aber.large = res.df[which(GenomicRanges::overlapsAny(res.gr, aber.gr)), ]
     ##     res.df = res.df[which(!GenomicRanges::overlapsAny(res.gr, aber.gr)), ]
     ##   }
-    ##   fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 
+    ##   fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99,
     ##                                      0.01), ref.dist.weight = ref.dist.weight, plot = FALSE)
     ##   res.df$pv = fdr$pval
     ##   res.df$qv = fdr$qval
@@ -142,42 +149,41 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   } else if (z.th[1] == "consbins") {
     res.df = z.thres.cons.bins(res.df, plot = !is.null(out.pdf), pvalues = TRUE)$z.df
   } else if (z.th[1] == "sdest2N") {
-    if (min.normal.prop > 0.98) {
-      stop("Maximum value accepted for 'min.normal.prop' is 0.98.")
-    }
-    fdr = fdrtool.quantile.2N(res.df$z, plot = !is.null(out.pdf), min.prop.null = min.normal.prop)
+    fdr = fdrtool.quantile.2N(res.df$z, plot = !is.null(out.pdf))
     res.df$pv = fdr$pval
     res.df$qv = fdr$qval
   } else {
     stop("'z.th=': available thresholding approaches are : 'stitch', 'zscores'.")
   }
-    
+
   if (merge.cons.bins[1] != "no") {
     if(is.null(stitch.dist)) {
       stitch.dist = bin.width + 1
     }
-    
+
     if (merge.cons.bins[1] == "stitch") {
       res.df = res.df[which(res.df$qv < FDR.th), ]
       res.df = mergeConsBin.reduce(res.df, stitch.dist = stitch.dist)
     } else if (merge.cons.bins[1] == "zscores") {
       res.df = mergeConsBin.z(res.df, fdr.th = FDR.th, sd.null = max(c(fdr$sigma.est.dup,fdr$sigma.est.del)), stitch.dist = stitch.dist)
+    } else if (merge.cons.bins[1] == "cbs") {
+      res.df = mergeConsBin.cbs(res.df, pv.th = FDR.th)
     } else {
       stop("'merge.cons.bins=' : available bin merging approaches are : 'stitch', 'zscores'.")
     }
-    
+
     if (nrow(res.df) > 0 & !is.null(out.pdf)) {
       nb.bin.cons = NULL  ## Uglily appease R checks
-      print(ggplot2::ggplot(res.df, ggplot2::aes(x = factor(nb.bin.cons))) + 
-              ggplot2::geom_histogram() + ggplot2::ylab("number of bins") + ggplot2::xlab("number of consecutive abnormal bins") + 
+      print(ggplot2::ggplot(res.df, ggplot2::aes(x = factor(nb.bin.cons))) +
+              ggplot2::geom_histogram() + ggplot2::ylab("number of bins") + ggplot2::xlab("number of consecutive abnormal bins") +
                 ggplot2::theme_bw())
-      
+
       if (any(colnames(res.df) == "fc") & sum(res.df$nb.bin.cons > 2 & res.df$fc < 2.5) > 3) {
         print(ggplot2::ggplot(subset(res.df, nb.bin.cons > 2), ggplot2::aes(x = 2 * fc)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::ylab("number of bins") + ggplot2::xlab("copy number estimate") + ggplot2::ggtitle("At least 3 consecutive abnormal bins") + ggplot2::xlim(0, 5))
       }
     }
   }
-  
+
   if (!is.null(out.pdf)) {
     dev.off()
   }
@@ -190,7 +196,7 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   } else {
     res.df$prop.single.bin = numeric(0)
   }
-    
+
   if (nrow(res.df) > 0 & merge.cons.bins[1] != "no") {
     return(data.frame(sample = samp, res.df, stringsAsFactors = FALSE))
   } else if (any(res.df$qv <= FDR.th, na.rm = TRUE)) {
@@ -198,4 +204,4 @@ call.abnormal.cov <- function(z=NULL, files.df=NULL, samp, out.pdf = NULL, FDR.t
   } else {
     return(NULL)
   }
-} 
+}

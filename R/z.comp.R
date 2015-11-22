@@ -10,17 +10,22 @@
 ##' @param chunk.size the chunk size. If NULL (Default), no chunks are used.
 ##' @param out.msd.f the name of the file to write the mean/sd information. If 'NULL' no file is created.
 ##' @param append should the Z-scores be appended to existing files. Default is FALSE.
+##' @param files.col the name of the column from 'files.df' to use to get the bin counts. Used only if 'bc.f' is NULL.
 ##' @return a list with
-##' \item{z}{a data.frame with the Z-scores for each bin and sample (bin x sample).}
-##' \item{fc}{a data.frame with the fold-change compared to the average bin count in
-##' the reference samples for each bin and sample (bin x sample).}
-##' \item{msd}{the mean, standard deviation and number of removed outlier samples in each bin.}
+##' \item{ref.samples}{a vector with the reference samples used.}
+##' \item{z.poisson}{was Normal-Poisson hybrid Z-score score computed.}
 ##' @author Jean Monlong
 ##' @export
-z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores = 1, chunk.size=NULL, out.msd.f="ref-msd.tsv", append=FALSE) {
+z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores = 1, chunk.size=NULL, out.msd.f="ref-msd.tsv", append=FALSE, files.col="bc.gc.norm.gz") {
 
-  if(!file.exists(bc.f)){
+  if(!is.null(bc.f) && !file.exists(bc.f)){
     stop("Bin count file not found.")
+  }
+  if(is.null(bc.f) & is.null(files.col)){
+    stop("Either 'bc.f' or 'files.col' must be non-NULL")
+  }
+  if(is.null(bc.f) && !is.null(files.col) && all(grepl("\\.bgz$", files.df[,files.col]))){
+    files.df[,files.col] = paste("zcat",files.df[,files.col])
   }
 
   if (z.poisson) {
@@ -37,22 +42,34 @@ z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores
     }
   }
 
-  read.chunk <- function(chunk.start=NULL, chunk.end=NULL, file, sep="\t", header=TRUE){
-    if(header){
-      col.n = read.table(file, nrows=1, sep=sep, header=FALSE, as.is=TRUE)
+  if(!is.null(bc.f)){
+    read.chunk <- function(chunk.start=NULL, chunk.end=NULL){
+      col.n = read.table(bc.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE)
+      dt = suppressWarnings(data.table::fread(bc.f,nrows=chunk.end-chunk.start+1, skip=chunk.start, header=FALSE, sep="\t"))
+      data.table::setnames(dt, as.character(col.n))
+      dt
     }
-    dt = suppressWarnings(data.table::fread(file,nrows=chunk.end-chunk.start+1, skip=chunk.start-1+as.numeric(header), header=FALSE, sep=sep))
-    data.table::setnames(dt, as.character(col.n))
-    dt
+    headers = as.character(read.table(bc.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE))
+  } else {
+    read.chunk <- function(chunk.start=NULL, chunk.end=NULL){
+      col.n = c("chr","start","end", files.df$sample)
+      files = as.character(files.df[,files.col])
+      dt.l = parallel::mclapply(files, function(file){
+        suppressWarnings(data.table::fread(file,nrows=chunk.end-chunk.start+1, skip=chunk.start, header=FALSE, sep="\t"))
+      }, mc.cores = nb.cores)
+      bc.1 = dt.l[[1]][, 1:3, with = FALSE]
+      if(any(!unlist(parallel::mclapply(dt.l, function(dt) all(bc.1[,2,with=FALSE]==dt[,2,with=FALSE] & bc.1[,1,with=FALSE]==dt[,1,with=FALSE]), mc.cores = nb.cores)))){
+        stop("Different orders in the bin count files.")
+      }
+      dt = do.call(cbind, lapply(dt.l, function(dt) dt[,4,with=FALSE]))
+      dt = cbind(bc.1, dt)
+      data.table::setnames(dt, as.character(col.n))
+      dt
+    }
+    headers = as.character(files.df$sample)
   }
 
-  ## One column to get number of rows
-  bc.1 = data.table::fread(bc.f, header = TRUE, select=1)
-  nrows = nrow(bc.1)
-  rm(bc.1)
-
-  ## Sample names
-  headers = as.character(read.table(bc.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE))
+  ## Sample names and row number
   if(!is.null(ref.samples)){
     if(!all(ref.samples %in% headers)){
       stop("Some specified reference samples are not present in the bin count file.")
@@ -60,6 +77,14 @@ z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores
   } else {
     ref.samples = setdiff(headers, c("chr","start","end"))
   }
+  if(!is.null(bc.f)){
+    bc.1 = data.table::fread(bc.f, header = TRUE, select=1)
+  } else {
+    files.df = subset(files.df, sample %in% ref.samples)
+    bc.1 = data.table::fread(as.character(files.df[,files.col])[1], header = TRUE, select=1)
+  }
+  nrows = nrow(bc.1)
+  rm(bc.1)
 
   ## Compute chunk index
   if(!is.null(chunk.size)){
@@ -72,7 +97,7 @@ z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores
   for(ch.ii in 1:length(chunks)){
 
     ## Read chunk
-    bc.l = read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]),bc.f)
+    bc.l = read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]))
     bc.1 = bc.l[, 1:3, with = FALSE]
     bc.l = as.matrix(bc.l[, ref.samples, with = FALSE])
 
@@ -89,7 +114,7 @@ z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores
     fc = data.frame(bc.1[, 1:3, with = FALSE], fc)
 
     ## Write output files
-    write.split.samples(list(z=z, fc=fc), files.df, ref.samples, res.n=c("z","fc"), files.col=c("z","fc"), compress.index=FALSE, append=append | ch.ii>1)
+    write.split.samples(list(z=z, fc=fc), files.df, ref.samples, files.col=c("z","fc"), compress.index=FALSE, append=append | ch.ii>1)
 
     ## Write mean/sd file
     msd = data.frame(as.data.frame(bc.1[, 1:3, with=FALSE]), t(msd))
@@ -99,7 +124,10 @@ z.comp <- function(bc.f, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores
 
   }
 
-  return(list(z = z, fc = fc, msd = msd, z.poisson = z.poisson))
+  files.df = files.df[which(files.df$sample %in% ref.samples),]
+  comp.index.files(c(files.df$z, files.df$fc), rm.input=TRUE, reorder=TRUE)
+
+  return(list(ref.samples=ref.samples, z.poisson = z.poisson))
 }
 
 ## To test: one sample only; chunks; msd input or not

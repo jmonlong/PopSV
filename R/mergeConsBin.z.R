@@ -10,7 +10,7 @@
 ##' @param sd.null the estimated standard deviation of the Z-score null distribution.
 ##' Usually, computed during P-value estimation by 'fdrtool.quantile'.
 ##' @param nb.sim the number of simulated Z-scores for the P-value computation.
-##' @param stitch.dist the stitching distance, i.e. the maximum distance at which two bins will be merged. 
+##' @param stitch.dist the stitching distance, i.e. the maximum distance at which two bins will be merged.
 ##' @return a data.frame similar to the input 'res.df' but with an extra 'nb.bin.cons'
 ##' column (the number of bin merged for each event).
 ##' @author Jean Monlong
@@ -18,18 +18,16 @@
 mergeConsBin.z <- function(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06, stitch.dist=1e4) {
 
   col.mean = c("z", "fc", "mean.cov", "GCcontent", "lowC", "map")
-  col.mean.log = c("pv", "qv")
-  
-  fun3 <- function(x, FUN = mean, log.x=FALSE) {
-    if(log.x){x = log(x)}
+  col.min = c("pv", "qv")
+
+  fun3 <- function(x, FUN3 = mean) {
     if (length(x) > 2) {
-      res.x = FUN(x[2:(length(x)-1)], na.rm=TRUE)
+      res.x = FUN3(x[2:(length(x)-1)], na.rm=TRUE)
     } else if (length(x) == 2) {
-      res.x = FUN(x, na.rm=TRUE)
+      res.x = FUN3(x, na.rm=TRUE)
     } else {
       res.x = x
     }
-    if(log.x){res.x = exp(res.x)}
     res.x
   }
 
@@ -67,7 +65,7 @@ mergeConsBin.z <- function(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06, s
     data.frame(start=df$start[-nrow(df)],end=df$end[-1],pv.dup = compute.pv(z.link[1, ], z.null = z.null[1, ]), pv.del = compute.pv(z.link[2,], z.null = z.null[2, ], alt.greater = FALSE))
   }
   link.df = lapply(unique(res.df$chr), function(chr.i)data.frame(chr=chr.i, pvLink.f(res.df[which(res.df$chr==chr.i),])))
-  link.df = plyr::ldply(link.df, identity)
+  link.df = do.call(rbind, link.df)
   ## Multiple test correction
   link.df$qv.dup = fdrtool::fdrtool(link.df$pv.dup, statistic = "pvalue", plot = FALSE, verbose = FALSE)$qval
   link.df$qv.del = fdrtool::fdrtool(link.df$pv.del, statistic = "pvalue", plot = FALSE, verbose = FALSE)$qval
@@ -75,33 +73,33 @@ mergeConsBin.z <- function(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06, s
 
   gr.f = with(res.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
   res.df$red.i = NA
-  
+
   ## Merge duplications
-  dup.gr = with(link.df[which(link.df$qv.dup < fdr.th), ], GenomicRanges::GRanges(chr, IRanges::IRanges(start,end)))
+  dup.gr = with(link.df[which(link.df$qv.dup <= fdr.th), ], GenomicRanges::GRanges(chr, IRanges::IRanges(start,end)))
   dup.gr = GenomicRanges::reduce(dup.gr, min.gapwidth = stitch.dist)
-  dup.gr = with(res.df[which(res.df$qv < fdr.th & res.df$z>0), ], c(dup.gr, GenomicRanges::GRanges(chr, IRanges::IRanges(start,end))))
+  dup.gr = with(res.df[which(res.df$qv <= fdr.th & res.df$z>0), ], c(dup.gr, GenomicRanges::GRanges(chr, IRanges::IRanges(start,end))))
   dup.gr = GenomicRanges::reduce(dup.gr, min.gapwidth = stitch.dist)
   ol.dup = GenomicRanges::findOverlaps(gr.f, dup.gr)
   res.df$red.i[IRanges::queryHits(ol.dup)] = paste0("dup", IRanges::subjectHits(ol.dup))
   ## Merge deletions
-  del.gr = with(link.df[which(link.df$qv.del < fdr.th), ], GenomicRanges::GRanges(chr, IRanges::IRanges(start,end)))
+  del.gr = with(link.df[which(link.df$qv.del <= fdr.th), ], GenomicRanges::GRanges(chr, IRanges::IRanges(start,end)))
   del.gr = GenomicRanges::reduce(del.gr, min.gapwidth = stitch.dist)
-  del.gr = with(res.df[which(res.df$qv < fdr.th & res.df$z<0), ], c(del.gr, GenomicRanges::GRanges(chr, IRanges::IRanges(start,end))))
+  del.gr = with(res.df[which(res.df$qv <= fdr.th & res.df$z<0), ], c(del.gr, GenomicRanges::GRanges(chr, IRanges::IRanges(start,end))))
   del.gr = GenomicRanges::reduce(del.gr, min.gapwidth = stitch.dist)
   ol.del = GenomicRanges::findOverlaps(gr.f, del.gr)
   res.df$red.i[IRanges::queryHits(ol.del)] = paste0("del", IRanges::subjectHits(ol.del))
-  
+
   merge.event.f <- function(df.f) {
     df.o = with(df.f, data.frame(start = min(start), end = max(end), nb.bin.cons = nrow(df.f)))
     cbind(df.o,
           t(apply(df.f[, intersect(colnames(df.f), col.mean), drop = FALSE], 2, fun3)),
-          t(apply(df.f[, intersect(colnames(df.f), col.mean.log), drop = FALSE], 2, fun3, log.x=TRUE))
+          t(apply(df.f[, intersect(colnames(df.f), col.min), drop = FALSE], 2, fun3, FUN3=min))
           )
   }
-  
+
   red.i = chr = . = NULL  ## Uglily appease R checks
   res.df = res.df[which(!is.na(res.df$red.i)),]
   res.df = as.data.frame(dplyr::do(dplyr::group_by(res.df, red.i, chr), merge.event.f(.)))
   res.df$red.i = NULL
   return(res.df)
-} 
+}

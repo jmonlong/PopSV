@@ -12,7 +12,7 @@ sv.summary.interactive(res.df, height = "500px")
 \item{height}{the height of the plot in the webpage. Default is "500px".}
 }
 \value{
-a shiny app in the web browser.
+a shiny app in the web browser. When the 'Export' button is pressed, the resulting data.frame is returned.
 }
 \description{
 Interactive summary of the individual bins with abnormal coverage as detected per 'call.abnomal.cov'.

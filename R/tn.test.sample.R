@@ -25,6 +25,7 @@
 ##' it is recommended for cancer but can be turned off if less than ~20% of the genome is expected
 ##' to be affected.
 ##' @param append should the results be appended to existing files. Default is FALSE.
+##' @param col.file the column name in 'files.df' which inform which file contains the bin counts to use. Default is 'bc.gc.gz'.
 ##' @return a data.frame with columns :
 ##' \item{chr, start, end}{the location of the bin}
 ##' \item{bc}{the normalized bin count}
@@ -32,16 +33,20 @@
 ##' \item{fc}{the fold-change compared to the average bin count in the reference samples}
 ##' @author Jean Monlong
 ##' @export
-tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.stats.f, write.out.file=TRUE, compress.index=TRUE, z.poisson = FALSE, aberrant.cases = FALSE, append=FALSE) {
+tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f=NULL, norm.stats.f, write.out.file=TRUE, compress.index=TRUE, z.poisson = FALSE, aberrant.cases = FALSE, append=FALSE, col.file="bc.gc.gz") {
   chunk.size = 1000
-  test.bc = read.table(files.df$bc.gc.gz[which(files.df$sample == test.sample)], colClasses = c("character", "integer", "integer", "numeric"), header = TRUE)
+  test.bc = read.table(files.df[which(files.df$sample == test.sample),col.file], colClasses = c("character", "integer", "integer", "numeric"), header = TRUE)
   id.test = 1:nrow(test.bc)
   names(id.test) = paste(test.bc$chr, as.integer(test.bc$start), sep = "-")
-  ref.headers = read.table(bc.ref.f, nrows = 1, as.is = TRUE)
-  colC = ifelse(ref.headers == cont.sample, "numeric", "NULL")
-  colC[1:3] = c("character", "integer", "integer")
-  cont.bc = read.table(bc.ref.f, colClasses = colC, header = TRUE)
-  colnames(cont.bc)[4] = "bc"
+  if(!is.null(bc.ref.f)){
+    ref.headers = read.table(bc.ref.f, nrows = 1, as.is = TRUE)
+    colC = ifelse(ref.headers == cont.sample, "numeric", "NULL")
+    colC[1:3] = c("character", "integer", "integer")
+    cont.bc = read.table(bc.ref.f, colClasses = colC, header = TRUE)
+    colnames(cont.bc)[4] = "bc"
+  } else {
+    cont.bc = read.table(files.df[which(files.df$sample == cont.sample), col.file], colClasses = c("character", "integer", "integer", "numeric"), header = TRUE)
+  }
   id.cont = 1:nrow(cont.bc)
   names(id.cont) = paste(cont.bc$chr, as.integer(cont.bc$start), sep = "-")
 
@@ -67,7 +72,7 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
   res.df$end = test.bc$end
 
   if (aberrant.cases) {
-    norm.bin <- function(bc.bin.arg, test.bc.arg, cont.bc.arg, bc.mean.arg, chrs.arg) {
+    norm.bin <- function(bc.bin.arg, test.bc.arg, cont.bc.arg, bc.mean.arg=NULL, chrs.arg=NULL) {
       norm.coeff = norm.tm.opt(as.matrix(test.bc.arg),
         ref.col = cont.bc.arg, bc.mean.norm = bc.mean.arg,
         chrs = chrs.arg)
@@ -108,9 +113,10 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f, norm.st
   close(con)
 
   if(write.out.file){
-    files.out = c(files.df[which(files.df$sample == test.sample), "z"], files.df[which(files.df$sample == test.sample), "fc"])
+    files.out = c(files.df[which(files.df$sample == test.sample), "z"], files.df[which(files.df$sample == test.sample), "fc"], files.df[which(files.df$sample == test.sample), "bc.gc.norm"])
     write.table(res.df[,c("chr","start","end","z")], file = files.out[1], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
     write.table(res.df[,c("chr","start","end","fc")], file = files.out[2], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
+    write.table(res.df[,c("chr","start","end","bc")], file = files.out[3], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
     if (compress.index) {
       comp.index.files(files.out)
     }

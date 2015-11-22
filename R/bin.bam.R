@@ -36,8 +36,8 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
   if(!file.exists(bam.file)){
     stop("'bam.file' (",bam.file," file not found.")
   }
-  
-  bin.df = with(bin.df, dplyr::arrange(bin.df, chr, start))
+
+  bin.df = bin.df[order(bin.df$chr, bin.df$start),]
   bin.df$chunk = rep(1:ceiling(nrow(bin.df)/chunk.size), each = chunk.size)[1:nrow(bin.df)]
   
   bai.file = sub("bam$", "bai", bam.file, perl = TRUE)

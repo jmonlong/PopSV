@@ -5,7 +5,7 @@
 \title{Compress and index BED-like files}
 \usage{
 comp.index.files(files, outprefix = files, rm.input = TRUE,
-  overwrite.out = TRUE)
+  overwrite.out = TRUE, reorder = FALSE)
 }
 \arguments{
 \item{files}{the names of the files to compress and index.}
@@ -15,6 +15,8 @@ comp.index.files(files, outprefix = files, rm.input = TRUE,
 \item{rm.input}{Should the original input file be removed after compression/indexing ? Default is TRUE.}
 
 \item{overwrite.out}{Should a compressed file be overwritten if it already exists ? Default is TRUE.}
+
+\item{reorder}{should the files be read a reordered before compression/indexation. Default is FALSE.}
 }
 \value{
 a character vector confirming the creation of the new files.
