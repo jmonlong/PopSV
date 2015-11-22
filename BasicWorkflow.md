@@ -1,6 +1,7 @@
 ---
 layout: page
 title: Analysis steps
+permalink: /workflow/
 ---
 
 Examples of a analysis, for local computation or computing cluster usage, can be found on the `scripts` folder of the GitHub repository. For more information on a specific function, see the manual or access the documentation through `?the.function.name`.
