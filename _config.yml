@@ -14,7 +14,7 @@ description: >
 baseurl: "http://jmonlong.github.io/PopSV/"
 tagline:          'Population-based CNV detection'
 
-paginate:         5
+paginate:         10
 
 # Custom vars
 version:          1.0
