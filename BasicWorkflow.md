@@ -50,4 +50,4 @@ To find which bins have abnormally low/high coverage, `call.abnormal.cov` will d
 #### Visualizing the results
 Function `sv.summary.interactive` opens an interactive web-browser application to look at the results. The number of calls across samples, distribution of copy-number estimates or frequency is visualized. The user can play with different stringency filters in order to retrieve the ones that gives the best result quality.
 
-More on the different visualizations available in PopSV [here](visual).
+More on the different visualizations available in PopSV [here]({{ site.url }}visual).
