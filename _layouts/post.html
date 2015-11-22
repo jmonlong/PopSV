@@ -1,15 +1,23 @@
 ---
 layout: default
 ---
+
 <div class="post">
+  <h1 class="post-title">{{ page.title }}</h1>
+  {{ content }}
+</div>
 
-  <header class="post-header">
-    <h1 class="post-title">{{ page.title }}</h1>
-    <p class="post-meta">{{ page.date | date: "%b %-d, %Y" }}{% if page.author %} • {{ page.author }}{% endif %}{% if page.meta %} • {{ page.meta }}{% endif %}</p>
-  </header>
-
-  <article class="post-content">
-    {{ content }}
-  </article>
-
+<div class="related">
+  <h2>Next</h2>
+  <ul class="related-posts">
+    {% for post in site.related_posts limit:3 %}
+      <li>
+        <h3>
+          <a href="{{ post.url }}">
+            {{ post.title }}
+          </a>
+        </h3>
+      </li>
+    {% endfor %}
+  </ul>
 </div>
