@@ -6,10 +6,6 @@ redcarpet:
   extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data"]
 exclude: ['README.md', 'TODO.md', 'LICENSE']
 
-# Permalinks
-permalink:        pretty
-relative_permalinks: true
-
 # Setup
 title: PopSV
 email: jean.monlong@mail.mcgill.ca
@@ -17,10 +13,6 @@ description: >
   Population-based Detection of Copy-Number Variation from High-Througput Sequencing.
 baseurl: "/PopSV/"
 tagline:          'Population-based CNV detection'
-
-author:
-  name:           'Jean Monlong'
-  url:            https://twitter.com/jmonlong
 
 paginate:         5
 
