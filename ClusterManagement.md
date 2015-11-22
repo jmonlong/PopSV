@@ -1,7 +1,6 @@
 ---
 layout: page
 title: Cluster management in R
-permalink: /cluster/
 ---
 
 ## *BatchJobs* package
