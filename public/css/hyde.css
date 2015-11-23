@@ -248,3 +248,20 @@ a.sidebar-nav-item:focus {
 .theme-base-0f .related-posts li a:hover {
   color: #8f5536;
 }
+
+/* Brown */
+.theme-solarized-dark .sidebar {
+  background-color: #002b36;
+}
+.theme-solarized-dark .content a,
+.theme-solarized-dark .related-posts li a:hover {
+  color: #002b36;
+}
+
+.theme-royal .sidebar {
+  background-color: #314f6f;
+}
+.theme-solarized-dark .content a,
+.theme-solarized-dark .related-posts li a:hover {
+  color: #314f6f;
+}
