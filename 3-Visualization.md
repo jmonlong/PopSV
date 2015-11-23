@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Visualization
-permalink: /visual/
+permalink: /3-Visualization.md/
 ---
 
 Soon.
