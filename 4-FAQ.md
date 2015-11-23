@@ -6,10 +6,6 @@ permalink: /4-FAQ.md/
 
 *Soon...*
 
-### What bin size should I use ?
-
-Depends on your sequencing depth...
-
 ### Can I run PopSV on my laptop ?
 
 Yes but you shouldn't...
@@ -29,6 +25,14 @@ library(PopSV, lib.loc="~/R")
 ```
 
 Eventually, if you are using the [automated pipeline](2-ClusterManagement.md#automated-run) you can pass this pass to `lib.loc=` parameter.
+
+### What bin size should I use ?
+
+Depends on your sequencing depth...
+
+### How do I know if my reference samples are correct ?
+
+Supposedly normal, plus they look homogeneous...
 
 ### Are `FDR.th=` parameter and `qv` column the same thing ?
 
