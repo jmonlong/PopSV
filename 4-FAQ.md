@@ -28,7 +28,7 @@ Then you should load the package with:
 library(PopSV, lib.loc="~/R")
 ```
 
-Eventually, if you are using the [automated pipeline](2-ClusterManagement.md#automated-run) you can pass this pass to `lib.loc=` parameter.
+Eventually, if you are using the [automated pipeline]({{ site.baseurl }}2-ClusterManagement.md#automated-run) you can pass this pass to `lib.loc=` parameter.
 
 ### Are `FDR.th=` parameter and `qv` column the same thing ?
 
