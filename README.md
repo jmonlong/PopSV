@@ -1,5 +1,5 @@
 ---
-layout: home
+layout: default
 title: PopSV
 ---
 
@@ -12,7 +12,18 @@ PopSV is a Copy-Number Variation (CNV) detection method from high-throughput seq
 # Getting started
 
 ## Installation
-To install the latest development version: `devtools::install_github("jmonlong/PopSV")`. This requires `devtools` package (more information [here](https://github.com/hadley/devtools)) which can be easily installed with `install.packages("devtools")`. 
+
+To install the latest development version:
+
+```r
+devtools::install_github("jmonlong/PopSV")
+```
+
+This command requires [*devtools* package](https://github.com/hadley/devtools) which can be easily installed with :
+
+```r
+install.packages("devtools")
+```
 
 Some [Bioconductor](http://bioconductor.org/) packages are also necessary and not installed automatically. Running the following command should be sufficient :
 ```{r}
@@ -22,9 +33,19 @@ biocLite("BSgenome.Hsapiens.UCSC.hg19", "Rsamtools")
 
 **R 3.1 or higher** is required.
 
+## Usage
+
+PopSV package is used as any R package, by simply loading the library and using the provided funtions.
+
+```r
+library(PopSV)
+...
+```
+
+
 # Workflow
 
-![PopSV workflow](docs/PopSVworkflow.png)
+![PopSV workflow](public/PopSVworkflow.png)
 
 First the genome is fragmented and reads mapping in each bin are counted for each sample and GC corrected (1). Next, coverage of the sample is normalized (2) and each bin is tested by computing a Z-score (3), estimating p-values (4) and identifying abnormal regions (5). 
 
