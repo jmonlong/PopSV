@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Publication
-permalink: /pub/
+permalink: /5-Publication.md/
 ---
 
 [Manuscript]()
