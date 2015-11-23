@@ -5,15 +5,17 @@ message("Two functions :
 - 'autoNormTest' to normalize and test all the samples.
 ")
 
-autoGCcounts <- function(files.df, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL){
+autoGCcounts <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL){
+  load(files.f)
   
   message("\n== 1) Get GC content in each bin.\n")
   stepName = paste0("getGC",file.suffix)
-  reg <- makeRegistry(id=stepName, seed=123, skip=all(redo!=1))
+  if(any(redo==1)) unlink(paste0(stepName, "-files"), recursive=TRUE)
+  reg <- makeRegistry(id=stepName, seed=123)
   if(length(findJobs(reg))==0){
     getGC.f <- function(imF){
       load(imF)
-      library(PopSV)
+      library(PopSV, lib.loc=lib.loc)
       bins.df = getGC.hg19(bins.df)
       save(bins.df, file=imF)
     }
@@ -31,10 +33,11 @@ autoGCcounts <- function(files.df, bins.f, redo=NULL, rewrite=FALSE, sleep=180, 
 
   message("\n== 2) Get bin counts in each sample and correct for GC bias.\n")
   stepName = paste0("getBC",file.suffix)
-  reg <- makeRegistry(id=stepName, seed=123, skip=all(redo!=2))
+  if(any(redo==2)) unlink(paste0(stepName, "-files"), recursive=TRUE)
+  reg <- makeRegistry(id=stepName, seed=123)
   if(length(findJobs(reg))==0){
     getBC.f <- function(file.i, bins.f, files.df){
-      library(PopSV)
+      library(PopSV, lib.loc=lib.loc)
       load(bins.f)
       bb.o = bin.bam(files.df$bam[file.i], bins.df, files.df$bc[file.i])
       correct.GC(files.df$bc.gz[file.i], bins.df, files.df$bc.gc[file.i])
@@ -56,28 +59,30 @@ autoGCcounts <- function(files.df, bins.f, redo=NULL, rewrite=FALSE, sleep=180, 
   quick.count(files.df, bins.df, col.files="bc.gc.gz", nb.rand.bins=1e3) 
 }
   
-autoNormTest <- function(files.df, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, ref.samples=NULL){
+autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, ref.samples=NULL){
+  load(files.f)
   
   message("\n== 1) Sample QC and reference definition.\n")
   bc.ref.f = paste0("bc-gcCor",file.suffix,".tsv")
   sampQC.pdf.f = paste0("sampQC",file.suffix,".pdf")
   stepName = paste0("sampQC",file.suffix)
-  reg <- makeRegistry(id=stepName, seed=123, skip=all(redo!=1))
+  if(any(redo==1)) unlink(paste0(stepName, "-files"), recursive=TRUE)
+  reg <- makeRegistry(id=stepName, seed=123)
   if(length(findJobs(reg))==0){
     if(!is.null(ref.samples)){
       files.ref = subset(files.df, sample %in% ref.samples)
     } else {
       files.ref = files.df
     }
-    sampQC.f <- function(bc.all.f, bins.f, files.df, sampQC.pdf.f, nbc, lib.loc){
+    sampQC.f <- function(bc.all.f, bins.f, files.df, sampQC.pdf.f, lib.loc){
       load(bins.f)
       library(PopSV, lib.loc=lib.loc)
       pdf(sampQC.pdf.f)
-      qc.o = qc.samples(files.df, bins.df, bc.all.f, nb.cores=nbc, nb.ref.samples=200)
+      qc.o = qc.samples(files.df, bins.df, bc.all.f, nb.cores=6, nb.ref.samples=200)
       dev.off()
       qc.o 
     }
-    batchMap(reg, sampQC.f,bc.ref.f, more.args=list(bins.f="bins.RData", files.df=files.ref, sampQC.pdf.f=sampQC.pdf.f, nbc=8, lib.loc=lib.loc))
+    batchMap(reg, sampQC.f,bc.ref.f, more.args=list(bins.f=bins.f, files.df=files.ref, sampQC.pdf.f=sampQC.pdf.f, lib.loc=lib.loc))
     submitJobs(reg, 1, resources=c(list(walltime="10:0:0", nodes="1", cores="6"), other.resources))
     waitForJobs(reg, sleep=sleep)
   } else {
@@ -93,10 +98,11 @@ autoNormTest <- function(files.df, bins.f, redo=NULL, rewrite=FALSE, sleep=180, 
 
   message("\n== 2) Reference sample normalization.\n")
   stepName = paste0("bcNormTN",file.suffix)
-  reg <- makeRegistry(id=stepName, seed=123, skip=all(redo!=2))
+  if(any(redo==2)) unlink(paste0(stepName, "-files"), recursive=TRUE)
+  reg <- makeRegistry(id=stepName, seed=123)
   if(length(findJobs(reg))==0){
     load(bins.f)
-    if(all(colnames(bins.df!="sm.chunk"))){
+    if(all(colnames(bins.df)!="sm.chunk")){
       bins.df = chunk.bin(bins.df, bg.chunk.size=1e5, sm.chunk.size=1e4, large.chr.chunks=TRUE)
       save(bins.df, file=bins.f)
     }
@@ -129,7 +135,8 @@ autoNormTest <- function(files.df, bins.f, redo=NULL, rewrite=FALSE, sleep=180, 
   
   message("\n== 3) Compute Z-scores in reference samples.\n")
   stepName = paste0("zRef",file.suffix)
-  reg <- makeRegistry(id=stepName, seed=123, skip=all(redo!=3))
+  if(any(redo==3)) unlink(paste0(stepName, "-files"), recursive=TRUE)
+  reg <- makeRegistry(id=stepName, seed=123)
   if(length(findJobs(reg))==0){
     zRef.f <- function(bc.f, files.df, lib.loc){
       library(PopSV, lib.loc=lib.loc)
@@ -149,7 +156,8 @@ autoNormTest <- function(files.df, bins.f, redo=NULL, rewrite=FALSE, sleep=180, 
 
   message("\n== 4) Normalization and Z-score computation for other samples.\n")
   stepName = paste0("zOthers",file.suffix)
-  reg <- makeRegistry(id=stepName, seed=123, skip=all(redo!=4))
+  if(any(redo==4)) unlink(paste0(stepName, "-files"), recursive=TRUE)
+  reg <- makeRegistry(id=stepName, seed=123)
   if(length(findJobs(reg))==0){
     callOthers.f <- function(samp, cont.sample, files.df, norm.stats.f, bc.ref.f, lib.loc){
       library(PopSV, lib.loc=lib.loc)
@@ -169,7 +177,8 @@ autoNormTest <- function(files.df, bins.f, redo=NULL, rewrite=FALSE, sleep=180, 
 
   message("\n== 5) Calling abnormal bin.\n")
   stepName = paste0("call",file.suffix)
-  reg <- makeRegistry(id=stepName, seed=123, skip=all(redo!=5))
+  if(any(redo==5)) unlink(paste0(stepName, "-files"), recursive=TRUE)
+  reg <- makeRegistry(id=stepName, seed=123)
   if(length(findJobs(reg))==0){
     abCovCallCases.f <- function(samp, files.df, norm.stats.f, bins.f, stitch.dist, lib.loc){
       library(PopSV, lib.loc=lib.loc)
@@ -191,7 +200,8 @@ autoNormTest <- function(files.df, bins.f, redo=NULL, rewrite=FALSE, sleep=180, 
   if(loose){
     message("\n== 6) Calling abnormal bin with loose threshold.\n")
     stepName = paste0("callLoose",file.suffix)
-    reg <- makeRegistry(id=stepName, seed=123, skip=all(redo!=6))
+    if(any(redo==6)) unlink(paste0(stepName, "-files"), recursive=TRUE)
+    reg <- makeRegistry(id=stepName, seed=123)
     if(length(findJobs(reg))==0){
       abCovCallCases.f <- function(samp, files.df, norm.stats.f, bins.f, stitch.dist, lib.loc){
         library(PopSV, lib.loc=lib.loc)

@@ -23,3 +23,10 @@ qc.samples.cluster(res.GCcounts) ## Run locally because it opens an interactive 
 res.df = autoNormTest(files.df, "bins.RData")
 
 sv.summary.interactive(res.df) ## Run locally because it opens an interactive web browser application
+
+
+#### Add chr X and Y
+
+## Females
+res.df = autoNormTest(subset(files.df, gender=="female"), "bins.RData", file.suffix="female", chr="X", append=TRUE)
+
