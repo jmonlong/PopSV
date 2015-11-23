@@ -4,7 +4,7 @@ title: Analysis steps
 permalink: /workflow/
 ---
 
-Examples of a analysis, for local computation or computing cluster usage, can be found on the `scripts` folder of the GitHub repository. For more information on a specific function, see the manual or access the documentation through `?the.function.name`.
+Examples of an analysis, for local computation or computing cluster usage, can be found on the [`scripts` folder of the GitHub repository](https://github.com/jmonlong/PopSV/tree/forPaper/scripts). For more information on a specific function, see the manual or access the documentation through `?the.function.name`.
 
 #### Input files
 The analysis can start directly from the BAM files. Each BAM file needs to be **sorted** and **indexed** (see [samtools](http://www.htslib.org/)).
@@ -50,4 +50,4 @@ To find which bins have abnormally low/high coverage, `call.abnormal.cov` will d
 #### Visualizing the results
 Function `sv.summary.interactive` opens an interactive web-browser application to look at the results. The number of calls across samples, distribution of copy-number estimates or frequency is visualized. The user can play with different stringency filters in order to retrieve the ones that gives the best result quality.
 
-More on the different visualizations available in PopSV [here](visual).
+More on the different visualizations available in PopSV [here](3-Visualization.md).
