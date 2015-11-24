@@ -147,7 +147,7 @@ Still, a few parameters can be passed to the two functions for the user convenie
 + `rewrite=TRUE` will force the normalized bin counts and normalization stats to be rewritten.
 + `file.suffix=` to add a suffix to the temporary files. This is useful when the pipeline is run several times on the same folder, for example when splitting the samples in batches (e.g. presence of batch effects, male/female split for XY chrs).
 
-We provide a [script](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/run-PopSV-batchjobs-automatedPipeline.R) to PopSV using these wrappers. In addition, when we want to analyze X and Y chromosomes, the samples have to be split and these wrappers come handy to run easily three analysis (see this [example](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/run-PopSV-batchjobs-XY-automatedPipeline.R)).
+We provide a [script](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/run-PopSV-batchjobs-automatedPipeline.R) to PopSV using these wrappers. In addition, when we want to analyze X and Y chromosomes, the samples have to be split and these wrappers come handy to run easily three analysis (see this [example](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/run-PopSV-XY-batchjobs-automatedPipeline.R)).
 
 ### Step-by-step manual run
 
