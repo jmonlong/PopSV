@@ -129,12 +129,13 @@ source("automatedPipeline.R")
 ## Set-up files and bins
 bam.files = read.table("bams.tsv", as.is=TRUE, header=TRUE)
 files.df = init.filenames(bam.files, code="example")
+save(files.df, file="files.RData")
 bin.size = 1e3
 bins.df = fragment.genome.hp19(bin.size)
 save(bins.df, file="bins.RData")
 ## Run PopSV
-res.GCcounts = autoGCcounts(files.df, "bins.RData")
-res.df = autoNormTest(files.df, "bins.RData")
+res.GCcounts = autoGCcounts("files.RData", "bins.RData")
+res.df = autoNormTest("files.RData", "bins.RData")
 ```
 
 The advantage of this wrapper is a easier management of the cluster and pipeline. However it's not so flexible: if a step need to be changed for some reason, you might have to change it within the `automatedPipeline.R` script.
