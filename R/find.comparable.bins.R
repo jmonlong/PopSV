@@ -39,6 +39,7 @@ find.comparable.bins <- function(msd1, msd2, plot=TRUE){
   ## Merge them
   cols = c("chr","start","end","m")
   m.df = merge(msd1[,cols], msd2[,cols], by=cols[1:3], suffixes = 1:2)
+  m.df = m.df[which(!is.na(m.df$m1) & !is.na(m.df$m2)),]
 
   ## Polar Kmeans
   theta = atan(log10(m.df$m2+1)/log10(m.df$m1+1))
@@ -56,8 +57,9 @@ find.comparable.bins <- function(msd1, msd2, plot=TRUE){
     print(ggplot2::ggplot(m.df, ggplot2::aes(x=m1+1,y=m2+1, fill=log10(..count..))) +
           ggplot2::geom_bin2d(binwidth=bw) + ggplot2::scale_x_log10() +
           ggplot2::scale_y_log10() + ggplot2::geom_abline(slope=tan(th), linetype=2) +
-           ggplot2::theme_bw() + ggplot2::xlab("average coverage 1") +
-           ggplot2::ylab("average coverage 2"))
+          ggplot2::theme_bw() + ggplot2::xlab("average coverage 1") +
+          ggplot2::ylab("average coverage 2") +
+          ggplot2::scale_fill_gradient(name="nb bins\n(log10)"))
   }
 
   ## Return comparable bins
