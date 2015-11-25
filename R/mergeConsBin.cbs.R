@@ -23,9 +23,9 @@ mergeConsBin.cbs <- function(df, pv.th=.01) {
     res.x
   }
 
-  cna.l = lapply(unique(res.df$chr), function(chr.i){
+  cna.l = lapply(unique(df$chr), function(chr.i){
     chr.ii = which(df$chr==chr.i)
-    cna.o = DNAcopy::CNA(log10(df$pv[chr.ii]), chr.i, df$start[chr.ii])
+    cna.o = DNAcopy::CNA(log10(df$pv[chr.ii]), df$chr[chr.ii], df$start[chr.ii])
     cna.s = DNAcopy::segment(cna.o, alpha=pv.th, undo.splits="prune", verbose=0)
     cna.s$output
   })
