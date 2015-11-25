@@ -16,11 +16,11 @@ save(bins.df, file="bins.RData")
 
 source("automatedPipeline.R")
 
-res.GCcounts = autoGCcounts(files.df, "bins.RData")
+res.GCcounts = autoGCcounts("files.RData", "bins.RData")
 
 qc.samples.cluster(res.GCcounts) ## Run locally because it opens an interactive web browser application
 
-res.df = autoNormTest(files.df, "bins.RData")
+res.df = autoNormTest("files.RData", "bins.RData")
 
 sv.summary.interactive(res.df) ## Run locally because it opens an interactive web browser application
 
