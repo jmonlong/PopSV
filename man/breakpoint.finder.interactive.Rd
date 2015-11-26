@@ -5,7 +5,8 @@
 \title{Interactive breakpoint finder}
 \usage{
 breakpoint.finder.interactive(chr, start, end, test.sample, files.df,
-  ref.samples, proper = TRUE, nb.cores = 1, bp.res = 1, flanks = 2000)
+  ref.samples, proper = TRUE, nb.cores = 1, bp.res = 1, flanks = 2000,
+  related.samples = NULL)
 }
 \arguments{
 \item{chr}{the chromosome}
@@ -27,9 +28,13 @@ breakpoint.finder.interactive(chr, start, end, test.sample, files.df,
 \item{bp.res}{default resolution (bp)}
 
 \item{flanks}{default flank size (bp)}
+
+\item{related.samples}{samples related to the `test.sample` (e.g. parents) to be drawn in a special color.}
 }
 \value{
-a data.frame with the breakpoint coordinates
+a list with
+\item{bk.df}{a data.frame with the breakpoint coordinates}
+\item{graph}{the ggplot object with the final graph}
 }
 \description{
 Interactive tool to fine tune breakpoint location

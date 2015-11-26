@@ -10,11 +10,18 @@
 ##' @param nb.cores number of cores
 ##' @param bp.res default resolution (bp)
 ##' @param flanks default flank size (bp)
-##' @return a data.frame with the breakpoint coordinates
+##' @param related.samples samples related to the `test.sample` (e.g. parents) to be drawn in a special color.
+##' @return a list with
+##' \item{bk.df}{a data.frame with the breakpoint coordinates}
+##' \item{graph}{the ggplot object with the final graph}
 ##' @author Jean Monlong
 ##' @export
-breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, ref.samples, proper = TRUE, nb.cores=1, bp.res=1, flanks=2000) {
+breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, ref.samples, proper = TRUE, nb.cores=1, bp.res=1, flanks=2000, related.samples=NULL) {
 
+  if(!all(c(test.sample, ref.samples, related.samples) %in% files.df$sample)){
+    stop("One of the 'test.sample' or 'ref.samples' is not in 'files.df'.")
+  }
+  
   gr.bam <- function(bam.file, gr, proper = TRUE, map.quality = 30) {
     bai.file = sub("bam$", "bai", bam.file, perl = TRUE)
     if (!file.exists(bai.file)) {
@@ -46,6 +53,7 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
         shiny::hr(),
         shiny::textOutput("stats"),
         shiny::hr(),
+        shiny::textInput("comment", "Comment:"),
         shiny::actionButton("exp","Done"), shiny::textOutput("export")),
       shiny::mainPanel(shiny::plotOutput("cov"),
                        shiny::wellPanel(shiny::sliderInput("start", "Start", start-2*flanks,end+2*flanks, value=start),
@@ -58,7 +66,7 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
         st.fl = start-input$flanks
         end.fl = end+input$flanks
         gr.f = GenomicRanges::GRanges(chr, IRanges::IRanges(st.fl, end.fl))
-        list(gr.f=gr.f, reads.l=parallel::mclapply(c(test.sample,ref.samples), function(samp.i){
+        list(gr.f=gr.f, reads.l=parallel::mclapply(c(ref.samples, related.samples,test.sample), function(samp.i){
                                        gr.bam(files.df$bam[files.df$sample==samp.i], gr.f, proper=proper, map.quality=input$map.quality)
                                      }, mc.cores=nb.cores))
       })
@@ -76,13 +84,16 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
         for (ii in 1:length(cov.l)) cov[, ii] = cov.l[[ii]]
         norm.f = apply(cov[c(1:floor(input$flanks/input$bp.res/2),(nrow(cov)-floor(input$flanks/input$bp.res/2)+1):nrow(cov)),],2,mean, na.rm=TRUE)
         cov = cov %*% diag(mean(norm.f)/norm.f)
-        colnames(cov) = c(test.sample,ref.samples)
+        colnames(cov) = c(ref.samples, related.samples, test.sample)
         rownames(cov) = GenomicRanges::start(gr.frag)
         cov.df = reshape::melt.array(cov)
         colnames(cov.df) = c("position","sample","cov")
-        cov.df$abnormal = cov.df$sample==test.sample
-        abnormal = position = NULL ## Uglily appease R checks
-        gp = ggplot2::ggplot(subset(cov.df,!abnormal), ggplot2::aes(x=position,y=cov, group=sample)) + ggplot2::geom_line(alpha=.8) + ggplot2::geom_line(data=subset(cov.df,abnormal), size=3) + ggplot2::theme_bw() + ggplot2::scale_size_manual(values=c(1,2))
+        cov.df$status = ifelse(cov.df$sample==test.sample, "tested","reference")
+        cov.df$sample = factor(cov.df$sample, levels=c(ref.samples, related.samples,test.sample))
+        if(!is.null(related.samples)) cov.df$status[which(cov.df$sample%in% related.samples)] = "related"
+        cov.df$status = factor(cov.df$status, levels=c("reference","related","tested"))
+        status = position = NULL ## Uglily appease R checks
+        gp = ggplot2::ggplot(cov.df, ggplot2::aes(x=position,y=cov, group=sample)) + ggplot2::geom_line(ggplot2::aes(alpha=status, size=status,col=status)) + ggplot2::theme_bw() + ggplot2::scale_size_manual(values=1:nlevels(cov.df$status)) + ggplot2::scale_alpha_manual(values=seq(.5,1,length.out=nlevels(cov.df$status))) + ggplot2::theme(legend.position="top")
       })
 
       output$cov = shiny::renderPlot({
@@ -96,7 +107,10 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
 
       output$export = shiny::renderText({
         if(input$exp){
-          shiny::stopApp(data.frame(chr=chr,start=input$start, end=input$end))
+          pdf = gp.flanks()
+          pdf = pdf + ggplot2::geom_vline(xintercept=c(input$start, input$end),linetype=2)
+          shiny::stopApp(list(bk.df=data.frame(chr=chr,start=input$start, end=input$end, comment=input$comment),
+                              graph=pdf))
         }
         ""
       })
