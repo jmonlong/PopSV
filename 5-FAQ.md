@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Frequently Asked Questions
-permalink: /4-FAQ.md/
+permalink: /5-FAQ.md/
 ---
 
 
