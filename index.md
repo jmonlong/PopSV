@@ -82,4 +82,4 @@ PopSV workflow heavily uses [*BatchJobs* package](https://cran.r-project.org/web
 
 # FAQ
 
-Find frequently asked questions [there]({{ site.baseurl }}4-FAQ.md).
+Find frequently asked questions [there]({{ site.baseurl }}5-FAQ.md).
