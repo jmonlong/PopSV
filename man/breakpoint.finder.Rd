@@ -33,7 +33,7 @@ breakpoint.finder(range.df, files.df, test.sample, ref.samples, proper = TRUE,
 the original data.frame with updated breakpoint location.
 }
 \description{
-Find breakpoints as the location with the most dramatic local coverage differences between a samples and a set of reference samples.
+Find breakpoints as the location with the most dramatic local coverage differences between a samples and a set of reference samples. DON'T TRUST THIS FUNCTION YET.
 }
 \author{
 Jean Monlong

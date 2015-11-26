@@ -1,4 +1,4 @@
-##' Interactive tool to fine tune breakpoint location
+##' Interactive tool to fine tune breakpoint location. An interactive Shiny app will open in your web browser. There the bp coverage of the `test.sample` will be shown along with the coverage of the reference samples (`ref.samples`). The user can then slide the breakpoint where the tested samples starts to deviate from the reference. If the deviation is not clear a few parameters (e.g. mapping quality, resolution) can be changed live. Once satisfied the user pushes a button and the function returns the new breakpoint locations. In practice this function can be looped over to quickly fine-tune the breakpoints of several CNVs.
 ##' @title Interactive breakpoint finder
 ##' @param chr the chromosome
 ##' @param start the start position

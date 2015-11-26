@@ -1,10 +1,10 @@
-##' Count the number of reads from a BAM file in specified bins. 
+##' Count the number of reads from a BAM file in specified bins.
 ##' @title Get read counts from BAM file
 ##' @param bam.file the BAM file
 ##' @param bin.df a data.frame with the information about the bins. Columns 'chr', 'start'
 ##' and 'end' are required.
 ##' @param outfile.prefix the prefix of the name of the output file. The suffix '.bgz' will
-##' be appended to this name prefix after compression. 
+##' be appended to this name prefix after compression.
 ##' @param appendIndex.outfile if TRUE (default), the results will be appended regularly on
 ##' the output file which will be ultimately indexed. This is recommend when a large number
 ##' of bins are analyzed. If FALSE, a data.frame with the bin counts will be returned and no
@@ -25,7 +25,7 @@
 ##' \item{nb.reads}{the number of reads counted.}
 ##' @author Jean Monlong
 ##' @export
-bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile = TRUE, 
+bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile = TRUE,
                     proper = TRUE, map.quality = 30, chunk.size = 10000, check.chr.name = TRUE, no.checks=FALSE) {
   if (is.null(outfile.prefix) & appendIndex.outfile) {
     stop("If 'appendIndex.outfile' is TRUE, please provide 'outfile.prefix'.")
@@ -39,7 +39,7 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
 
   bin.df = bin.df[order(bin.df$chr, bin.df$start),]
   bin.df$chunk = rep(1:ceiling(nrow(bin.df)/chunk.size), each = chunk.size)[1:nrow(bin.df)]
-  
+
   bai.file = sub("bam$", "bai", bam.file, perl = TRUE)
   if (!file.exists(bai.file)) {
     bai.file = paste0(bam.file, ".bai")
@@ -47,16 +47,16 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
       stop("Index file is missing (neither '.bai' nor '.bam.bai').")
     }
   }
-  
+
   binBam.single <- function(df) {
-    gr.o = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start = start, 
+    gr.o = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start = start,
       end = end)))
-    param = Rsamtools::ScanBamParam(which = gr.o, what = c("mapq"), flag = Rsamtools::scanBamFlag(isProperPair = proper, 
+    param = Rsamtools::ScanBamParam(which = gr.o, what = c("mapq"), flag = Rsamtools::scanBamFlag(isProperPair = proper,
                                                                       isDuplicate = FALSE, isNotPassingQualityControls = FALSE, isUnmappedQuery = FALSE))
     bam = Rsamtools::scanBam(bam.file, index = bai.file, param = param)
     unlist(lapply(bam, function(e) sum(unlist(e) > map.quality)))
   }
-  
+
   if (check.chr.name) {
     ## Check if headers
     bam.headers = Rsamtools::scanBamHeader(bam.file)
@@ -87,14 +87,14 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
       }
     }
   }
-  
+
   binBam.chunk <- function(df) {
     ch.nb = as.numeric(df$chunk[1])
     df = df[, c("chr", "start", "end")]
     df$bc = binBam.single(df)
     if (!is.null(outfile.prefix)) {
       df$chunk = NULL
-      write.table(df, file = outfile.prefix, quote = FALSE, row.names = FALSE, 
+      write.table(df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
                   sep = "\t", append = ch.nb > 1, col.names = ch.nb == 1)
       return(data.frame(chunk = ch.nb, nb.reads = sum(as.numeric(df$bc), na.rm = TRUE)))
     } else {
@@ -105,7 +105,7 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
   bc.df = lapply(unique(bin.df$chunk), function(chunk.i){
     binBam.chunk(bin.df[which(bin.df$chunk==chunk.i),])
   })
-  bc.df = plyr::ldply(bc.df, identity)
+  bc.df = do.call(rbind, bc.df)
 
   final.file = outfile.prefix
   if (appendIndex.outfile) {
@@ -124,4 +124,4 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
     stop("no reads found with these parameters (binning, mapping) in:",bam.file,". Suspicious, maybe investigate.")
   }
   return(res.l)
-} 
+}
