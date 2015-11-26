@@ -4,7 +4,7 @@ title: Visualization
 permalink: /3-Visualization.md/
 ---
 
-Soon.
+*Soon...*
 
 ## Data quality before analysis
 
@@ -14,7 +14,7 @@ Soon.
 
 ## Interactive breakpoint fine-tuning
 
-PopSV calls are defined at the bin resolution, hence hundreds to thousands of bp. In order to fine-tune the breakpoints location we implemented an interactive app. `breakpoint.finder.interactive` takes as input a genomic region, some samples and the path to the bam files. It then opens an application in the web-browser where the user can slide the breakpoints where desired. The interface looks like this:
+PopSV calls are defined at the bin resolution, hence hundreds to thousands of bp. In order to fine-tune the breakpoints location we implemented an interactive app. `breakpoint.finder.interactive` takes as input a genomic region, some samples and the path to the bam files. It then opens an application in the web-browser where you can slide the breakpoints where desired. The interface looks like this:
 
 ![Interactive breakpoint fine-tuning](public/bkptInteractive.jpg)
 
@@ -23,7 +23,7 @@ PopSV calls are defined at the bin resolution, hence hundreds to thousands of bp
 breakpoint.finder.interactive(chr.i, start.i, end.i, test.sample=test.samp, files.df=files.df, ref.samples=ref.samp)
 ```
 
-Once the user have decided on breakpoint location, he pushes the *Done* button and the function returns the final breakpoint location as well as the final graph. In practice you might want to save this output, and maybe even loop across several regions:
+Once you have decided on breakpoint location, you can hit the *Done* button and the function will returns the final breakpoint location as well as the final graph. In practice you might want to save this output, and maybe even loop across several regions:
 
 ```r
 ## Interactive breakpoint fine-tuning
@@ -40,6 +40,6 @@ lapply(bk.l, function(ll)ll$graph)
 dev.off()
 ```
 
-You can also specify related samples (e.g. parents) that will be displayed with a specific color. This might help understanding the mode of inheritance or veracity of the variant. Then it would look like this:
+You can also specify related samples (e.g. parents) that will be displayed with a specific color. This might help understanding the mode of inheritance or veracity of the variant. It looks like this:
 
-![Interactive breakpoint fine-tuning trios](public/bkptInteractive-trios.jpg)
+![Interactive breakpoint fine-tuning trio](public/bkptInteractive-trio.jpg)
