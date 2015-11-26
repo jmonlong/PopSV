@@ -1,4 +1,4 @@
-##' Find breakpoints as the location with the most dramatic local coverage differences between a samples and a set of reference samples.
+##' Find breakpoints as the location with the most dramatic local coverage differences between a samples and a set of reference samples. DON'T TRUST THIS FUNCTION YET.
 ##' @title Breakpoint finder
 ##' @param range.df a data.frame with the information about the genomic ranges to analyze.
 ##' @param files.df a data.frame with information about the BAM file path for each sample (columns 'sample' and 'bam').
@@ -114,4 +114,4 @@ breakpoint.finder <- function(range.df, files.df, test.sample, ref.samples, prop
   bkres.df$cn = 2*bkres.df$fc
   bkres.df$cn.new = with(bkres.df, (former.size*cn-2*(former.size-bp.in))/bp.in)
   return(bkres.df)
-} 
+}
