@@ -68,7 +68,7 @@ res.df = autoNormTest("files.RData", "bins.RData")
 
 # Workflow
 
-![PopSV workflow](public/PopSVworkflow.png)
+![PopSV workflow]({{ site.baseurl }}public/PopSVworkflow.png)
 
 First the genome is fragmented and reads mapping in each bin are counted for each sample and GC corrected (1). Next, coverage of the sample is normalized (2) and each bin is tested by computing a Z-score (3), estimating p-values (4) and identifying abnormal regions (5).
 
