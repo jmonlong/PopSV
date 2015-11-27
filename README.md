@@ -77,7 +77,7 @@ A quick description of the different analysis steps and their corresponding func
 
 # Running PopSV on computing clusters
 
-PopSV workflow heavily uses [*BatchJobs* package](https://cran.r-project.org/web/packages/BatchJobs/index.html) to send computations to a cluster. It needs some configuration but then it saves a lot of time and the pipeline can be run easily. For more information on how to configure it and how the pipelines are using it go to [this page](2-ClusterManagement.md).
+PopSV workflow heavily uses [*BatchJobs* package](https://github.com/tudo-r/BatchJobs) to send computations to a cluster. It needs some configuration but then it saves a lot of time and the pipeline can be run easily. For more information on how to configure it and how the pipelines are using it go to [this page](2-ClusterManagement.md).
 
 
 # FAQ

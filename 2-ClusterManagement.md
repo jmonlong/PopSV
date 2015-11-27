@@ -6,7 +6,7 @@ permalink: /2-ClusterManagement.md/
 
 ## *BatchJobs* package
 
-[*BatchJobs*](https://cran.r-project.org/web/packages/BatchJobs/index.html) is a potent package to communicate with a cluster, i.e. send jobs, check their status, eventually rerun, retrieve the results.
+[*BatchJobs*](https://github.com/tudo-r/BatchJobs) is a potent package to communicate with a cluster, i.e. send jobs, check their status, eventually rerun, retrieve the results.
 PopSV has been designed into separate steps to be ran more easily on a computing cluster using *BatchJobs*.
 
 A two-commands version is also available (see *Automated run* below. It's basically a wrapper for the basic analysis steps with some useful functions (running custom steps, stop/restart). However it's less flexible.
