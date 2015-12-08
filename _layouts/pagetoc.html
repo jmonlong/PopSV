@@ -1,0 +1,17 @@
+---
+layout: default
+---
+
+<div class="page">
+  <h1 class="page-title">{{ page.title }}</h1>
+  <div id="toc"></div>
+
+  {{ content }}
+
+</div>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+  $('#toc').toc({ showSpeed: 0 });
+  });
+</script>

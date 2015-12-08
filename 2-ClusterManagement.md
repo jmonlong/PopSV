@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: pagetoc
 title: Cluster management in R
 permalink: /2-ClusterManagement.md/
 ---

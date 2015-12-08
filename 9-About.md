@@ -17,3 +17,6 @@ PopSV heavily uses [Bioconductor](http://bioconductor.org/) packages. [BatchJobs
 + [McGill Genome Center](http://www.mcgillgenomecentre.org/)
 + [McGill University and Genome Quebec Innovation Centre](http://gqinnovationcenter.com/index.aspx?l=e)
 
+## Funding
+
+ADD FUNDING

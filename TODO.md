@@ -1,3 +1,5 @@
++ Remove `qc.samples.summary`.
++ Add `GR` function.
 + Test more cancer functions: aneuploidy flag
 + Fix `fragment.genome.hp19` name.
 + Unit tests for the pv estimation in tumor situation

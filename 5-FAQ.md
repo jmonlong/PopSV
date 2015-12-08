@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: pagetoc
 title: Frequently Asked Questions
 permalink: /5-FAQ.md/
 ---
@@ -56,11 +56,19 @@ In summary, it more powerful to play with `FDR.th=` parameter than to filter dir
 
 More details on `call.abnormal.cov` function [there]({{ site.baseurl }}1-BasicWorkflow.md#abnormal-coverage-calls).
 
+### Can PopSV detect common variants ?
+
+It depends. Short answer: in a case/control design it can detect case-specific variants at any frequency; in a *"population"* study it can't usually detect variants with frequency higher than 50%.
+
+If a variant has high frequency in the reference samples, it is considered as the *normal* state. If another sample with this variant is compared to the reference samples, it will look quite similar and will not be called. In a case/control we are usually interested in the case-specific variant so it's not a problem as we use the control as reference samples. In a population study, we use samples from the population itself so we detect variants present in a minority of samples. The variant that we *"lose"* at usually of lesser interest. First there are very few of them, especially compared to the less frequent variants. Second, PopSV will likely call the variant in samples that are in the reference genome state instead. For this variant, "normal" samples will represent a minority in the population and should be called.
+
+In summary, **it's all a matter of definition**. Usually, a variant is defined according to the reference *genome*. If a locus in the reference genome is not representative (e.g. includes a rare variant), many samples will be called as variable. In PopSV a variant is defined according to the reference *population*. There, common variants don't really exist, it's always the minority that defines the variant.
+
 ### X and Y chromosomes are not tested, why ? I want them !
 
 By default PopSV analyzes all samples together. In practice males and females are jointly analyzed so we only analyze chromosomes where they are expected to have similar copies, i.e. the autosomes.
 
-However, if needed, the samples can be split into males and females, and chromosomes X and Y analyzed. See [this script](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/run-PopSV-XY-batchjobs-automatedPipeline.R) for an example of what the pipeline would look like. There three analysis are run:
+However, if needed, the samples can be split into males and females, and chromosomes X and Y analyzed. See [this script](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/run-PopSV-XY-batchjobs-automatedPipeline.R) for an example of what the pipeline would look like. There, three analysis are run:
 
 1. All samples on chr 1 to 22.
 2. Females on chr X.
