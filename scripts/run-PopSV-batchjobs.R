@@ -137,5 +137,5 @@ res.df = do.call(rbind, reduceResultsList(abCovCallCases.reg), identity)
 save(res.df, file="cnvs-FDR001-mergeStitch-thSdest.RData")
 
 ## Open locally because the output opens an interactive web browser application
-sv.summary.interactive(res.df)
+res.filt.df = sv.summary.interactive(res.df)
 ##

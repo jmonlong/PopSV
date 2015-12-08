@@ -45,7 +45,7 @@ library(PopSV)
 
 ## I don't want to think, how can I run it quickly ?
 
-After quickly configuring *BatchJobs* for your computing cluster, you can run the [automated pipeline](2-ClusterManagement.md#automated-run):
+After quickly [configuring *BatchJobs*](2-ClusterManagement.md#installation-and-configuration) for your computing cluster, you can run the [automated pipeline](2-ClusterManagement.md#automated-run):
 
 ```r
 ## Load package and wrapper

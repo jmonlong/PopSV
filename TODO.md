@@ -1,3 +1,4 @@
++ Remove `qc.samples.summary`.
 + Add `GR` function.
 + Test more cancer functions: aneuploidy flag
 + Fix `fragment.genome.hp19` name.

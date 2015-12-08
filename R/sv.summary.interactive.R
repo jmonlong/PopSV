@@ -63,7 +63,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
                   shiny::tabPanel("Frequency distribution", shiny::plotOutput("freq", height=height)),
                   shiny::tabPanel("Frequency across the genome", shiny::plotOutput("freq.chr", height=height)),
                   shiny::tabPanel("Sample QC", shiny::plotOutput("prop.sing", height=height)),
-                  shiny::tabPanel("Export", shiny::helpText("To export the results with the current filters, click on 'Export results' button. The results will be exported in 'sv-summary-results.RData' file on your working directory."), shiny::hr(), shiny::actionButton("exp","Export results"), shiny::hr(), shiny::textOutput("export")),
+                  shiny::tabPanel("Export", shiny::helpText("To export the results with the current filters, click on 'Export results' button."), shiny::hr(), shiny::actionButton("exp","Export results"), shiny::hr(), shiny::textOutput("export")),
                   id="conditionPanels"
                   )
               )
@@ -214,7 +214,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
             if(input$exp){
               shiny::stopApp(res.df)
             }
-            return(nrow(res.df))
+            return(paste(nrow(res.df),"variants selected."))
           })
 
 
