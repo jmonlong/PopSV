@@ -10,7 +10,7 @@ Please [contact me](mailto:jean.monlong@mail.mcgill.ca) if you have any question
 
 ## Acknowledgment 
 
-PopSV heavily uses Bioconductor packages. [BatchJobs](https://github.com/tudo-r/BatchJobs) package also greatly simplified the implementation of an efficient pipeline.
+PopSV heavily uses [Bioconductor](http://bioconductor.org/) packages. [BatchJobs](https://github.com/tudo-r/BatchJobs) package also greatly simplified the implementation of an efficient pipeline.
 
 ## Other links
 
