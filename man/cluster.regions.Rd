@@ -2,7 +2,7 @@
 % Please edit documentation in R/cluster.regions.R
 \name{cluster.regions}
 \alias{cluster.regions}
-\title{Cluster samples with abnormal regions}
+\title{Cluster samples using their abnormal regions}
 \usage{
 cluster.regions(cnv.df, cl.method = "complete", nb.cores = 3,
   geom.approx = FALSE)
@@ -23,7 +23,7 @@ a list
 \item{cnv.geom}{if the geometric approximation was used, the geometric representation of each samples as a matrix.}
 }
 \description{
-Cluster samples with their abnormal regions. The similarity between two samples is computed as the amount of base pairs called in both samples divided by the average of the total base pairs called in each sample. The distance is 1 - this similarity.
+Cluster samples using their abnormal regions. The similarity between two samples is computed as the amount of base pairs called in both samples divided by the average of the total base pairs called in each sample. The distance is 1 - this similarity.
 }
 \author{
 Jean Monlong

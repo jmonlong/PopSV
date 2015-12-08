@@ -2,7 +2,9 @@
 ##' data.frame. It was designed to count reads in a small amount of bins (a subset
 ##' of what will be used for the full analysis). This counts can be used later to
 ##' compare a potentially large number samples and guide the selection of samples
-##' to consider in the analysis. 
+##' to consider in the analysis.
+##'
+##' If `col.files="bc.gc.gz"`, for example, the bin counts will be merged from the pre-computed files (the ones created by functions 'bin.bam' and 'correct.GC').
 ##' @title Counts reads across samples in a small number of bins
 ##' @param files.df a data.frame with the information about the files to
 ##' use. Columns 'sample' and 'bam' are required.

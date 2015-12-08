@@ -2,7 +2,7 @@
 % Please edit documentation in R/chunk.bin.R
 \name{chunk.bin}
 \alias{chunk.bin}
-\title{Split the cbins in chunks}
+\title{Split the bins in chunks for parallel normalization}
 \usage{
 chunk.bin(bins.df, bg.chunk.size = 1e+05, sm.chunk.size = 1000,
   large.chr.chunks = FALSE)
@@ -15,10 +15,10 @@ chunk.bin(bins.df, bg.chunk.size = 1e+05, sm.chunk.size = 1000,
 
 \item{sm.chunk.size}{the number of bins in a small chunk.}
 
-\item{large.chr.chunks}{should the big chunks be made of just some large genomic sub-regions ? Default is false. It is faster than using random bins, hence recommended when dealing with a large number of bins (e.g. > 5e5).}
+\item{large.chr.chunks}{should the big chunks be made of a few large genomic sub-regions ? Default is false. Normalization is faster (but a bit less efficient) than when using random bins. Recommended when dealing with a large number of bins.}
 }
 \value{
-an updated data.frame with 'sm.chunk', 'bg.chunk' and 'bin' with the small chunk
+an updated data.frame with new columns 'sm.chunk', 'bg.chunk' and 'bin' with the small chunk
 ID, big chunk ID and bin definition.
 }
 \description{

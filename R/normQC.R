@@ -19,7 +19,7 @@
 ##' Z-scores normality is computed by comparing their density distribution and a fitted
 ##' normal distribution. The estimate represents the proportion of the area under the curve
 ##' that is unique to the Z-score curve.
-##' @title Normalized bin count QC metrics
+##' @title Normalized bin count QC metrics for normalization benchmark
 ##' @return a list with
 ##' \item{prop.non.normal.bin}{proportion of bins with non-normal distribution across samples.}
 ##' \item{prop.nonRand.rank}{proportion of bins with non-random ranks.}

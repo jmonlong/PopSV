@@ -1,7 +1,9 @@
-##' All the ranges defined by columns 'chr', 'start' and 'end' in the input data.frame are overlapped and used to define sub-ranges. Then the number of input ranges overlapping each sub-ranges is computed and return in a data.frame.
+##' The frequency is defined as the number of input ranges overlapping a particular bp/region. In practice, all the ranges defined by columns 'chr', 'start' and 'end' in the input data.frame are overlapped and used to define sub-ranges. Then the number of input ranges overlapping each sub-ranges is computed and return in a data.frame.
+##'
+##' If 'annotate.only=TRUE' however, the frequency of an input range is computed as the number of ranges overlapping it. It is less-suited to describe the frequency distribution, but more convenient to filter out frequent variants.
 ##' @title Frequency computation for ranges
 ##' @param range.df a data.frame with columns 'chr', 'start' and 'end'.
-##' @param plot should a graph with the frequency distribution be displayed.
+##' @param plot should a graph with the frequency distribution be displayed. Default is FALSE.
 ##' @param annotate.only If TRUE, the input ranges are annotated with the number of other overlapping ranges. If FALSE (Default), the input ranges are fragmented and the frequency computed for each sub-range.
 ##' @return a data.frame with the frequency of each sub-range
 ##' @author Jean Monlong

@@ -11,7 +11,7 @@ fragment.genome.hg19(bin.size = 1000, chr.prefix = FALSE, XY.chr = FALSE)
 
 \item{chr.prefix}{should chromosome name be in the form "chr1" instead of "1". Default is FALSE.}
 
-\item{XY.chr}{should chromosome X and Y be included. Default is FALSE. If TRUE, male and female should be analyzed separately.}
+\item{XY.chr}{should chromosome X and Y be included. Default is FALSE. If TRUE, male and female should be analyzed separately, at least for chromosomes X and Y.}
 }
 \value{
 a data.frame with columns 'chr', 'start' and 'end'.

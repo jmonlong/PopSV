@@ -1,5 +1,5 @@
-##' Find breakpoints as the location with the most dramatic local coverage differences between a samples and a set of reference samples. DON'T TRUST THIS FUNCTION YET.
-##' @title Breakpoint finder
+##' An attempt to find breakpoints as the location with the most dramatic local coverage differences between a samples and a set of reference samples. DON'T TRUST THIS FUNCTION YET.
+##' @title Breakpoint finder (NOT READY YET)
 ##' @param range.df a data.frame with the information about the genomic ranges to analyze.
 ##' @param files.df a data.frame with information about the BAM file path for each sample (columns 'sample' and 'bam').
 ##' @param test.sample the name of the sample of interest.

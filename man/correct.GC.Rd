@@ -7,20 +7,20 @@
 correct.GC(bc.f, gc.df, outfile.prefix, appendIndex.outfile = TRUE)
 }
 \arguments{
-\item{bc.f}{the name of the file with the bin cont for a particular sample OR
+\item{bc.f}{the name of the file with the bin count for a particular sample OR
 a data.frame with 4 columns: 'chr', 'start', 'end' and 'bc'.}
 
-\item{gc.df}{a data.frame with the bin deifnition and GC content information.
+\item{gc.df}{a data.frame with the bin definition and GC content information.
 Column 'GCcontent' is required and can be obtained thanks to 'getGC.hp19' for
 example.}
 
-\item{outfile.prefix}{the prefix of the name of the output file. The suffix '.bgz' will
+\item{outfile.prefix}{the prefix for the output file name. The suffix '.bgz' will
 be appended to this name prefix after compression.}
 
 \item{appendIndex.outfile}{if TRUE (default), the results will be saved on the
-output file which will be ultimately indexed. This is recommend when a large number
+output file which will be ultimately compressed/indexed. This is recommend when a large number
 of bins are analyzed. If FALSE, a data.frame with the corrected bin counts will
-be returned and no file are created.}
+be returned and no file is created.}
 }
 \value{
 the name of the file with the corrected bin counts OR a new data.frame

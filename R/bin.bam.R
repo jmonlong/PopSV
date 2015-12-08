@@ -1,17 +1,19 @@
-##' Count the number of reads from a BAM file in specified bins.
+##' Count the number of reads from a BAM file in specified bins. By default the output bin counts are writtent into a file, which is then automatically compressed and indexed.
+##'
+##' By default, the function tries to check that the bin definition and the BAM file have compatible chromosome names. For example, 'chr1' in both or '1' in both. Moreover it will stop if no reads are found in the BAM file. To switch off these checks use 'no.checks=TRUE'.
 ##' @title Get read counts from BAM file
 ##' @param bam.file the BAM file
 ##' @param bin.df a data.frame with the information about the bins. Columns 'chr', 'start'
 ##' and 'end' are required.
 ##' @param outfile.prefix the prefix of the name of the output file. The suffix '.bgz' will
-##' be appended to this name prefix after compression.
+##' be appended to this name prefix after compression. In practice this is present in the output of 'init.filenames' function.
 ##' @param appendIndex.outfile if TRUE (default), the results will be appended regularly on
-##' the output file which will be ultimately indexed. This is recommend when a large number
+##' the output file which will be ultimately compressed and indexed. This is recommend when a large number
 ##' of bins are analyzed. If FALSE, a data.frame with the bin counts will be returned and no
-##' file are created.
+##' file is created.
 ##' @param proper if TRUE (default), reads with properly mapped pairs are counted. If
 ##' FALSE, reads with improper mapping are counted.
-##' @param map.quality the minimum mapping quality (PHRED) for the reads to count. Default
+##' @param map.quality the minimum mapping quality (Phred score) for the reads to count. Default
 ##' is 30.
 ##' @param chunk.size the number of bins to analyze at a time (for memory optimization).
 ##' Default is 10 000. Reduce this number if memory problems arise.

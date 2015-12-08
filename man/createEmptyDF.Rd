@@ -15,7 +15,7 @@ createEmptyDF(colClasses, nrows)
 a data.frame with 'NA' but of the specified types
 }
 \description{
-Create an empty data.frame with NA and specified column types.
+Create an empty data.frame with NA and specified column types. Probably not the best way to do.
 }
 \author{
 Jean Monlong

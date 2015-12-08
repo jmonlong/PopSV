@@ -88,9 +88,15 @@ Eventually, if you just want the graphs, without the interactivity, use `sv.summ
 
 ## Example of a region
 
-The coverage of a specific region across samples can be displayed in order to get a idea of the signal there. 
+The signal in a specific region across samples can be displayed in order to get a better feel of the call/variant.
 
-*This is not yet robustly coded. Soon...*
+For now the available functions are:
+
++ `coverage.plot.R` displays the bin coverage in a region, highlighting sample(s) of interest.
++ `coverage.plot.raw.R` reads the BAM files and display bp coverage of a region.
++ `cn.plot.R` displays the copy number estimates in a region.
+
+*Examples soon...*
 
 ## Interactive breakpoint fine-tuning
 
@@ -123,3 +129,6 @@ dev.off()
 You can also specify related samples (e.g. parents) that will be displayed with a specific color. This might help understanding the mode of inheritance or veracity of the variant. It looks like this:
 
 ![Interactive breakpoint fine-tuning trio](public/bkptInteractive-trio.jpg)
+
+
+In practice, you **need access to the BAM files** and to **run it locally** (for the web-browser application). I would recommend to **mount** the cluster/server with the BAM files on your laptop. Then you might need to tweak a bit the paths in the *bam* column of `files.df` to include your mounting location.

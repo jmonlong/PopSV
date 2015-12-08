@@ -1,6 +1,6 @@
 ##' Plot the copy number estimates in a genomic regions across samples.
-##' @title  Plot a region copy-number estimates
-##' @param files.df a data.frame with the path to the different files associated with each sample. If 'sample' is absent from 'bc.f' the correct file from 'files.df' will be used. Default is NULL.
+##' @title  Plot copy-number estimates in a region.
+##' @param files.df a data.frame with the path to the different files associated with each sample.
 ##' @param gr a GRange object with the region to represent. Default is NULL.
 ##' @param chr the chromosome. Used if 'gr' is NULL.
 ##' @param start the start position of the region. Used if 'gr' is NULL.
@@ -15,7 +15,7 @@
 ##' @export
 cn.plot <- function(files.df, gr=NULL, chr=NULL, start=NULL, end=NULL, samples=NULL, flanks=1e4, highlight.region=TRUE, draw.lines=TRUE, nb.cores=1){
   if(!is.null(samples)){
-    files.df = subset(files.df, sample %in% samples)
+    files.df = files.df[which(files.df$sample %in% samples),]
   }
   exist = which(file.exists(files.df$fc) | file.exists(files.df$fc.gz))
   samples = files.df$sample[exist]

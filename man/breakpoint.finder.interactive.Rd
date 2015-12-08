@@ -37,7 +37,10 @@ a list with
 \item{graph}{the ggplot object with the final graph}
 }
 \description{
-Interactive tool to fine tune breakpoint location. An interactive Shiny app will open in your web browser. There the bp coverage of the `test.sample` will be shown along with the coverage of the reference samples (`ref.samples`). The user can then slide the breakpoint where the tested samples starts to deviate from the reference. If the deviation is not clear a few parameters (e.g. mapping quality, resolution) can be changed live. Once satisfied the user pushes a button and the function returns the new breakpoint locations. In practice this function can be looped over to quickly fine-tune the breakpoints of several CNVs.
+Interactive tool to fine tune breakpoint location from the BAM files. An interactive Shiny app will open in your web browser. There, the bp coverage of the `test.sample` will be shown along with the coverage of the reference samples (`ref.samples`). The user can then slide the breakpoint where the tested samples starts to deviate from the reference. If the deviation is not clear a few parameters (e.g. mapping quality, resolution) can be changed live. Once satisfied the user pushes a button and the function returns the new breakpoint locations. In practice this function can be looped over to quickly fine-tune the breakpoints of several CNVs.
+}
+\details{
+Access to the BAM files is necessary, but also to a web-browser (for the application). Hence I would recommend to mount the cluster/server with the BAM on your personnal laptop to use this. Then you might need to tweak a bit the paths in the 'bam' column of 'files.df' to include your mounting location.
 }
 \author{
 Jean Monlong

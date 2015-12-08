@@ -19,7 +19,7 @@ a list with
 \item{sigma.est.del}{the estimated null distribution variance for negative Z-scores}
 }
 \description{
-Compute P-values and Q-values from the Z-score distribution.
+Compute P-values and Q-values from the Z-score distribution. Here the null distribution is modeled as two Normal distrution centered in 0. The variance are fitted to the empirical distribution. P-values and Q-values are derived from the Z-score and this fitted null distribution.
 }
 \author{
 Jean Monlong

@@ -2,14 +2,14 @@
 % Please edit documentation in R/cn.plot.R
 \name{cn.plot}
 \alias{cn.plot}
-\title{Plot a region copy-number estimates}
+\title{Plot copy-number estimates in a region.}
 \usage{
 cn.plot(files.df, gr = NULL, chr = NULL, start = NULL, end = NULL,
   samples = NULL, flanks = 10000, highlight.region = TRUE,
   draw.lines = TRUE, nb.cores = 1)
 }
 \arguments{
-\item{files.df}{a data.frame with the path to the different files associated with each sample. If 'sample' is absent from 'bc.f' the correct file from 'files.df' will be used. Default is NULL.}
+\item{files.df}{a data.frame with the path to the different files associated with each sample.}
 
 \item{gr}{a GRange object with the region to represent. Default is NULL.}
 

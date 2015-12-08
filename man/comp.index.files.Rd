@@ -10,19 +10,22 @@ comp.index.files(files, outprefix = files, rm.input = TRUE,
 \arguments{
 \item{files}{the names of the files to compress and index.}
 
-\item{outprefix}{the prefix to use to name the output files. By default, the original file names.}
+\item{outprefix}{the prefix to use when naming the output files. By default, the original file names.}
 
-\item{rm.input}{Should the original input file be removed after compression/indexing ? Default is TRUE.}
+\item{rm.input}{should the original input file be removed after compression/indexing ? Default is TRUE.}
 
-\item{overwrite.out}{Should a compressed file be overwritten if it already exists ? Default is TRUE.}
+\item{overwrite.out}{should a compressed file be overwritten if it already exists ? Default is TRUE.}
 
-\item{reorder}{should the files be read a reordered before compression/indexation. Default is FALSE.}
+\item{reorder}{should the files be read and reordered before compression/indexation. Default is FALSE.}
 }
 \value{
 a character vector confirming the creation of the new files.
 }
 \description{
-Compress and index BED-like files. The files need to be ordered by genomic position and the first three columns must define chromosome location, start and end position.
+Compress and index BED-like files. The first three columns must define chromosome location, start and end position.
+}
+\details{
+The files should be ordered by genomic position. If not 'reorder=TRUE' will force the files to be imported in R, reordered and written back.
 }
 \author{
 Jean Monlong

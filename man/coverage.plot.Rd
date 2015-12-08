@@ -2,7 +2,7 @@
 % Please edit documentation in R/coverage.plot.R
 \name{coverage.plot}
 \alias{coverage.plot}
-\title{Plot a region coverage}
+\title{Plot the bin coverage in a region}
 \usage{
 coverage.plot(chr, start, end, bc.f, norm.stats.f = NULL, sv.df = NULL,
   ref.samples = NULL, boxplot = FALSE, samples = NULL, files.df = NULL,
@@ -39,7 +39,7 @@ coverage.plot(chr, start, end, bc.f, norm.stats.f = NULL, sv.df = NULL,
 a ggplot object
 }
 \description{
-Plot the coverage in a genomic regions across samples. The files ('bc.f', 'norm.stats.f') must be ordered and indexed.
+Plot the bin coverage in a genomic regions across samples. The files ('bc.f', 'norm.stats.f') must be ordered and indexed.
 }
 \author{
 Jean Monlong

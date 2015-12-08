@@ -15,7 +15,7 @@ the same input data.frame with an extra column 'GCcontent'.
 }
 \description{
 Add a column with GC content to a data.frame with 'chr', 'start' and 'end' column.
-Requires BSgenome for Hsapiens hg19; if not installed instructions to install it will
+Requires BSgenome for Hsapiens hg19; if not instructions to install it will
 be displayed.
 }
 \author{

@@ -2,7 +2,7 @@
 % Please edit documentation in R/find.comparable.bins.R
 \name{find.comparable.bins}
 \alias{find.comparable.bins}
-\title{Find comparable bins between two runs}
+\title{Find comparable bins between two sample cohort.}
 \usage{
 find.comparable.bins(msd1, msd2, plot = TRUE)
 }
@@ -14,13 +14,13 @@ find.comparable.bins(msd1, msd2, plot = TRUE)
 \item{plot}{should a graph be displayed. Default is TRUE.}
 }
 \value{
-a data.frame with the bins to use for the comparison/
+a data.frame with the bins to use for the comparison.
 }
 \description{
-When two runs have been ran separately but the variant has to be compared, this function finds the bins in which both runs had comparable detection power. Or at least it removes most of the bins that are clearly not covered similarly in both runs.
+When two cohort have been run separately but the variants have to be compared, this function finds the bins in which both runs had comparable detection power. Or at least it removes most of the bins that are clearly not covered similarly in both runs. H
 }
 \details{
-If 'plot=TRUE' (Default), a graph is displayed. It compares the average coverage in both runs and shows the thresholds used to filter out bins with different coverage.
+If 'plot=TRUE' (Default), a graph is displayed. It compares the average coverage in both cohort and shows the thresholds used to filter out bins with different coverage.
 }
 \author{
 Jean Monlong

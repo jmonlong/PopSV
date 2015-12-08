@@ -1,4 +1,4 @@
-##' Compute QC metrics for each sample informing how much it fits the reference samples.
+##' Compute QC metrics for each sample informing how much it fits the reference samples. It can compute: the average distance between a sample and the 10% closest reference samples; the proportion of single-bin calls; the proportion of calls with copy number estimate close to 2. These metrics might be useful to interpret the calls. For example, an excess of calls in a sample which is globally an outlier in those QC is not so surprising.
 ##' @title QC samples
 ##' @param bins.df a data.frame with information about the bins. Columns 'chr', 'start', 'end' are required.
 ##' @param files.df a data.frame with information about the files, usually created by 'init.filenames'.
@@ -21,7 +21,6 @@ qc.sample <- function(bins.df, files.df=NULL, cnv.df=NULL, ref.samples=NULL, n.s
   if(is.null(ref.samples) & !is.null(files.df)){
     ref.samples = files.df$sample
   }
-
 
   res = NULL
   if(!is.null(files.df)){

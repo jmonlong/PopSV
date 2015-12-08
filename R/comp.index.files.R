@@ -1,10 +1,12 @@
-##' Compress and index BED-like files. The files need to be ordered by genomic position and the first three columns must define chromosome location, start and end position.
+##' Compress and index BED-like files. The first three columns must define chromosome location, start and end position.
+##'
+##' The files should be ordered by genomic position. If not 'reorder=TRUE' will force the files to be imported in R, reordered and written back.
 ##' @title Compress and index BED-like files
 ##' @param files the names of the files to compress and index.
-##' @param outprefix the prefix to use to name the output files. By default, the original file names.
-##' @param rm.input Should the original input file be removed after compression/indexing ? Default is TRUE.
-##' @param overwrite.out Should a compressed file be overwritten if it already exists ? Default is TRUE.
-##' @param reorder should the files be read a reordered before compression/indexation. Default is FALSE.
+##' @param outprefix the prefix to use when naming the output files. By default, the original file names.
+##' @param rm.input should the original input file be removed after compression/indexing ? Default is TRUE.
+##' @param overwrite.out should a compressed file be overwritten if it already exists ? Default is TRUE.
+##' @param reorder should the files be read and reordered before compression/indexation. Default is FALSE.
 ##' @return a character vector confirming the creation of the new files.
 ##' @author Jean Monlong
 ##' @export

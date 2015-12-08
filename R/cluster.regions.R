@@ -1,5 +1,5 @@
-##' Cluster samples with their abnormal regions. The similarity between two samples is computed as the amount of base pairs called in both samples divided by the average of the total base pairs called in each sample. The distance is 1 - this similarity.
-##' @title Cluster samples with abnormal regions
+##' Cluster samples using their abnormal regions. The similarity between two samples is computed as the amount of base pairs called in both samples divided by the average of the total base pairs called in each sample. The distance is 1 - this similarity.
+##' @title Cluster samples using their abnormal regions
 ##' @param cnv.df a data.frame with the abnormal regions for each sample. Columns 'chr', 'start', 'end' and 'sample' are required.
 ##' @param cl.method the linkage criterion for hierarchical clustering. Default is 'complete'.
 ##' @param nb.cores the number of processors to use. Default is 1.

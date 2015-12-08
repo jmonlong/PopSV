@@ -1,8 +1,8 @@
-##' When two runs have been ran separately but the variant has to be compared, this function finds the bins in which both runs had comparable detection power. Or at least it removes most of the bins that are clearly not covered similarly in both runs.
+##' When two cohort have been run separately but the variants have to be compared, this function finds the bins in which both runs had comparable detection power. Or at least it removes most of the bins that are clearly not covered similarly in both runs. H
 ##'
-##' If 'plot=TRUE' (Default), a graph is displayed. It compares the average coverage in both runs and shows the thresholds used to filter out bins with different coverage.
-##' @title Find comparable bins between two runs
-##' @return a data.frame with the bins to use for the comparison/
+##' If 'plot=TRUE' (Default), a graph is displayed. It compares the average coverage in both cohort and shows the thresholds used to filter out bins with different coverage.
+##' @title Find comparable bins between two sample cohort.
+##' @return a data.frame with the bins to use for the comparison.
 ##' @author Jean Monlong
 ##' @export
 ##' @param msd1 a data.frame or path to the file with the normalization stats from the first run.

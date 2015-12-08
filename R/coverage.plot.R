@@ -1,5 +1,5 @@
-##' Plot the coverage in a genomic regions across samples. The files ('bc.f', 'norm.stats.f') must be ordered and indexed.
-##' @title  Plot a region coverage
+##' Plot the bin coverage in a genomic regions across samples. The files ('bc.f', 'norm.stats.f') must be ordered and indexed.
+##' @title  Plot the bin coverage in a region
 ##' @param chr the chromosome
 ##' @param start the start position of the region
 ##' @param end the end position of the region

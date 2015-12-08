@@ -1,4 +1,6 @@
-##' Interactive representation of the bin counts with potential clustering of the samples.
+##' Interactive representation of the bin counts with potential clustering of the samples. This app can be used to check if the reference samples are homogeneous, and define outliers or batches.
+##'
+##' There is no need to use all the bin count, a few thousand bins is enough to detect potential problems. 'quick.count' is useful to retrieve bin counts on a subset of bins.
 ##' @title QC sample : clustering
 ##' @param bc.df a data.frame with the bin counts.
 ##' @param nb.rand.bins if non-NULL, the number of bins to randomly choose. Default is NULL.

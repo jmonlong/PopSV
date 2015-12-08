@@ -1,9 +1,8 @@
-##' Compute P-values and Q-values from the Z-score distribution.
+##' Compute P-values and Q-values from the Z-score distribution. Here the Z-score distribution is modeled as a Normal centered in 0. The variance is fitted at different level of tail-trimming.
 ##' @title P-values estimation
 ##' @param z a vector with the Z-scores
 ##' @param quant.int a vector with the quantiles to test for the estimation of the
 ##' null normal variance.
-##' @param ref.dist.weight the weight (value between 0 and 1) based on the distance to the reference samples.
 ##' @param plot should some graphs be displayed. Default if FALSE.
 ##' @param z.th the Z-score threshold to use to estimate the null normal variance, if 'quant.int=NULL'. If one value the same threshold is used for both duplication and deletion; if a vector, the threshold for duplication / deletions.
 ##' @return a list with
@@ -13,8 +12,7 @@
 ##' \item{sigma.est.del}{the estimated null distribution variance for negative Z-scores}
 ##' @author Jean Monlong
 ##' @keywords internal
-fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), ref.dist.weight = NULL,
-                             plot = TRUE, z.th=NULL) {
+fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), plot = TRUE, z.th=NULL) {
   localMax <- function(x, min.max.prop = 0.1) {
     d = density(x, na.rm = TRUE)
     im = 1 + which(diff(sign(diff(d$y))) == -2)
@@ -43,10 +41,6 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), ref.dist.weight =
     if(is.null(z.th)){stop("Either quant.int or z.th parameters are necessary.")}
     sd.e = fdrtool::censored.fit(z.dup, z.th[1])[5]
   }
-  if (!is.null(ref.dist.weight)) {
-    sd.df = with(sd.df, dplyr::arrange(sd.df, abs(sd.est - sd.e)))
-    sd.e = sd.e + ref.dist.weight * 10 * sd(sd.df$sd.est[1:20])
-  }
   res$sigma.est.dup = sd.e
   ## Deletion
   z.del = z.non.na[z.non.na < 0]
@@ -63,10 +57,6 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), ref.dist.weight =
     } else {
       sd.e = fdrtool::censored.fit(z.del, z.th[1])[5]
     }
-  }
-  if (!is.null(ref.dist.weight)) {
-    sd.df = with(sd.df, dplyr::arrange(sd.df, abs(sd.est - sd.e)))
-    sd.e = sd.e + ref.dist.weight * 10 * sd(sd.df$sd.est[1:20])
   }
   res$sigma.est.del = sd.e
 

@@ -1,10 +1,10 @@
-##' Circular Binary Segmentation of the Z-scores.
-##' @title Segmentation using CBS
+##' Circular Binary Segmentation of the Z-scores. (NOT TESTED WELL YET)
+##' @title Segmentation using CBS (NOT READY)
 ##' @param df a data.frame with at least 'chr', 'start' and 'end' columns.
 ##' @param pv.th the P-value threshold used for the segmentation and the segment filtering. Default is 0.01.
 ##' @return a data.frame, similar to the input but with merged rows.
 ##' @author Jean Monlong
-##' @export
+##' @keywords internal
 mergeConsBin.cbs <- function(df, pv.th=.01) {
   if (nrow(df) == 0)
     return(df)

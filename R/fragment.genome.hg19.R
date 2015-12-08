@@ -3,7 +3,7 @@
 ##' @title Fragment hg19 genome
 ##' @param bin.size the size of the bins
 ##' @param chr.prefix should chromosome name be in the form "chr1" instead of "1". Default is FALSE.
-##' @param XY.chr should chromosome X and Y be included. Default is FALSE. If TRUE, male and female should be analyzed separately.
+##' @param XY.chr should chromosome X and Y be included. Default is FALSE. If TRUE, male and female should be analyzed separately, at least for chromosomes X and Y.
 ##' @return a data.frame with columns 'chr', 'start' and 'end'.
 ##' @author Jean Monlong
 ##' @import GenomicRanges
@@ -35,5 +35,5 @@ fragment.genome.hg19 <- function(bin.size = 1000, chr.prefix=FALSE, XY.chr=FALSE
     data.frame(chr = chrs[chr.i], start = starts, end = ends)
   }
 
-  plyr::ldply(lapply(1:length(chrs), fragment.chr), identity)
+  do.call(rbind, lapply(1:length(chrs), fragment.chr))
 }

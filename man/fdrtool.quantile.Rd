@@ -4,16 +4,14 @@
 \alias{fdrtool.quantile}
 \title{P-values estimation}
 \usage{
-fdrtool.quantile(z, quant.int = seq(0.4, 1, 0.02), ref.dist.weight = NULL,
-  plot = TRUE, z.th = NULL)
+fdrtool.quantile(z, quant.int = seq(0.4, 1, 0.02), plot = TRUE,
+  z.th = NULL)
 }
 \arguments{
 \item{z}{a vector with the Z-scores}
 
 \item{quant.int}{a vector with the quantiles to test for the estimation of the
 null normal variance.}
-
-\item{ref.dist.weight}{the weight (value between 0 and 1) based on the distance to the reference samples.}
 
 \item{plot}{should some graphs be displayed. Default if FALSE.}
 
@@ -27,7 +25,7 @@ a list with
 \item{sigma.est.del}{the estimated null distribution variance for negative Z-scores}
 }
 \description{
-Compute P-values and Q-values from the Z-score distribution.
+Compute P-values and Q-values from the Z-score distribution. Here the Z-score distribution is modeled as a Normal centered in 0. The variance is fitted at different level of tail-trimming.
 }
 \author{
 Jean Monlong

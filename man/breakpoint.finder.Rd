@@ -2,7 +2,7 @@
 % Please edit documentation in R/breakpoint.finder.R
 \name{breakpoint.finder}
 \alias{breakpoint.finder}
-\title{Breakpoint finder}
+\title{Breakpoint finder (NOT READY YET)}
 \usage{
 breakpoint.finder(range.df, files.df, test.sample, ref.samples, proper = TRUE,
   map.quality = 0, bp.res = 3:6, slidW.step = 1, midread = FALSE,
@@ -33,7 +33,7 @@ breakpoint.finder(range.df, files.df, test.sample, ref.samples, proper = TRUE,
 the original data.frame with updated breakpoint location.
 }
 \description{
-Find breakpoints as the location with the most dramatic local coverage differences between a samples and a set of reference samples. DON'T TRUST THIS FUNCTION YET.
+An attempt to find breakpoints as the location with the most dramatic local coverage differences between a samples and a set of reference samples. DON'T TRUST THIS FUNCTION YET.
 }
 \author{
 Jean Monlong

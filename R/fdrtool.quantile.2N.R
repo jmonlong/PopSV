@@ -1,4 +1,4 @@
-##' Compute P-values and Q-values from the Z-score distribution.
+##' Compute P-values and Q-values from the Z-score distribution. Here the null distribution is modeled as two Normal distrution centered in 0. The variance are fitted to the empirical distribution. P-values and Q-values are derived from the Z-score and this fitted null distribution. 
 ##' @title P-values estimation from mixture of 2 centered normal
 ##' @param z a vector with the Z-scores
 ##' @param plot should some graphs be displayed. Default if FALSE.
