@@ -19,4 +19,6 @@ PopSV heavily uses [Bioconductor](http://bioconductor.org/) packages. [BatchJobs
 
 ## Funding
 
-ADD FUNDING
+![Natural Sciences and Engineering Research Council]({{ site.baseurl }}/public/nserc.jpg)
+![Fonds de Recherche Sante du Quebec]({{ site.baseurl }}/public/frsq.png)
+![Canadian Institute for Health Research]({{ site.baseurl }}/public/cihr.png)

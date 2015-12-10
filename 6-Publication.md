@@ -7,7 +7,7 @@ permalink: /6-Publication.md/
 [Manuscript]()
 [Data and scripts]()
 
-[PopSV v1]() was used in this paper.
+[PopSV v1](https://github.com/jmonlong/PopSV/releases/tag/v1.0) was used in this paper.
 
 # How to reproduce the results from the paper ?
 
