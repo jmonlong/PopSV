@@ -9,7 +9,7 @@ chunk.bin(bins.df, bg.chunk.size = 1e+05, sm.chunk.size = 1000,
 }
 \arguments{
 \item{bins.df}{a data.frame with the bins definition (one row per bin). E.g. created by
-'fragment.genome.hp19'.}
+'fragment.genome.hg19'.}
 
 \item{bg.chunk.size}{the number of bins in a big chunk.}
 

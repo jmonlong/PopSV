@@ -64,7 +64,7 @@ qc.samples.cluster <- function(bc.df, nb.rand.bins=NULL){
         output$export = shiny::renderText({
             input$exp
             samp.df = shiny::isolate(samples.ref())
-            ref.samples = samp.df$sample[which(samp.df$selected)]
+            ref.samples = as.character(samp.df$sample[which(samp.df$selected)])
             save(ref.samples, file="ref-samples.RData")
             return(paste(length(ref.samples)," samples saved in 'ref-samples.RData'."))
           })

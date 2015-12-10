@@ -5,11 +5,11 @@
 \title{Z-score computation}
 \usage{
 z.comp(bc.f = NULL, files.df, ref.samples = NULL, z.poisson = FALSE,
-  nb.cores = 1, chunk.size = NULL, out.msd.f = "ref-msd.tsv",
+  nb.cores = 1, chunk.size = 10000, out.msd.f = "ref-msd.tsv",
   append = FALSE, files.col = "bc.gc.norm.gz")
 }
 \arguments{
-\item{bc.f}{the path to the normalized bin count file.}
+\item{bc.f}{the path to the normalized bin count file. If NULL, the bin counts will be read from the corresponding files in 'files.df' (not recommended).}
 
 \item{files.df}{a data.frame with the file paths.}
 
@@ -20,9 +20,9 @@ Details). Default is FALSE.}
 
 \item{nb.cores}{the number of cores to use.}
 
-\item{chunk.size}{the chunk size. If NULL (Default), no chunks are used.}
+\item{chunk.size}{the chunk size. Default is 1e4. If NULL, no chunks are used.}
 
-\item{out.msd.f}{the name of the file to write the mean/sd information. If 'NULL' no file is created.}
+\item{out.msd.f}{the name of the file to write the mean/sd information. Default is "ref-msd.tsv". If 'NULL' no file is created.}
 
 \item{append}{should the Z-scores be appended to existing files. Default is FALSE.}
 
@@ -34,7 +34,15 @@ a list with
 \item{z.poisson}{was Normal-Poisson hybrid Z-score score computed.}
 }
 \description{
-Z-score computation from bin count and/or mean/sd metrics on the reference samples
+Z-score computation from bin count and/or mean/sd metrics on the reference samples.
+}
+\details{
+The Z-score is computed by substracting the bin count by the average bin count
+across the reference samples and dividing by their standard deviation. If
+'z.poisson' is TRUE, a score using Poisson distribution is also computed, using
+the average bin count as an estimator of the lambda. Then the score with the lowest
+absolute value is kept. This hybrid Z-score is to be used when some regions have low
+coverage where it is more robust to use Poisson assumptions.
 }
 \author{
 Jean Monlong

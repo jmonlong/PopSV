@@ -25,8 +25,15 @@ mean.sd.outlierR <- function(x, pv.max.ol = 1e-06) {
   }
   trim.mean <- function(x, probs=c(.4,.6)){
     qq = quantile(x,probs=probs, na.rm=TRUE)
+    x.in = x
     x[x<qq[1] | x>qq[2]] = NA
+    if(all(is.na(x))){
+      x = x.in
+    }
     m = mean(x, na.rm=TRUE)
+    if(is.na(m)){
+      return(NA)
+    }
     if(m==0){
       return(1)
     }
@@ -67,13 +74,17 @@ mean.sd.outlierR <- function(x, pv.max.ol = 1e-06) {
     step = 1
     continue = TRUE
     while (continue & step <= max.step) {
-      gt = grubbs.t(as.numeric(x), type, opposite, two.sided)
-      if (gt$p.value > max.pv | all(is.na(gt$statistic))) {
-        continue = FALSE
+      if(length(unique(x))>3){
+        gt = grubbs.t(as.numeric(x), type, opposite, two.sided)
+        if (gt$p.value > max.pv | all(is.na(gt$statistic))) {
+          continue = FALSE
+        } else {
+          pv = c(pv, gt$p.value)
+          outliers = c(outliers, gt$outlier.i)
+          x[outliers[step]] = NA
+        }
       } else {
-        pv = c(pv, gt$p.value)
-        outliers = c(outliers, gt$outlier.i)
-        x[outliers[step]] = NA
+        continue = FALSE
       }
       step = step + 1
     }

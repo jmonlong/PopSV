@@ -14,7 +14,7 @@ write.split.samples(res, files.df, samples, files.col = c("z", "fc"),
 
 \item{samples}{the names of the samples to use.}
 
-\item{files.col}{the name of 'files.df' to use for each 'res' element.}
+\item{files.col}{the name of 'files.df' column to use for each 'res' element.}
 
 \item{compress.index}{should the output be compressed and indexed. Default is TRUE.}
 

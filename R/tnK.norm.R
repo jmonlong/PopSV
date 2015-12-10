@@ -1,6 +1,4 @@
-##' Bin count targeted normalization using K-mean clustering to group bins with similar coverage profile across the samples. For outlier bins, i.e. showing unique profile, the set of most similar bins is computed for each bin. Eventually the importance of each sample in the definition of the coverage profile can be weighted using principal components.
-##'
-##' DETAILS PC WEIGHT
+##' Bin count targeted normalization using K-mean clustering to group bins with similar coverage profile across the samples. For outlier bins, i.e. showing unique profile, the set of most similar bins is computed for each bin. Eventually the importance of each sample in the definition of the coverage profile can be weighted using principal components. This normalization is still in development state. It is supposed to be more faster than the full targeted normalization ('tn.norm') and better normalize outlier samples (e.g. if the data is not homogeneous).
 ##' @title Weighted targeted normalization using K-mean optimization.
 ##' @param bc.ref a data.frame with the coverage in the reference samples.
 ##' @param samp the name of the sample to normalize.

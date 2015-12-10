@@ -6,6 +6,7 @@
 ##' @keywords internal
 medvar.norm.internal <- function(bc) {
   med = apply(bc, 2, median, na.rm = TRUE)
+  if(all(is.na(med))) stop("All the samples have median coverage of 0...Are these regions covered ?")
   if(any(med==0)) med[which(med==0)] = 1
   med.c = mean(med)
   bc = t(t(bc) * med.c/med)

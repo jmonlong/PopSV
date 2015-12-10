@@ -1,4 +1,4 @@
-##' Winsorising a vector: any value higher(lower) than U(L) are changed to U(L).
+##' Winsorising a vector: any value higher(lower) than 'u'('l') are changed to 'u'('l').
 ##' @title Winsorize a vector
 ##' @param x the input to winsorize.
 ##' @param u the highest value desired.

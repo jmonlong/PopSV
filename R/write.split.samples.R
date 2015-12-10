@@ -3,7 +3,7 @@
 ##' @param res a list with the results to split/write.
 ##' @param files.df a data.frame with information about each output file.
 ##' @param samples the names of the samples to use.
-##' @param files.col the name of 'files.df' to use for each 'res' element.
+##' @param files.col the name of 'files.df' column to use for each 'res' element.
 ##' @param compress.index should the output be compressed and indexed. Default is TRUE.
 ##' @param nb.cores the number of computing cores to use. Default is 1.
 ##' @param append should the results be appended at the end of existing files. Default is FALSE.

@@ -11,7 +11,7 @@ correct.GC(bc.f, gc.df, outfile.prefix, appendIndex.outfile = TRUE)
 a data.frame with 4 columns: 'chr', 'start', 'end' and 'bc'.}
 
 \item{gc.df}{a data.frame with the bin definition and GC content information.
-Column 'GCcontent' is required and can be obtained thanks to 'getGC.hp19' for
+Column 'GCcontent' is required and can be obtained thanks to 'getGC.hg19' for
 example.}
 
 \item{outfile.prefix}{the prefix for the output file name. The suffix '.bgz' will

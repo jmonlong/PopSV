@@ -26,10 +26,7 @@ tnK.norm(bc.ref, samp, bc.to.norm = NULL, cont.sample, pca.weights = FALSE,
 a data.frame with the normalized bin counts. columns: chr, start, end, bc.
 }
 \description{
-Bin count targeted normalization using K-mean clustering to group bins with similar coverage profile across the samples. For outlier bins, i.e. showing unique profile, the set of most similar bins is computed for each bin. Eventually the importance of each sample in the definition of the coverage profile can be weighted using principal components.
-}
-\details{
-DETAILS PC WEIGHT
+Bin count targeted normalization using K-mean clustering to group bins with similar coverage profile across the samples. For outlier bins, i.e. showing unique profile, the set of most similar bins is computed for each bin. Eventually the importance of each sample in the definition of the coverage profile can be weighted using principal components. This normalization is still in development state. It is supposed to be more faster than the full targeted normalization ('tn.norm') and better normalize outlier samples (e.g. if the data is not homogeneous).
 }
 \author{
 Jean Monlong

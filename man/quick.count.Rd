@@ -33,6 +33,9 @@ of what will be used for the full analysis). This counts can be used later to
 compare a potentially large number samples and guide the selection of samples
 to consider in the analysis.
 }
+\details{
+If `col.files="bc.gc.gz"`, for example, the bin counts will be merged from the pre-computed files (the ones created by functions 'bin.bam' and 'correct.GC').
+}
 \author{
 Jean Monlong
 }

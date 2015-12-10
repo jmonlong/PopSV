@@ -13,7 +13,7 @@ bin.size = 1e3
 
 ## 1) Init file names and construct bins
 files.df = init.filenames(bam.files, code="example")
-bins.df = fragment.genome.hp19(bin.size, XY.chr=TRUE)
+bins.df = fragment.genome.hg19(bin.size, XY.chr=TRUE)
 save(bins.df, file="bins.RData")
 rm(bins.df)
 
@@ -270,5 +270,5 @@ res.df$.id = NULL
 save(res.df, file="cnvs-FDR01-mergeStitch-thSdest2N.RData")
 
 ## Open locally because the output opens an interactive web browser application
-sv.summary.interactive(res.df)
+res.filt.df = sv.summary.interactive(res.df)
 ##

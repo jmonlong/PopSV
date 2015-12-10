@@ -14,7 +14,7 @@ bin.size = 1e3
 
 ## 1) Init file names and construct bins
 files.df = init.filenames(bam.files, code="example")
-bins.df = fragment.genome.hp19(bin.size)
+bins.df = fragment.genome.hg19(bin.size)
 bins.df = subset(bins.df, chr==22) ## FTE: chr 22 only => remove line
 save(bins.df, file="bins.RData")
 
@@ -82,4 +82,4 @@ call.o = lapply(files.df$sample, function(samp){
 
 res.df = do.call(rbind, call.o)
 
-sv.summary.interactive(res.df)
+res.filt.df = sv.summary.interactive(res.df)

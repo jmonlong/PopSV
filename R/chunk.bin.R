@@ -8,7 +8,7 @@
 ##' ID, big chunk ID and bin definition.
 ##' @author Jean Monlong
 ##' @param bins.df a data.frame with the bins definition (one row per bin). E.g. created by
-##' 'fragment.genome.hp19'.
+##' 'fragment.genome.hg19'.
 ##' @param bg.chunk.size the number of bins in a big chunk.
 ##' @param sm.chunk.size the number of bins in a small chunk.
 ##' @param large.chr.chunks should the big chunks be made of a few large genomic sub-regions ? Default is false. Normalization is faster (but a bit less efficient) than when using random bins. Recommended when dealing with a large number of bins.

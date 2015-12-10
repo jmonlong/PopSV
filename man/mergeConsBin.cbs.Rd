@@ -2,7 +2,7 @@
 % Please edit documentation in R/mergeConsBin.cbs.R
 \name{mergeConsBin.cbs}
 \alias{mergeConsBin.cbs}
-\title{Segmentation using CBS}
+\title{Segmentation using CBS (NOT READY)}
 \usage{
 mergeConsBin.cbs(df, pv.th = 0.01)
 }
@@ -15,9 +15,10 @@ mergeConsBin.cbs(df, pv.th = 0.01)
 a data.frame, similar to the input but with merged rows.
 }
 \description{
-Circular Binary Segmentation of the Z-scores.
+Circular Binary Segmentation of the Z-scores. (NOT TESTED WELL YET)
 }
 \author{
 Jean Monlong
 }
+\keyword{internal}
 

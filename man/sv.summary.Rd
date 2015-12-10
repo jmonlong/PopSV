@@ -19,7 +19,10 @@ A list with :
 \item{info.df}{a data.frame with different summary statistics}
 }
 \description{
-Summary of regions with abnormal coverage as detected by 'call.abnomal.cov'.
+Summary of regions with abnormal coverage as detected by 'call.abnomal.cov'. It's a static version of 'sv.summary.interactive'. It produces graphs to to get an idea of the quality of the calls. For normal samples we would expect: the amount of called genome in each sample to be somewhat similar; the copy number estimates to locate near integer values; No systematic calls (i.e. called in all samples). The output graphs represent the amount of affected genome across samples, the copy number estimates distribution, the frequency distribution.
+}
+\details{
+A list is returned. Its first element is a list of ggplot object with the different graphs. The second is a data.frame with summary information used to create the graphs.
 }
 \author{
 Jean Monlong

@@ -17,7 +17,7 @@ tn.norm.qc(norm.stats, out.pdf = "normStats-QC.pdf", bin.size = FALSE)
 the name of the created PDF file.
 }
 \description{
-Following targeted normalization, some Quality Control graphs are produced to see if some bins were problematic. TODO MORE
+Following targeted normalization, some Quality Control graphs are produced to see if some bins were problematic. Several graphs will be created. First the distribution of each normalization statistic: correlation distance with the last supporting bin; average normalized coverage; number of outlier samples removed. Then pairwise comparison of these metrics are displayed.
 }
 \author{
 Jean Monlong

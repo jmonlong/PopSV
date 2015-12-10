@@ -50,4 +50,4 @@ resMale.df = autoNormTest("filesMale.RData", "binsMale.RData", file.suffix="male
 
 #### Merge results
 res.df = rbind(resAll.df, resFemale.df, resMale.df)
-sv.summary.interactive(res.df) ## Run locally because it opens an interactive web browser application
+res.filt.df = sv.summary.interactive(res.df) ## Run locally because it opens an interactive web browser application

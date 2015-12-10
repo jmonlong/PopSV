@@ -2,7 +2,7 @@ Package: PopSV
 Type: Package
 Title: Population-based detection of structural variants from Read-Depth signal.
 Version: 1.0
-Date: 2014-09-27
+Date: 2015-12-09
 Author: Jean Monlong
 Maintainer: Jean Monlong <jean.monlong@mail.mcgill.ca>
 Description: Detect abnormal read coverage using a set of samples as
@@ -26,7 +26,6 @@ Imports:
     plyr,
     Biostrings,
     fdrtool,
-    ggdendro,
     shiny,
     RColorBrewer,
     parallel,

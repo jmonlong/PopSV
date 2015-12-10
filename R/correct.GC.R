@@ -5,7 +5,7 @@
 ##' @param bc.f the name of the file with the bin count for a particular sample OR
 ##' a data.frame with 4 columns: 'chr', 'start', 'end' and 'bc'.
 ##' @param gc.df a data.frame with the bin definition and GC content information.
-##' Column 'GCcontent' is required and can be obtained thanks to 'getGC.hp19' for
+##' Column 'GCcontent' is required and can be obtained thanks to 'getGC.hg19' for
 ##' example. 
 ##' @param outfile.prefix the prefix for the output file name. The suffix '.bgz' will
 ##' be appended to this name prefix after compression. 

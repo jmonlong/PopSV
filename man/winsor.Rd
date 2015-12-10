@@ -17,7 +17,7 @@ winsor(x, u = 5, l = NULL)
 a vector with winsorized values.
 }
 \description{
-Winsorising a vector: any value higher(lower) than U(L) are changed to U(L).
+Winsorising a vector: any value higher(lower) than 'u'('l') are changed to 'u'('l').
 }
 \author{
 Jean Monlong

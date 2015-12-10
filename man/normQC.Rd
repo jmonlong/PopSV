@@ -2,7 +2,7 @@
 % Please edit documentation in R/normQC.R
 \name{normQC}
 \alias{normQC}
-\title{Normalized bin count QC metrics}
+\title{Normalized bin count QC metrics for normalization benchmark}
 \usage{
 normQC(bc.df, n.subset = 10000, nb.cores = 1, plot = FALSE)
 }

@@ -1,6 +1,9 @@
 ##' Bin counts are normalized one bin at a time, using a subset of the bins that look
 ##' similar across the reference samples.
 ##'
+##' A specific set of bins, defined by 'bins=', can de normalized using all the bins in 'bc'. The bin names in 'bins=' should be the chr and start position as in '1-501' (for chr 1, start 501).
+##'
+##' The default approach ('norm="1pass"') looks for supporting across all samples. A more robust approach, finds supporting bins on different subset of samples with a bootstrap appoach. 'norm="bootstrap"' normalization is better and recommended for small bins, but it takes more time to run.
 ##' @title Targeted-normalization of bin counts
 ##' @param bc a matrix or data.frame with the bin counts (bin x sample).
 ##' @param cont.sample the sample to use as baseline for the pairwise normalization.
@@ -10,17 +13,15 @@
 ##' bins are normalized.
 ##' @param save.support.bins if TRUE (default) the bins used for the normalization are
 ##' saved in the output object 'norm.stats'.
-##' @param norm the type of normalization. '1pass' (default) means one pass of normalization. Other options are '2pass' and 'bootstrap'.
+##' @param norm the type of normalization. '1pass' (default) means one pass of normalization. Other options is 'bootstrap'.
 ##' @return a list with
 ##' \item{norm.stats}{a data.frame witht some metrics about the normalization of each
-##' bin (row) : correlation with worst supporting bin; coverage average and standard
-##' deviation; number of outlier reference samples; supporting bins.}
+##' bin (row) : correlation with worst supporting bin ('d.max'); coverage average ('m') and standard deviation ('sd'); number of outlier reference samples ('nb.remove'); supporting bins.}
 ##' \item{bc.norm}{a matrix with the normalized bin counts (bin x sample).}
-##' \item{nb.support.bins, cont.sample, z.poisson}{a backup of the input parameters.}
-##' \item{cont.sample}{the name of the sample used to normalize all samples.}
+##' \item{nb.support.bins, cont.sample}{a backup of the input parameters.}
 ##' @author Jean Monlong
 ##' @export
-tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.support.bins = TRUE, norm = c("1pass", "2pass", "bootstrap")) {
+tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.support.bins = TRUE, norm = c("1pass", "bootstrap")) {
 
   all.samples = setdiff(colnames(bc), c("chr", "start", "end"))
   rownames(bc) = paste(bc$chr, as.integer(bc$start), sep = "-")
@@ -37,8 +38,7 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
       4)), length(bins))
     colnames(norm.stats) = c("chr", "start", "end", "m", "sd", "nb.remove", "d.max")
   }
-  bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))),
-    length(bins))
+  bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))), length(bins))
   colnames(bc.norm) = c("chr", "start", "end", all.samples)
   norm.stats$chr = bc.norm$chr = bc[bins, "chr"]
   norm.stats$start = bc.norm$start = bc[bins, "start"]
@@ -79,17 +79,6 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
         norm.coeff = norm.tm.opt(bc.g, ref.col = bc.g[, cont.sample])
         bc.t = bc.i * norm.coeff
         msd = mean.sd.outlierR(bc.t)
-        if(norm[1]=="2pass" & sum(as.numeric(bc.i) > 0) >= 5){
-          med.samps = order(abs(bc.t-msd$m))[1:(length(bc.i)*.5)]
-          d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i[med.samps]), bc[med.samps,], use = "pairwise.complete.obs")))
-          d.o.i = order(d.i)[1:nb.support.bins]
-          d.max = as.numeric(d.i[d.o.i[nb.support.bins]])
-          bc.g = t(bc[, d.o.i])
-          bin.for.norm = colnames(bc)[d.o.i]
-          norm.coeff = norm.tm.opt(bc.g, ref.col = bc.g[, cont.sample])
-          bc.t = bc.i * norm.coeff
-          msd = mean.sd.outlierR(bc.t)
-        }
         if (any(!is.na(bc.t))) {
           norm.stats[bin.ii, 4:7] = round(c(msd$m, msd$sd, msd$nb.remove, d.max), 3)
           if (save.support.bins)
@@ -98,7 +87,6 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
         }
       }
     }
-
   }
 
   return(list(norm.stats = norm.stats, bc.norm = bc.norm, nb.support.bins = nb.support.bins,

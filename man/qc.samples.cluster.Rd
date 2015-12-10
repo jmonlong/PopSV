@@ -15,7 +15,10 @@ qc.samples.cluster(bc.df, nb.rand.bins = NULL)
 a shiny app in the web browser
 }
 \description{
-Interactive representation of the bin counts with potential clustering of the samples.
+Interactive representation of the bin counts with potential clustering of the samples. This app can be used to check if the reference samples are homogeneous, and define outliers or batches.
+}
+\details{
+There is no need to use all the bin count, a few thousand bins is enough to detect potential problems. 'quick.count' is useful to retrieve bin counts on a subset of bins.
 }
 \author{
 Jean Monlong

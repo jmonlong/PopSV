@@ -2,7 +2,7 @@
 % Please edit documentation in R/sv.summary.interactive.R
 \name{sv.summary.interactive}
 \alias{sv.summary.interactive}
-\title{Interactive summary}
+\title{Interactive summary of the calls}
 \usage{
 sv.summary.interactive(res.df, height = "500px")
 }
@@ -15,7 +15,16 @@ sv.summary.interactive(res.df, height = "500px")
 a shiny app in the web browser. When the 'Export' button is pressed, the resulting data.frame is returned.
 }
 \description{
-Interactive summary of the individual bins with abnormal coverage as detected per 'call.abnomal.cov'.
+Interactive summary of the individual bins with abnormal coverage as detected by 'call.abnomal.cov'.
+}
+\details{
+A number of simple metrics are displayed, to get an idea of the quality of the calls. For normal samples we would expect: the amount of called genome in each sample to be somewhat similar; the copy number estimates to locate near integer values; No systematic calls (i.e. called in all samples). The different tabs of the application display related metrics. The use can interactively tweak a number of filtering parameter to get a subset of high-quality calls. These filtering parameters are
+\itemize{
+\item{False Discovery Rate}{significance threshold, reduce it to get higher confidence calls.}
+\item{Deviation from the CN 2}{how different a call should be compared to the estimated *C*opy *N*umber 2. Force a minimum deviation if you see calls too close to CN 2 (second tab).}
+\item{Maximum of single bins (Kb)}{automatically chooses a significance threshold that gives the specified maximum of genome affected by single-bin calls. Useful to force higher stringency for outlier samples (but keep them).}
+\item{Minimum read coverage in reference}{mappability threshold. Increase this number to remove calls in regions with low coverage in the reference samples.}
+}
 }
 \author{
 Jean Monlong

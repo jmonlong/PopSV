@@ -1,14 +1,20 @@
-##' Z-score computation from bin count and/or mean/sd metrics on the reference samples
+##' Z-score computation from bin count and/or mean/sd metrics on the reference samples.
 ##'
+##' The Z-score is computed by substracting the bin count by the average bin count
+##' across the reference samples and dividing by their standard deviation. If
+##' 'z.poisson' is TRUE, a score using Poisson distribution is also computed, using
+##' the average bin count as an estimator of the lambda. Then the score with the lowest
+##' absolute value is kept. This hybrid Z-score is to be used when some regions have low
+##' coverage where it is more robust to use Poisson assumptions.
 ##' @title Z-score computation
-##' @param bc.f the path to the normalized bin count file.
+##' @param bc.f the path to the normalized bin count file. If NULL, the bin counts will be read from the corresponding files in 'files.df' (not recommended).
 ##' @param files.df a data.frame with the file paths.
 ##' @param ref.samples a vector with the samples to use as reference. If 'NULL' (default) all samples in the bin count file are used as reference.
 ##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
 ##' Details). Default is FALSE.
 ##' @param nb.cores the number of cores to use.
-##' @param chunk.size the chunk size. If NULL (Default), no chunks are used.
-##' @param out.msd.f the name of the file to write the mean/sd information. If 'NULL' no file is created.
+##' @param chunk.size the chunk size. Default is 1e4. If NULL, no chunks are used. 
+##' @param out.msd.f the name of the file to write the mean/sd information. Default is "ref-msd.tsv". If 'NULL' no file is created.
 ##' @param append should the Z-scores be appended to existing files. Default is FALSE.
 ##' @param files.col the name of the column from 'files.df' to use to get the bin counts. Used only if 'bc.f' is NULL.
 ##' @return a list with
@@ -16,7 +22,7 @@
 ##' \item{z.poisson}{was Normal-Poisson hybrid Z-score score computed.}
 ##' @author Jean Monlong
 ##' @export
-z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores = 1, chunk.size=NULL, out.msd.f="ref-msd.tsv", append=FALSE, files.col="bc.gc.norm.gz") {
+z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.cores = 1, chunk.size=1e4, out.msd.f="ref-msd.tsv", append=FALSE, files.col="bc.gc.norm.gz") {
 
   if(!is.null(bc.f) && !file.exists(bc.f)){
     stop("Bin count file not found.")
@@ -87,7 +93,7 @@ z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.
   rm(bc.1)
 
   ## Compute chunk index
-  if(!is.null(chunk.size)){
+  if(!is.null(chunk.size) && chunk.size<nrows){
     chunks = tapply(1:nrows, rep(1:ceiling(nrows/chunk.size), each=chunk.size)[1:nrows], identity)
   } else {
     chunks = list(1:nrows)
@@ -129,6 +135,3 @@ z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.
 
   return(list(ref.samples=ref.samples, z.poisson = z.poisson))
 }
-
-## To test: one sample only; chunks; msd input or not
-## To add: Check consistency in parameters in the beginning

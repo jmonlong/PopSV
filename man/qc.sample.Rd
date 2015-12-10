@@ -25,7 +25,7 @@ package is used to parallelized the counting.}
 a data.frame with qc metrics for each sample of the input 'files.df'.
 }
 \description{
-Compute QC metrics for each sample informing how much it fits the reference samples.
+Compute QC metrics for each sample informing how much it fits the reference samples. It can compute: the average distance between a sample and the 10% closest reference samples; the proportion of single-bin calls; the proportion of calls with copy number estimate close to 2. These metrics might be useful to interpret the calls. For example, an excess of calls in a sample which is globally an outlier in those QC is not so surprising.
 }
 \author{
 Jean Monlong
