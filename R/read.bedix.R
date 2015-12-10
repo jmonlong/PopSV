@@ -67,6 +67,11 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
   } else {
     bed.df = read.chunk(subset.reg)
   }
+
+  if(is.null(bed.df)){
+    return(NULL)
+  }
+  
   bed.df = bed.df[order(bed.df$chr, bed.df$start),]
 
   bed.bins.names = with(bed.df, paste(chr,start,end,sep="-"))

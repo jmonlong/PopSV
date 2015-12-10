@@ -30,10 +30,10 @@ fragment.genome.hg19 <- function(bin.size = 1000, slid.window=bin.size, chr.pref
   seql.chrs = seqlengths(BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)[chr.chrs]
 
   fragment.chr <- function(chr.i) {
-    starts = as.integer(seq(1, seql.1.22[chr.i], slid.window))
+    starts = as.integer(seq(1, seql.chrs[chr.i], slid.window))
     ends = as.integer(starts + bin.size - 1)
-    if(any(ends>as.integer(seql.1.22[chr.i]))){
-      ends[which(ends>as.integer(seql.1.22[chr.i]))] = as.integer(seql.1.22[chr.i])
+    if(any(ends>as.integer(seql.chrs[chr.i]))){
+      ends[which(ends>as.integer(seql.chrs[chr.i]))] = as.integer(seql.chrs[chr.i])
     }
     data.frame(chr = chr.i, start = starts, end = ends)
   }

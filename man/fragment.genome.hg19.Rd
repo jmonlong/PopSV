@@ -4,10 +4,13 @@
 \alias{fragment.genome.hg19}
 \title{Fragment hg19 genome}
 \usage{
-fragment.genome.hg19(bin.size = 1000, chr.prefix = FALSE, XY.chr = FALSE)
+fragment.genome.hg19(bin.size = 1000, slid.window = bin.size,
+  chr.prefix = FALSE, XY.chr = FALSE)
 }
 \arguments{
 \item{bin.size}{the size of the bins}
+
+\item{slid.window}{the size of the sliding window. Default is the size of the bin, i.e. not overlapping windows.}
 
 \item{chr.prefix}{should chromosome name be in the form "chr1" instead of "1". Default is FALSE.}
 
