@@ -61,9 +61,9 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
   
   if (length(subset.reg) > 10000) {
     chunks = cut(1:length(subset.reg), ceiling(length(subset.reg)/10000))
-    bed.df = plyr::ldply(levels(chunks), function(ch.id){
+    bed.df = do.call(rbind, lapply(levels(chunks), function(ch.id){
       read.chunk(subset.reg[which(chunks == ch.id)])
-    })
+    }))
   } else {
     bed.df = read.chunk(subset.reg)
   }

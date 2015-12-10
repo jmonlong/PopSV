@@ -1,6 +1,6 @@
 context("Tabix files manipulation")
 
-bin.df =  data.frame(chr=sample(1:22,1e3, replace=TRUE), start=seq(1,1e5,100), end=seq(99,99999,100))
+bin.df =  data.frame(chr=sample(1:21,1e3, replace=TRUE), start=seq(1,1e5,100), end=seq(99,99999,100))
 bin.df = bin.df[order(bin.df$chr, bin.df$start),]
 
 b1.df = cbind(bin.df, bc=rnorm(nrow(bin.df)))
@@ -109,6 +109,16 @@ test_that("Checks for bins missing columns",{
   file.remove("test.tsv.bgz","test.tsv.bgz.tbi")
 })
 
+test_that("Returns null if no data in the queried region", {
+  write.table(b1.df, file="test.tsv", quote=FALSE, sep="\t", row.names=FALSE)
+  expect_equal(length(comp.index.files("test.tsv")), 1)
+  b1.df = b1.df[sort(sample.int(nrow(b1.df), 10)),]
+  b1.df$chr = 22
+  df = read.bedix("test.tsv.bgz", b1.df)
+  expect_true(is.null(df))
+  file.remove("test.tsv.bgz","test.tsv.bgz.tbi")
+})
+
 test_that("Factors doesn't cause errors",{
   write.table(b1.df, file="test.tsv", quote=FALSE, sep="\t", row.names=FALSE)
   expect_equal(length(comp.index.files("test.tsv")), 1)
@@ -119,4 +129,3 @@ test_that("Factors doesn't cause errors",{
   expect_equal(df$start, b1.df$start[ii])
   file.remove("test.tsv.bgz","test.tsv.bgz.tbi")
 })
-

@@ -1,4 +1,4 @@
-##' Following targeted normalization, some Quality Control graphs are produced to see if some bins were problematic. TODO MORE
+##' Following targeted normalization, some Quality Control graphs are produced to see if some bins were problematic. Several graphs will be created. First the distribution of each normalization statistic: correlation distance with the last supporting bin; average normalized coverage; number of outlier samples removed. Then pairwise comparison of these metrics are displayed.
 ##' @title QC graphs for Targeted Normalization
 ##' @param norm.stats the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.
 ##' @param out.pdf the name of the PDF file to create.

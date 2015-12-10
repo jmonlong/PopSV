@@ -7,8 +7,11 @@
 ##' @return a vector similar to 'x' but with NAs for outliers.
 ##' @author Jean Monlong
 ##' @keywords internal
-mean.sd.outlierR <- function(x, pv.max.ol = 1e-05) {
-  
+mean.sd.outlierR <- function(x, pv.max.ol = 1e-06) {
+  if(any(x<0, na.rm=TRUE)){
+    stop("Bin counts cannot be negative; negative value inputed.")
+  }
+
   sd.mad <- function(x) {
     if (all(x == 0, na.rm = TRUE)) {
       return(sd(rpois(length(x), 1)))
@@ -22,8 +25,15 @@ mean.sd.outlierR <- function(x, pv.max.ol = 1e-05) {
   }
   trim.mean <- function(x, probs=c(.4,.6)){
     qq = quantile(x,probs=probs, na.rm=TRUE)
+    x.in = x
     x[x<qq[1] | x>qq[2]] = NA
+    if(all(is.na(x))){
+      x = x.in
+    }
     m = mean(x, na.rm=TRUE)
+    if(is.na(m)){
+      return(NA)
+    }
     if(m==0){
       return(1)
     }
@@ -33,7 +43,7 @@ mean.sd.outlierR <- function(x, pv.max.ol = 1e-05) {
     mix.obj <- function(p, x) {
       e <- p[1] * dnorm((x-p[2])/p[4])/p[4] + (1 - p[1]) * dnorm((x-p[3])/p[5])/ p[5]
       if (any(e <= 0, na.rm = TRUE) | p[1] < 0 | p[1] > 1) 
-      Inf else -sum(log(e))
+        Inf else -sum(log(e))
     }
     lmix2a <- deriv(~-log(p * dnorm((x-m1)/s1)/s1 + (1 - p) * dnorm((x-m2)/s2)/s2), c("p", "m1","m2", "s1", "s2"), function(x, p, m1, m2, s1, s2) NULL)
     mix.gr <- function(pa, x) {
@@ -64,20 +74,24 @@ mean.sd.outlierR <- function(x, pv.max.ol = 1e-05) {
     step = 1
     continue = TRUE
     while (continue & step <= max.step) {
-      gt = grubbs.t(as.numeric(x), type, opposite, two.sided)
-      if (gt$p.value > max.pv | all(is.na(gt$statistic))) {
-        continue = FALSE
+      if(length(unique(x))>3){
+        gt = grubbs.t(as.numeric(x), type, opposite, two.sided)
+        if (gt$p.value > max.pv | all(is.na(gt$statistic))) {
+          continue = FALSE
+        } else {
+          pv = c(pv, gt$p.value)
+          outliers = c(outliers, gt$outlier.i)
+          x[outliers[step]] = NA
+        }
       } else {
-        pv = c(pv, gt$p.value)
-        outliers = c(outliers, gt$outlier.i)
-        x[outliers[step]] = NA
+        continue = FALSE
       }
       step = step + 1
     }
     return(list(x = x, pv = pv, outliers = outliers, max.pv = max.pv))
   }
 
-  if(all(is.na(x))){
+  if(sum(!is.na(x))<2){
     return(list(m=NA,sd=NA, nb.remove=NA))
   }
   

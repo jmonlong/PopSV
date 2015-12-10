@@ -65,12 +65,12 @@ z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
     return(list(lM = d$x[max.id.o], h = d$y[max.id.o]/my))
   }
   find.th <- function(df, z.int = seq(1, 20, 0.2)) {
-    nbcc.df = plyr::ldply(z.int, function(z.th) {
+    nbcc.df = do.call(rbind, lapply(z.int, function(z.th) {
       df.th = df[which(abs(df$z) > z.th), ]
       df.th = cons.dist.f(df.th)
       df.th$z.th = z.th
       return(df.th)
-    })
+    }))
     ## ggplot(subset(nbcc.df, nbc<3), aes(x=z.th, y=p)) + geom_line() + facet_grid(nbc~., scales='free')
     z.th = c(min(localMax(nbcc.df$z.th[which(nbcc.df$nbc==1)], nbcc.df$p[which(nbcc.df$nbc==1)], loc.max=FALSE)$lM), sapply(2, function(nbc.i)min(localMax(nbcc.df$z.th[which(nbcc.df$nbc==nbc.i)], nbcc.df$p[which(nbcc.df$nbc==nbc.i)])$lM)))
     ## z.th = c(cumLocalMax(nbcc.df$z.th[which(nbcc.df$nbc == 1)], nbcc.df$p[which(nbcc.df$nbc == 1)], min = TRUE)$x, cumLocalMax(nbcc.df$z.th[which(nbcc.df$nbc == 2)], nbcc.df$p[which(nbcc.df$nbc == 2)])$x)

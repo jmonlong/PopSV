@@ -4,7 +4,7 @@
 ##' @param stitch.dist the stitching distance, i.e. the maximum distance at which two bins will be merged. 
 ##' @return a data.frame, similar to the input but with merged rows. 
 ##' @author Jean Monlong
-##' @export
+##' @keywords internal
 mergeConsBin.reduce <- function(df, stitch.dist = 10000) {
   if (nrow(df) == 0) 
     return(df)
