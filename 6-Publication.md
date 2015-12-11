@@ -4,10 +4,9 @@ title: Publication
 permalink: /6-Publication.md/
 ---
 
-[Manuscript]()
-[Data and scripts](https://figshare.com/s/ba79730bb87a1322480d)
-
-[PopSV v1](https://github.com/jmonlong/PopSV/releases/tag/v1.0) was used in this paper.
++ [Manuscript on bioRxiv](http://www.biorxiv.org/content/early/2015/12/11/034165)
++ [Data and scripts](https://figshare.com/s/ba79730bb87a1322480d)
++ [PopSV v1.0](https://github.com/jmonlong/PopSV/releases/tag/v1.0) was used in this paper.
 
 # How to reproduce the results from the paper ?
 
@@ -26,4 +25,5 @@ All the scripts (mostly R) used to run PopSV on these data are available [there]
 The necessary data, as well as the scripts to run the CNV callers, have been packed in *dataRuns.tar*. Run `sh unpackPopSVruns.sh` to unpack it.
 
 *More soon...*
+
 
