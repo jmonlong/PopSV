@@ -27,7 +27,7 @@ aneu.o = aneuploidy.flag("SAMP1827", files.df)
 
 Then, `aneu.o$aneu.chrs` contains the names of aneuploid chromosomes and can be added to `call.abnormal.cov` function (see below). In addition, using `plot=TRUE` will produce a graph like this:
 
-*ADD GRAPH*
+*Example of the graph soon...*
 
 
 ## Special parameter when calling abnormal coverage
