@@ -67,9 +67,10 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
         bkpts = c(start, end)
         st.fl = start-input$flanks
         end.fl = end+input$flanks
+        mapq = input$map.quality
         gr.f = GenomicRanges::GRanges(chr, IRanges::IRanges(st.fl, end.fl))
         list(gr.f=gr.f, reads.l=parallel::mclapply(c(ref.samples, related.samples,test.sample), function(samp.i){
-                                       gr.bam(files.df$bam[files.df$sample==samp.i], gr.f, proper=proper, map.quality=input$map.quality)
+                                       gr.bam(files.df$bam[files.df$sample==samp.i], gr.f, proper=proper, map.quality=mapq)
                                      }, mc.cores=nb.cores))
       })
 
