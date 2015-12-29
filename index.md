@@ -7,6 +7,7 @@ title: PopSV
 
 PopSV is a Copy-Number Variation (CNV) detection method from high-throughput sequencing. Abnormal Read-Depth signal is detected by using a population of samples as reference. Thanks to this population view the whole genome can be robustly interrogated, including regions of low mappability. Moreover, any divergence from the reference samples are detected, even if the signal is incomplete, e.g. tumoral aberrations or SV involving repeats.
 
+The manuscript presenting the methods and application to hundreds of human genomes is on [bioRxiv](http://www.biorxiv.org/content/early/2015/12/11/034165).
 
 # Getting started
 
