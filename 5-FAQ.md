@@ -73,3 +73,23 @@ However, if needed, the samples can be split into males and females, and chromos
 1. All samples on chr 1 to 22.
 2. Females on chr X.
 3. Males on chr X and Y.
+
+### Can I use PopSV for Exome or targeted sequencing ?
+
+**Yes**, the method doesn't assume uniform coverage or consecutive bins. It also uses a population-based normalization that can help reduce additional bias from the capture. However, you still need reference samples sequenced and pre-processed in the same way as the samples to analyze.
+
+However, the most of the pipeline assumes that the regions analyzed are covered by the sequencing. For exome or targeted sequencing, the bins definition (`bins.df` *data.frame*) just **need to be filtered to keep only covered bins**. After counting the reads in all the bins and all the sample, we could do something like this:
+
+```r
+## Get bin count from 10 samples
+bc.sub = lapply(sample(files.df$bc.gz, 10), function(filename){
+  read.table(filename, as.is=TRUE, header=TRUE, sep="\t")
+})
+bc.sub = cbind(bc.sub[[1]][,1:3], do.call(cbind, lapply(bc.sub, function(bc.s)bc.s$bc)))
+## Find non-covered bins
+med.bc = apply(bc.sub[,-(1:3)],1, median, na.rm=TRUE)
+bc.sub = bc.sub[which(med.bc>50), 1:3] ## Or whatever threshold you think is best
+bins.df = merge(bins.df, bc.sub)
+```
+
+Then the usual pipeline can be used with the new  `bins.df`.
