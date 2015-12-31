@@ -74,11 +74,11 @@ However, if needed, the samples can be split into males and females, and chromos
 2. Females on chr X.
 3. Males on chr X and Y.
 
-### Can I use PopSV for Exome or targeted sequencing ?
+### Can I use PopSV for exome or targeted sequencing ?
 
 **Yes**, the method doesn't assume uniform coverage or consecutive bins. It also uses a population-based normalization that can help reduce additional bias from the capture. However, you still need reference samples sequenced and pre-processed in the same way as the samples to analyze.
 
-However, the most of the pipeline assumes that the regions analyzed are covered by the sequencing. For exome or targeted sequencing, the bins definition (`bins.df` *data.frame*) just **need to be filtered to keep only covered bins**. After counting the reads in all the bins and all the sample, we could do something like this:
+However, the most of the pipeline assumes that the regions analyzed are covered by the sequencing. For exome or targeted sequencing, **the bins definition** (`bins.df` *data.frame*) just **need to be filtered to keep only covered bins**. After counting the reads in all the bins and all the sample, we could do something like this:
 
 ```r
 ## Get bin count from 10 samples
