@@ -13,10 +13,11 @@
 ##' @param anno.df a data.frame with additional information (e.g. gene annotation) to be added to the graph.
 ##' @param anno.col the name of 'anno.df' column to use to differentiate elements in the graph. E.g. 'geneName' to color the genes in the graph.
 ##' @param flanks the size of the flanking region. Default is 10000.
+##' @param absolute.position should the bins be placed in absolute position. Default is TRUE. If FALSE, distant bins might be displayed next to each other if no bins are available in between (useful for targeted sequencing).
 ##' @return a ggplot object
 ##' @author Jean Monlong
 ##' @export
-coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, ref.samples=NULL, boxplot=FALSE , samples=NULL, files.df=NULL, anno.df=NULL, anno.col="geneName", flanks=1e4){
+coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, ref.samples=NULL, boxplot=FALSE , samples=NULL, files.df=NULL, anno.df=NULL, anno.col="geneName", flanks=1e4, absolute.position=TRUE){
 
   gr = GenomicRanges::GRanges(chr, IRanges::IRanges(start-flanks, end+flanks))
 
@@ -66,11 +67,20 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
       }
     }
   }
-  max.bc = max(max.bc, max(bc.sv$value, na.rm=TRUE))
+  if(!is.null(bc.sv)){
+    max.bc = max(max.bc, max(bc.sv$value, na.rm=TRUE))
+  }
 
+  if(!absolute.position){
+    bc.ref$pos = factor(round(bc.ref$pos))
+  }
+  
   ## Plot reference samples
   pos = m = value = ggpSck = NULL ## Uglily appease R checks
-  gp.o = ggplot2::ggplot(bc.ref) + ggplot2::geom_rect(xmin=start, xmax=end, ymin=0, ymax=max.bc, fill="yellow2", ggplot2::aes(alpha=ggpSck), data=data.frame(ggpSck=0)) + ggplot2::guides(alpha=FALSE)  + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::xlab("position")
+  gp.o = ggplot2::ggplot(bc.ref) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::xlab("position")
+  if(flanks>0){
+    gp.o = gp.o + ggplot2::geom_rect(xmin=start, xmax=end, ymin=0, ymax=max.bc, fill="yellow2", ggplot2::aes(alpha=ggpSck), data=data.frame(ggpSck=0)) + ggplot2::guides(alpha=FALSE)
+  } 
   if(!is.null(norm.stats.f)) {
     gp.o = gp.o + ggplot2::geom_errorbar(ggplot2::aes(x=pos, ymin=m-3*sd,ymax=m+3*sd)) + ggplot2::geom_point(ggplot2::aes(y=m))
   } else if(boxplot){
@@ -91,5 +101,9 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
     gp.o = gp.o + ggplot2::geom_segment(ggplot2::aes_string(x="start",xend="end",y="y",yend="y",colour=anno.col), size=6, alpha=.5, data=anno.df)
   }
 
+  if(!absolute.position){
+    gp.o = gp.o + ggplot2::theme(axis.text.x=ggplot2::element_text(angle=45,hjust=1))
+  }
+  
   gp.o
 }
