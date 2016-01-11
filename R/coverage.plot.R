@@ -23,12 +23,27 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
 
   ## Read coverage file
   message("Bin count...")
-  bc = read.bedix(bc.f, gr)
-  bc.all = reshape::melt.data.frame(bc, id.vars=c("chr","start","end"),variable_name="sample")
-  bc.all$pos = as.numeric(with(bc.all, (start+end)/2))
+  if(length(bc.f) > 1 & is.null(names(bc.f))){
+    names(bc.f) = paste("set",1:length(bc.f))
+  }
+  bc.l = lapply(names(bc.f), function(bc.name){
+    bc = read.bedix(bc.f[bc.name], gr)
+    bc.all = reshape::melt.data.frame(bc, id.vars=c("chr","start","end"), variable_name="sample")
+    bc.all$pos = as.numeric(with(bc.all, (start+end)/2))
+    bc.all$bc.f = bc.name
+    bc.all
+  })
+  bc.all = do.call(rbind, bc.l)
   start = min(bc.all$start[which(bc.all$end>start)])
   end = max(bc.all$end[which(bc.all$start<end)])
 
+  ## Normalize the different sets
+  if(length(bc.f)>1){
+    med.v = tapply(bc.all$value, bc.all$bc.f, quantile, probs=.9, na.rm=TRUE)
+    med.mean = mean(med.v, na.rm=TRUE)
+    bc.all$value = med.mean * bc.all$value / med.v[as.character(bc.all$bc.f)]
+  }
+  
   if(is.null(ref.samples)){
     ref.samples = unique(bc.all$sample)
   }
@@ -86,7 +101,14 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
   } else if(boxplot){
     gp.o = gp.o + ggplot2::geom_boxplot(ggplot2::aes(x=pos, y=value, group=pos), fill="lightgreen",alpha=.7)
   } else {
-    gp.o = gp.o + ggplot2::geom_violin(ggplot2::aes(x=pos, y=value, group=pos), fill="grey90",alpha=.7, scale="width")
+    if(length(bc.f) == 1){
+      gp.o = gp.o + ggplot2::geom_violin(ggplot2::aes(x=pos, y=value, group=pos), fill="grey90",alpha=.7, scale="width")
+    } else {
+      gp.o = gp.o + ggplot2::geom_violin(ggplot2::aes(x=pos, y=value, fill=factor(bc.f), group=paste(pos, bc.f)),alpha=.7, scale="width") + ggplot2::scale_fill_brewer(name="", palette="Set1")
+      if(length(bc.f)>2){
+        gp.o = gp.o + ggplot2::facet_wrap(~pos, scales="free") + ggplot2::theme(legend.position="bottom", strip.background=ggplot2::element_blank(), strip.text=ggplot2::element_blank())
+      }
+    }
   }
 
   ## Add the SVs
@@ -101,7 +123,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
     gp.o = gp.o + ggplot2::geom_segment(ggplot2::aes_string(x="start",xend="end",y="y",yend="y",colour=anno.col), size=6, alpha=.5, data=anno.df)
   }
 
-  if(!absolute.position){
+  if(!absolute.position & length(bc.f)<3){
     gp.o = gp.o + ggplot2::theme(axis.text.x=ggplot2::element_text(angle=45,hjust=1))
   }
   
