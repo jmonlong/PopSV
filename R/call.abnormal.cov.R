@@ -127,7 +127,7 @@ call.abnormal.cov <- function(files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05
     if (nrow(res.df) > 0 & !is.null(out.pdf)) {
       nb.bin.cons = NULL  ## Uglily appease R checks
       print(ggplot2::ggplot(res.df, ggplot2::aes(x = factor(nb.bin.cons))) +
-              ggplot2::geom_histogram() + ggplot2::ylab("number of bins") + ggplot2::xlab("number of consecutive abnormal bins") +
+              ggplot2::geom_bar() + ggplot2::ylab("number of bins") + ggplot2::xlab("number of consecutive abnormal bins") +
                 ggplot2::theme_bw())
 
       if (any(colnames(res.df) == "fc") & sum(res.df$nb.bin.cons > 2 & res.df$fc < 2.5) > 3) {
