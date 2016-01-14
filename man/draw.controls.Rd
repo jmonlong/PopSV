@@ -5,7 +5,8 @@
 \title{Select control genomic regions for enrichment analysis}
 \usage{
 draw.controls(cnv.gr, feat.grl, nb.class = 20, nb.cores = 3,
-  redo.duplicates = TRUE, seed.nb.max = 1e+05, min.nb.gr = NULL)
+  redo.duplicates = TRUE, seed.nb.max = 1e+05, min.nb.gr = NULL,
+  chr.prefix = "")
 }
 \arguments{
 \item{cnv.gr}{the input regions}
@@ -21,6 +22,8 @@ draw.controls(cnv.gr, feat.grl, nb.class = 20, nb.cores = 3,
 \item{seed.nb.max}{the maximum number of genomic position to use as seeds. Default is 1e5.}
 
 \item{min.nb.gr}{the minimum number of control regions. If NULL (default), as many controls as input are simulated.}
+
+\item{chr.prefix}{the chromosome name prefix. Default is "" (no prefix). Other value could be "chr" if chromosome are defined as 'chr1', 'chr2', etc.}
 }
 \value{
 a GRanges object defining the control regions
