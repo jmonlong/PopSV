@@ -29,7 +29,7 @@ Some [Bioconductor](http://bioconductor.org/) packages are also necessary and no
 
 ```r
 source("http://bioconductor.org/biocLite.R")
-biocLite("BSgenome.Hsapiens.UCSC.hg19", "Rsamtools")
+biocLite("BSgenome.Hsapiens.UCSC.hg19", "Rsamtools", "DNAcopy")
 ```
 
 **R 3.1 or higher** is required.
