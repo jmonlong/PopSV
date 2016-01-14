@@ -151,7 +151,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
             pdf$cn = pdf$fc*2
             if(any(pdf$cn>input$cnMax)) pdf$cn[pdf$cn>input$cnMax] = input$cnMax
             gp = ggplot2::ggplot(pdf, ggplot2::aes(x=cn, fill=col)) +
-                ggplot2::geom_bar() + ggplot2::theme_bw() + ggplot2::scale_x_continuous(breaks=seq(input$cnMin,input$cnMax,1), labels=c(seq(input$cnMin,input$cnMax-1,1), paste0(">",input$cnMax)), limits=c(input$cnMin,input$cnMax+.2)) +
+                ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::scale_x_continuous(breaks=seq(input$cnMin,input$cnMax,1), labels=c(seq(input$cnMin,input$cnMax-1,1), paste0(">",input$cnMax)), limits=c(input$cnMin,input$cnMax+.2)) +
                     ggplot2::theme(legend.position=c(1,1),legend.justification=c(1,1)) + extra.gg + ggplot2::xlab("Copy Number estimates") + ggplot2::ylab("number of calls")
             if(input$col=="sample"){
               gp = gp  + ggplot2::guides(fill=FALSE)
