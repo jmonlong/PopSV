@@ -23,7 +23,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
 
   ## Read coverage file
   message("Bin count...")
-  if(length(bc.f) > 1 & is.null(names(bc.f))){
+  if(is.null(names(bc.f))){
     names(bc.f) = paste("set",1:length(bc.f))
   }
   bc.l = lapply(names(bc.f), function(bc.name){
@@ -88,6 +88,9 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
 
   if(!absolute.position){
     bc.ref$pos = factor(round(bc.ref$pos))
+    if(!is.null(bc.sv)){
+      bc.sv$pos = factor(round(bc.sv$pos))
+    }
   }
   
   ## Plot reference samples
