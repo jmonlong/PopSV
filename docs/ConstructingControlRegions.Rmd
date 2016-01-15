@@ -9,6 +9,8 @@ output:
      variant: markdown_github
 ---
 
+# Constructing control regions for enrichment analysis
+
 ## Introduction
 
 When investigating enrichment in specific genomic features, it is common to compare the regions of interest with some controls regions. **A simple approach** to construct control regions could be to **randomly select regions across the genome**. Additionally, it is important for the control regions to have the **same size distribution**.
@@ -31,7 +33,7 @@ dgv = ah[["AH5120"]] ## SVs from DGV
 dgv = dgv[sample.int(length(dgv), 1e4)] ## Reduce to 10K random SVs
 ```
 
-We imported a gene annotation and 10 thousands SVs from DGV. If we want to construct controls regions that fit the SV size and overlap with genes, we run:
+We imported a gene annotation and 10 thousands SVs from DGV. If we want to construct control regions that fit the SV size and overlap with genes, we run:
 
 ```{r, message=FALSE}
 dgv.cont = draw.controls(dgv, list(gene=genes), chr.prefix="chr")
@@ -54,7 +56,7 @@ mean(overlapsAny(dgv, genes))
 mean(overlapsAny(dgv.cont, genes))
 ```
 
-`draw.controls` functions can accept any number of genomic features to control. Let's import two additional genomic annotation that we would like to control for our enrichment analysis: assembly gaps and segmental duplications.
+`draw.controls` functions can **accept any number of genomic features to control**. Let's import two additional genomic annotation that we would like to control for our enrichment analysis: assembly gaps and segmental duplications.
 
 ```{r, message=FALSE}
 gap = ah[["AH6444"]]
@@ -62,7 +64,7 @@ segdups = ah[["AH5121"]]
 dgv.cont2 = draw.controls(dgv, list(gene=genes, gap=gap, sd=segdups), chr.prefix="chr")
 ```
 
-Again, the size distribution must be the same
+Again, the size distribution must be the same:
 
 ```{r, message=FALSE}
 ## Same size distribution ?
@@ -84,7 +86,7 @@ mean(overlapsAny(dgv, segdups))
 mean(overlapsAny(dgv.cont2, segdups))
 ```
 
-If we had used the first set of control regions, taking only genes into account, the gap and segmental duplication overlap proportions wouldn't match.
+If we had used the first set of control regions (only genes overlap control) the gap and segmental duplication overlap proportions wouldn't match.
 
 ```{r, message=FALSE}
 mean(overlapsAny(dgv.cont, segdups))
