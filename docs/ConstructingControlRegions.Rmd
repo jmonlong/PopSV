@@ -1,0 +1,98 @@
+---
+title: Constructing control regions for enrichment analysis
+author: Jean Monlong
+date: January 15, 2016
+output:
+   md_document:
+     fig_width: 10
+     fig_height: 5
+     variant: markdown_github
+---
+
+## Introduction
+
+When investigating enrichment in specific genomic features, it is common to compare the regions of interest with some controls regions. **A simple approach** to construct control regions could be to **randomly select regions across the genome**. Additionally, it is important for the control regions to have the **same size distribution**.
+
+However, a random distribution across the genome is usually **not realistic**. Likely, regions in the genome were not tested because inaccessible or not included in the analysis. Moreover, **you might want to control for some patterns and look for more**.
+
+For example, we first observed enrichment of CNVs in low-mappability regions. We then wanted to test additional enrichment in different repeat classes. Because repeats are enriched in low-mappability regions, repeats will likely be seen enriched in CNVs. We want to avoid spurious correlation and control for the low-mappability enrichment. By constructing control regions with the same low-mappability enrichment we can can test additional enrichment in the different repeat classes without being biased by the relation between low-mappability regions and repeats.
+
+
+## Constructing control regions with *PopSV* package
+
+First we load the package and retrieve some annotations to play with.
+
+```{r}
+library(PopSV)
+library(AnnotationHub)
+ah = AnnotationHub()
+genes = ah[["AH49010"]] ## Genes
+dgv = ah[["AH5120"]] ## SVs from DGV
+dgv = dgv[sample.int(length(dgv), 1e4)] ## Reduce to 10K random SVs
+```
+
+We imported a gene annotation and 10 thousands SVs from DGV. If we want to construct controls regions that fit the SV size and overlap with genes, we run:
+
+```{r, message=FALSE}
+dgv.cont = draw.controls(dgv, list(gene=genes), chr.prefix="chr")
+```
+
+Now let's verify that the size distribution is the same.
+
+```{r, message=FALSE}
+library(ggplot2)
+size.df = rbind(data.frame(reg="dgv", size=width(dgv)),
+                 data.frame(reg="control", size=width(dgv.cont)))
+ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge")
+ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge") + scale_x_log10()
+```
+
+And that the input and output regions overlap genes similarly.
+
+```{r, message=FALSE}
+mean(overlapsAny(dgv, genes))
+mean(overlapsAny(dgv.cont, genes))
+```
+
+`draw.controls` functions can accept any number of genomic features to control. Let's import two additional genomic annotation that we would like to control for our enrichment analysis: assembly gaps and segmental duplications.
+
+```{r, message=FALSE}
+gap = ah[["AH6444"]]
+segdups = ah[["AH5121"]]
+dgv.cont2 = draw.controls(dgv, list(gene=genes, gap=gap, sd=segdups), chr.prefix="chr")
+```
+
+Again, the size distribution must be the same
+
+```{r, message=FALSE}
+## Same size distribution ?
+size.df = rbind(data.frame(reg="dgv", size=width(dgv)),
+                 data.frame(reg="control", size=width(dgv.cont2)))
+ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge")
+ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge") + scale_x_log10()
+```
+
+And the overlap with the three different genomic annotations similar.
+
+```{r, message=FALSE}
+## Same overlap with features ?
+mean(overlapsAny(dgv, genes))
+mean(overlapsAny(dgv.cont2, genes))
+mean(overlapsAny(dgv, gap))
+mean(overlapsAny(dgv.cont2, gap))
+mean(overlapsAny(dgv, segdups))
+mean(overlapsAny(dgv.cont2, segdups))
+```
+
+If we had used the first set of control regions, taking only genes into account, the gap and segmental duplication overlap proportions wouldn't match.
+
+```{r, message=FALSE}
+mean(overlapsAny(dgv.cont, segdups))
+mean(overlapsAny(dgv.cont, gap))
+```
+
+## R session
+
+```{r}
+sessionInfo()
+```
