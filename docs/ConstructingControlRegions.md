@@ -17,54 +17,9 @@ First we load the package and retrieve some annotations to play with.
 
 ``` {.r}
 library(PopSV)
-```
-
-    ## Warning: replacing previous import by 'data.table::shift' when loading
-    ## 'PopSV'
-
-``` {.r}
 library(AnnotationHub)
-```
-
-    ## Loading required package: BiocGenerics
-
-    ## Loading required package: parallel
-
-    ## 
-    ## Attaching package: 'BiocGenerics'
-
-    ## The following objects are masked from 'package:parallel':
-    ## 
-    ##     clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
-    ##     clusterExport, clusterMap, parApply, parCapply, parLapply,
-    ##     parLapplyLB, parRapply, parSapply, parSapplyLB
-
-    ## The following objects are masked from 'package:stats':
-    ## 
-    ##     IQR, mad, xtabs
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     anyDuplicated, append, as.data.frame, as.vector, cbind,
-    ##     colnames, do.call, duplicated, eval, evalq, Filter, Find, get,
-    ##     grep, grepl, intersect, is.unsorted, lapply, lengths, Map,
-    ##     mapply, match, mget, order, paste, pmax, pmax.int, pmin,
-    ##     pmin.int, Position, rank, rbind, Reduce, rownames, sapply,
-    ##     setdiff, sort, table, tapply, union, unique, unlist, unsplit
-
-``` {.r}
 ah = AnnotationHub()
-```
-
-    ## snapshotDate(): 2016-01-14
-
-``` {.r}
 genes = ah[["AH49010"]] ## Genes
-```
-
-    ## require("GenomicRanges")
-
-``` {.r}
 dgv = ah[["AH5120"]] ## SVs from DGV
 dgv = dgv[sample.int(length(dgv), 1e4)] ## Reduce to 10K random SVs
 ```
@@ -97,13 +52,13 @@ ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge") + scal
 mean(overlapsAny(dgv, genes))
 ```
 
-    ## [1] 0.3991
+    ## [1] 0.3976
 
 ``` {.r}
 mean(overlapsAny(dgv.cont, genes))
 ```
 
-    ## [1] 0.3995
+    ## [1] 0.4003
 
 `draw.controls` functions can **accept any number of genomic features to control**. Let's import two additional genomic annotation that we would like to control for our enrichment analysis: assembly gaps and segmental duplications.
 
@@ -136,37 +91,37 @@ ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge") + scal
 mean(overlapsAny(dgv, genes))
 ```
 
-    ## [1] 0.3991
+    ## [1] 0.3976
 
 ``` {.r}
 mean(overlapsAny(dgv.cont2, genes))
 ```
 
-    ## [1] 0.4007
+    ## [1] 0.4021
 
 ``` {.r}
 mean(overlapsAny(dgv, gap))
 ```
 
-    ## [1] 0.0072
+    ## [1] 0.0068
 
 ``` {.r}
 mean(overlapsAny(dgv.cont2, gap))
 ```
 
-    ## [1] 0.0073
+    ## [1] 0.0069
 
 ``` {.r}
 mean(overlapsAny(dgv, segdups))
 ```
 
-    ## [1] 0.2053
+    ## [1] 0.1979
 
 ``` {.r}
 mean(overlapsAny(dgv.cont2, segdups))
 ```
 
-    ## [1] 0.2038
+    ## [1] 0.1956
 
 If we had used the first set of control regions (only genes overlap control) the gap and segmental duplication overlap proportions wouldn't match.
 
@@ -174,13 +129,13 @@ If we had used the first set of control regions (only genes overlap control) the
 mean(overlapsAny(dgv.cont, segdups))
 ```
 
-    ## [1] 0.0871
+    ## [1] 0.0917
 
 ``` {.r}
 mean(overlapsAny(dgv.cont, gap))
 ```
 
-    ## [1] 0.1097
+    ## [1] 0.1093
 
 R session
 ---------
