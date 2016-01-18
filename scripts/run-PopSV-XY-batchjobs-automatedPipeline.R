@@ -42,8 +42,8 @@ source("automatedPipeline.R")
 res.GCcounts = autoGCcounts("files.RData", "binsAll.RData")
 resAll.df = autoNormTest("files.RData", "binsAll.RData")
 ## Females
-res.GCcounts = autoGCcounts("filesFemale.RData", "binsFemale.RData", file.suffix="female", redo=1)
-resFemale.df = autoNormTest("filesFemale.RData", "binsFemale.RData", file.suffix="female", lib.loc="/home/jmonlong/R/PopSVforPaper", redo=5)
+res.GCcounts = autoGCcounts("filesFemale.RData", "binsFemale.RData", file.suffix="female")
+resFemale.df = autoNormTest("filesFemale.RData", "binsFemale.RData", file.suffix="female", lib.loc="/home/jmonlong/R/PopSVforPaper")
 ## Males
 res.GCcounts = autoGCcounts("filesMale.RData", "binsMale.RData", file.suffix="male")
 resMale.df = autoNormTest("filesMale.RData", "binsMale.RData", file.suffix="male")
