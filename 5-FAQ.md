@@ -7,7 +7,7 @@ permalink: /5-FAQ.md/
 
 ### Can I run PopSV on my laptop ?
 
-Yes, it's possible but not recommended. You can have a look at the [pipeline to run PopSV locally](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/run-PopSV-local.R). However, PopSV has been designed to be easily run in a cluster using *BatchJobs* package. Moreover, you likely have access to a computing cluster to store and analyze several WGS samples. Have a look [there](2-ClusterManagement.md#installation-and-configuration) to see how to configure it.
+Yes, it's possible but not recommended. You can have a look at the [pipeline to run PopSV locally](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-local.R). However, PopSV has been designed to be easily run in a cluster using *BatchJobs* package. Moreover, you likely have access to a computing cluster to store and analyze several WGS samples. Have a look [there](2-ClusterManagement.md#installation-and-configuration) to see how to configure it.
 
 Eventually if you really want to run it locally (and slowly) but want to benefit from the optimization with *BatchJobs* (e.g. the [automated pipeline](2-ClusterManagement.md#automated-run)), you can use your laptop/computer as cluster. Then you don't need [3 configuration files](2-ClusterManagement.md#installation-and-configuration), just create a `.BatchJobs.R` file in the project folder or `~/` with
 
@@ -68,7 +68,7 @@ In summary, **it's all a matter of definition**. Usually, a variant is defined a
 
 By default PopSV analyzes all samples together. In practice males and females are jointly analyzed so we only analyze chromosomes where they are expected to have similar copies, i.e. the autosomes.
 
-However, if needed, the samples can be split into males and females, and chromosomes X and Y analyzed. See [this script](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/run-PopSV-XY-batchjobs-automatedPipeline.R) for an example of what the pipeline would look like. There, three analysis are run:
+However, if needed, the samples can be split into males and females, and chromosomes X and Y analyzed. See [this script](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-XY-batchjobs-automatedPipeline.R) for an example of what the pipeline would look like. There, three analysis are run:
 
 1. All samples on chr 1 to 22.
 2. Females on chr X.
