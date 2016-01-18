@@ -59,7 +59,7 @@ Parser functions are saved in a R script, called for example `makeClusterFunctio
 
 Likely you just need to check/replace `qsub`/`qdel`/`qstat` calls with the correct bash commands (sometimes `msub`/`canceljob`/`showq`).
 
-From [our file](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/makeClusterFunctionsAdaptive.R), these are the lines you might need to change :
+From [our file](https://github.com/jmonlong/PopSV/blob/master/scripts/makeClusterFunctionsAdaptive.R), these are the lines you might need to change :
 
 ```sh
 res =  BatchJobs:::runOSCommandLinux("qsub", outfile, stop.on.exit.code = FALSE)
@@ -119,7 +119,7 @@ We can check the status of the job with `showStatus(getBC.reg)` command.
 
 ### Automated run
 
-Two wrapper functions around *BatchJobs* allows you to run PopSV without manually sending the jobs for each steps. These two functions (`autoGCcounts` and `autoNormTest`) are located in [`automatedPipeline.R`](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/automatedPipeline.R). Now, a full analysis can be run like this:
+Two wrapper functions around *BatchJobs* allows you to run PopSV without manually sending the jobs for each steps. These two functions (`autoGCcounts` and `autoNormTest`) are located in [`automatedPipeline.R`](https://github.com/jmonlong/PopSV/blob/master/scripts/automatedPipeline.R). Now, a full analysis can be run like this:
 
 ```r
 ## Load package and wrapper
@@ -147,11 +147,11 @@ Still, a few parameters can be passed to the two functions for the user convenie
 + `rewrite=TRUE` will force the normalized bin counts and normalization stats to be rewritten.
 + `file.suffix=` to add a suffix to the temporary files. This is useful when the pipeline is run several times on the same folder, for example when splitting the samples in batches (e.g. presence of batch effects, male/female split for XY chrs).
 
-We provide a [script](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/run-PopSV-batchjobs-automatedPipeline.R) to PopSV using these wrappers. In addition, when we want to analyze X and Y chromosomes, the samples have to be split and these wrappers come handy to run easily three analysis (see this [example](https://github.com/jmonlong/PopSV/blob/forPaper/scripts/run-PopSV-XY-batchjobs-automatedPipeline.R)).
+We provide a [script](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-batchjobs-automatedPipeline.R) to PopSV using these wrappers. In addition, when we want to analyze X and Y chromosomes, the samples have to be split and these wrappers come handy to run easily three analysis (see this [example](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-XY-batchjobs-automatedPipeline.R)).
 
 ### Step-by-step manual run
 
-The general idea is to have one script per analysis (e.g. bin size, project). Each such analysis should be in its own folder to avoid possible confusion between temporary files. Examples of pipeline scripts can be found in the [`scripts` folder of the GitHub repository](https://github.com/jmonlong/PopSV/tree/forPaper/scripts).
+The general idea is to have one script per analysis (e.g. bin size, project). Each such analysis should be in its own folder to avoid possible confusion between temporary files. Examples of pipeline scripts can be found in the [`scripts` folder of the GitHub repository](https://github.com/jmonlong/PopSV/tree/master/scripts).
 
 Because it manipulates large data (BAM files, genome-wide coverage) and large sample sizes, PopSV was designed to create and work with intermediate files. The management of these files are mostly handle automatically. In practice all the important path and folder structure is saved in the `files.df` data.frame, originally created by  `init.filenames` function. For this reason, the results of each analysis steps are saved as the local files so that the next steps can be run later without the need for you to think about what to save etc.
 
