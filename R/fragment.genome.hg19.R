@@ -35,7 +35,7 @@ fragment.genome.hg19 <- function(bin.size = 1000, slid.window=bin.size, chr.pref
     if(any(ends>as.integer(seql.chrs[chr.i]))){
       ends[which(ends>as.integer(seql.chrs[chr.i]))] = as.integer(seql.chrs[chr.i])
     }
-    data.frame(chr = chrs[chr.i], start = starts, end = ends)
+    data.frame(chr = chrs[chr.i], start = starts, end = ends, stringsAsFactors=FALSE)
   }
 
   do.call(rbind, lapply(1:length(chrs), fragment.chr))
