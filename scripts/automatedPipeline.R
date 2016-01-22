@@ -5,14 +5,14 @@ message("Two functions :
 - 'autoNormTest' to normalize and test all the samples.
 ")
 
-autoGCcounts <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL){
+autoGCcounts <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, skip=NULL){
   load(files.f)
   
   message("\n== 1) Get GC content in each bin.\n")
   stepName = paste0("getGC",file.suffix)
   if(any(redo==1)) unlink(paste0(stepName, "-files"), recursive=TRUE)
   reg <- makeRegistry(id=stepName, seed=123)
-  if(length(findJobs(reg))==0){
+  if(!any(skip==1) & length(findJobs(reg))==0){
     getGC.f <- function(imF){
       load(imF)
       library(PopSV, lib.loc=lib.loc)
@@ -22,12 +22,15 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     batchMap(reg, getGC.f,bins.f)
     submitJobs(reg, findJobs(reg), resources=c(list(walltime="2:0:0", nodes="1", cores="1"), other.resources))
     waitForJobs(reg, sleep=sleep)
-  } else {
-    if(length(findJobs(reg))!=length(findDone(reg))){
-      showStatus(reg)
-      waitForJobs(reg, sleep=sleep)
-      if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
+  }
+  if(length(findJobs(reg))!=length(findDone(reg))){
+    showStatus(reg)
+    if(length(findExpired(reg))>0){
+      message("Re-submitting ", findExpired(reg))
+      submitJobs(reg, findExpired(reg), resources=c(list(walltime="2:0:0", nodes="1", cores="1"), other.resources))
     }
+    waitForJobs(reg, sleep=sleep)
+    if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
   }
   if(status) showStatus(reg)
 
@@ -35,7 +38,7 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
   stepName = paste0("getBC",file.suffix)
   if(any(redo==2)) unlink(paste0(stepName, "-files"), recursive=TRUE)
   reg <- makeRegistry(id=stepName, seed=123)
-  if(length(findJobs(reg))==0){
+  if(!any(skip==2) & length(findJobs(reg))==0){
     getBC.f <- function(file.i, bins.f, files.df){
       library(PopSV, lib.loc=lib.loc)
       load(bins.f)
@@ -46,17 +49,20 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     batchMap(reg, getBC.f,1:nrow(files.df), more.args=list(bins.f=bins.f, files.df=files.df))
     submitJobs(reg, findJobs(reg), resources=c(list(walltime="20:0:0", nodes="1", cores="1"), other.resources))
     waitForJobs(reg, sleep=sleep)
-  } else {
-    if(length(findJobs(reg))!=length(findDone(reg))){
-      showStatus(reg)
-      waitForJobs(reg, sleep=sleep)
-      if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
+  }
+  if(length(findJobs(reg))!=length(findDone(reg))){
+    showStatus(reg)
+    if(length(findExpired(reg))>0){
+      message("Re-submitting ", findExpired(reg))
+      submitJobs(reg, findExpired(reg), resources=c(list(walltime="20:0:0", nodes="1", cores="1"), other.resources))
     }
+    waitForJobs(reg, sleep=sleep)
+    if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
   }
   if(status) showStatus(reg)
 
-  load(bins.f)
-  quick.count(files.df, bins.df, col.files="bc.gc.gz", nb.rand.bins=1e3) 
+  ## load(bins.f)
+  ## quick.count(files.df, bins.df, col.files="bc.gc.gz", nb.rand.bins=1e3) 
 }
   
 autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, ref.samples=NULL){
@@ -85,12 +91,15 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     batchMap(reg, sampQC.f,bc.ref.f, more.args=list(bins.f=bins.f, files.df=files.ref, sampQC.pdf.f=sampQC.pdf.f, lib.loc=lib.loc))
     submitJobs(reg, 1, resources=c(list(walltime="10:0:0", nodes="1", cores="6"), other.resources))
     waitForJobs(reg, sleep=sleep)
-  } else {
-    if(length(findJobs(reg))!=length(findDone(reg))){
-      showStatus(reg)
-      waitForJobs(reg, sleep=sleep)
-      if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
+  }
+  if(length(findJobs(reg))!=length(findDone(reg))){
+    showStatus(reg)
+    if(length(findExpired(reg))>0){
+      message("Re-submitting ", findExpired(reg))
+      submitJobs(reg, findExpired(reg), resources=c(list(walltime="10:0:0", nodes="1", cores="6"), other.resources))
     }
+    waitForJobs(reg, sleep=sleep)
+    if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
   }
   samp.qc.o = loadResult(reg, 1)
   save(samp.qc.o, file=paste0(stepName,".RData"))
@@ -115,12 +124,15 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     batchMap(reg, bcNormTN.f,unique(bins.df$sm.chunk), more.args=list(file.bc=samp.qc.o$bc, file.bin=bins.f,cont.sample=samp.qc.o$cont.sample, lib.loc=lib.loc))
     submitJobs(reg, findJobs(reg) , resources=c(list(walltime="12:0:0", nodes="1", cores="1"), other.resources))
     waitForJobs(reg, sleep=sleep)
-  } else {
-    if(length(findJobs(reg))!=length(findDone(reg))){
-      showStatus(reg)
-      waitForJobs(reg, sleep=sleep)
-      if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
+  } 
+  if(length(findJobs(reg))!=length(findDone(reg))){
+    showStatus(reg)
+    if(length(findExpired(reg))>0){
+      message("Re-submitting ", findExpired(reg))
+      submitJobs(reg, findExpired(reg), resources=c(list(walltime="12:0:0", nodes="1", cores="1"), other.resources))
     }
+    waitForJobs(reg, sleep=sleep)
+    if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
   }
   ## Write normalized bin counts and reference metrics
   out.files = paste(paste0("ref",file.suffix), c("bc-norm.tsv", "msd.tsv"), sep="-")
@@ -145,12 +157,15 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     batchMap(reg, zRef.f,out.files[1], more.args=list(files.df=files.df, lib.loc=lib.loc))
     submitJobs(reg, 1, resources=c(list(walltime="6:0:0", nodes="1", cores="3"), other.resources))
     waitForJobs(reg, sleep=sleep)
-  } else {
-    if(length(findJobs(reg))!=length(findDone(reg))){
-      showStatus(reg)
-      waitForJobs(reg, sleep=sleep)
-      if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
+  }
+  if(length(findJobs(reg))!=length(findDone(reg))){
+    showStatus(reg)
+    if(length(findExpired(reg))>0){
+      message("Re-submitting ", findExpired(reg))
+      submitJobs(reg, findExpired(reg), resources=c(list(walltime="6:0:0", nodes="1", cores="3"), other.resources))
     }
+    waitForJobs(reg, sleep=sleep)
+    if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
   }
   if(status) showStatus(reg)
 
@@ -166,12 +181,15 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     batchMap(reg, callOthers.f,setdiff(files.df$sample, samp.qc.o$ref.samples), more.args=list(cont.sample=samp.qc.o$cont.sample, files.df=files.df, norm.stats.f=out.files[2], bc.ref.f=samp.qc.o$bc, lib.loc=lib.loc))
     submitJobs(reg, findJobs(reg), resources=c(list(walltime="6:0:0", nodes="1", cores="1"), other.resources))
     waitForJobs(reg, sleep=sleep)
-  } else {
-    if(length(findJobs(reg))!=length(findDone(reg))){
-      showStatus(reg)
-      waitForJobs(reg, sleep=sleep)
-      if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
+  }
+  if(length(findJobs(reg))!=length(findDone(reg))){
+    showStatus(reg)
+    if(length(findExpired(reg))>0){
+      message("Re-submitting ", findExpired(reg))
+      submitJobs(reg, findExpired(reg), resources=c(list(walltime="6:0:0", nodes="1", cores="1"), other.resources))
     }
+    waitForJobs(reg, sleep=sleep)
+    if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
   }
   if(status) showStatus(reg)
 
@@ -188,12 +206,15 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     batchMap(reg, abCovCallCases.f, files.df$sample, more.args=list(files.df=files.df, norm.stats.f=out.files[2], bins.f=bins.f, stitch.dist=5e3, lib.loc=lib.loc))
     submitJobs(reg, findJobs(reg) , resources=c(list(walltime="1:0:0", nodes="1", cores="1"), other.resources))
     waitForJobs(reg, sleep=sleep)
-  } else {
-    if(length(findJobs(reg))!=length(findDone(reg))){
-      showStatus(reg)
-      waitForJobs(reg, sleep=sleep)
-      if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
+  }
+  if(length(findJobs(reg))!=length(findDone(reg))){
+    showStatus(reg)
+    if(length(findExpired(reg))>0){
+      message("Re-submitting ", findExpired(reg))
+      submitJobs(reg, findExpired(reg), resources=c(list(walltime="1:0:0", nodes="1", cores="1"), other.resources))
     }
+    waitForJobs(reg, sleep=sleep)
+    if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
   }
   if(status) showStatus(reg)
 
@@ -212,12 +233,15 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
       batchMap(reg, abCovCallCases.f, files.df$sample, more.args=list(files.df=files.df, norm.stats.f=out.files[2], bins.f=bins.f, stitch.dist=5e3, lib.loc=lib.loc))
       submitJobs(reg, findJobs(reg) , resources=c(list(walltime="1:0:0", nodes="1", cores="1"), other.resources))
       waitForJobs(reg, sleep=sleep)
-    } else {
-      if(length(findJobs(reg))!=length(findDone(reg))){
-        showStatus(reg)
-        waitForJobs(reg, sleep=sleep)
-        if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
+    }
+    if(length(findJobs(reg))!=length(findDone(reg))){
+      showStatus(reg)
+      if(length(findExpired(reg))>0){
+        message("Re-submitting ", findExpired(reg))
+        submitJobs(reg, findExpired(reg), resources=c(list(walltime="1:0:0", nodes="1", cores="1"), other.resources))
       }
+      waitForJobs(reg, sleep=sleep)
+      if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
     }
     if(status) showStatus(reg)
   }
