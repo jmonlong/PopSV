@@ -14,10 +14,11 @@
 ##' @param anno.col the name of 'anno.df' column to use to differentiate elements in the graph. E.g. 'geneName' to color the genes in the graph.
 ##' @param flanks the size of the flanking region. Default is 10000.
 ##' @param absolute.position should the bins be placed in absolute position. Default is TRUE. If FALSE, distant bins might be displayed next to each other if no bins are available in between (useful for targeted sequencing).
+##' @param nb.cores the number of cores to use. Default is 1.
 ##' @return a ggplot object
 ##' @author Jean Monlong
 ##' @export
-coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, ref.samples=NULL, boxplot=FALSE , samples=NULL, files.df=NULL, anno.df=NULL, anno.col="geneName", flanks=1e4, absolute.position=TRUE){
+coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, ref.samples=NULL, boxplot=FALSE , samples=NULL, files.df=NULL, anno.df=NULL, anno.col="geneName", flanks=1e4, absolute.position=TRUE, nb.cores=1){
 
   gr = GenomicRanges::GRanges(chr, IRanges::IRanges(start-flanks, end+flanks))
 
@@ -71,13 +72,13 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
       if(is.null(files.df)){
         warning("'files.df' is NULL and some samples are not in ",bc.f,", hence they will not be displayed.")
       } else {
-        bc.sv.l = lapply(setdiff(samples, unique(bc.all$sample)), function(samp){
+        bc.sv.l = parallel::mclapply(setdiff(samples, unique(bc.all$sample)), function(samp){
           bc = read.bedix(files.df$bc.gc.norm.gz[which(files.df$sample==samp)], gr)
           bc$sample = samp
           colnames(bc)[4] = "value"
           bc$pos = as.numeric(with(bc, (start+end)/2))
           bc[,c("chr","start","end","sample","value","pos")]
-        })
+        }, mc.cores=nb.cores)
         bc.sv = rbind(bc.sv, do.call(rbind, bc.sv.l))
       }
     }
@@ -116,7 +117,17 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
 
   ## Add the SVs
   if(!is.null(bc.sv)){
-    gp.o = gp.o + ggplot2::geom_line(ggplot2::aes(x=pos, y=value, colour=sample, group=sample),alpha=.7, size=2, data=bc.sv) + ggplot2::geom_point(ggplot2::aes(x=pos, y=value, colour=sample),size=4, data=bc.sv)
+    if(length(unique(bc.sv$sample))>20){
+      com.cols = intersect(colnames(bc.ref), colnames(bc.sv))
+      bc.ref = rbind(data.frame(set="control",bc.ref[,com.cols]), data.frame(set="tested",bc.sv[,com.cols]))
+      gp.o = ggplot2::ggplot(bc.ref) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::xlab("position")
+      if(flanks>0){
+        gp.o = gp.o + ggplot2::geom_rect(xmin=start, xmax=end, ymin=0, ymax=max.bc, fill="yellow2", ggplot2::aes(alpha=ggpSck), data=data.frame(ggpSck=0)) + ggplot2::guides(alpha=FALSE)
+      } 
+      gp.o = gp.o + ggplot2::geom_violin(ggplot2::aes(x=pos, y=value, fill=set, group=paste(set,pos)), alpha=.7, scale="width") + ggplot2::scale_fill_brewer(name="", palette="Set1")
+    } else {
+      gp.o = gp.o + ggplot2::geom_line(ggplot2::aes(x=pos, y=value, colour=sample, group=sample),alpha=.7, size=2, data=bc.sv) + ggplot2::geom_point(ggplot2::aes(x=pos, y=value, colour=sample),size=4, data=bc.sv)
+    }
   }
 
   if(!is.null(anno.df)){
