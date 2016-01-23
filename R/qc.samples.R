@@ -8,7 +8,7 @@
 ##' @param bin.df a data.frame with the information about the bins. Columns 'chr', 'start'
 ##' and 'end' are required.
 ##' @param outfile.prefix the prefix of the output file name. The suffix '.bgz' will
-##' be appended if compressed ('appendIndex.outfile=TRUE'). 
+##' be appended if compressed ('appendIndex.outfile=TRUE').
 ##' @param ref.samples a vector with the names of the samples to use as reference.
 ##' @param nb.ref.samples the number of reference samples desired. If NULL, the size of 'ref.samples'.
 ##' @param plot should PCA graphs be outputed ? Default is TRUE.
@@ -45,11 +45,11 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
   if (is.null(nb.ref.samples)) {
     nb.ref.samples = length(ref.samples)
   }
-  
+
   ## Flexible function to read bin counts on specific bins, several files, ...
-  read.bc.samples <- function(df, files.df, nb.cores = 1, med.med = NULL, med.samp = NULL, 
+  read.bc.samples <- function(df, files.df, nb.cores = 1, med.med = NULL, med.samp = NULL,
                               file = NULL, append.f = FALSE, sub.bc = NULL) {
-    bc.df = createEmptyDF(c("character", rep("integer", 2), rep("numeric", nrow(files.df))), 
+    bc.df = createEmptyDF(c("character", rep("integer", 2), rep("numeric", nrow(files.df))),
       nrow(df))
     colnames(bc.df) = c("chr", "start", "end", as.character(files.df$sample))
     bc.df$chr = df$chr
@@ -73,7 +73,7 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     }
     bc.df = bc.df[order(bc.df$chr, bc.df$start, bc.df$end),]
     if (!is.null(file)) {
-      write.table(bc.df, file = file, quote = FALSE, row.names = FALSE, sep = "\t", 
+      write.table(bc.df, file = file, quote = FALSE, row.names = FALSE, sep = "\t",
                   append = append.f, col.names = !append.f)
     }
     if (!is.null(sub.bc)) {
@@ -86,7 +86,7 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     diag(dm) = NA
     rownames(m)[which.min(apply(dm, 2, mean, na.rm = TRUE))]
   }
-  
+
   files.df = files.df[which(files.df$sample %in% ref.samples), ]
   ## Too many ref.samples
   pc.all.df = bc.rand = NULL
@@ -98,7 +98,7 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
       pts.ii = which.max(apply(dm, 1, max, na.rm = TRUE))
       pts.jj = pts.jj[-pts.ii]
       while (length(pts.ii) < nb.pts) {
-        m.ii = which.max(apply(dm[pts.ii, pts.jj, drop = FALSE], 2, min, 
+        m.ii = which.max(apply(dm[pts.ii, pts.jj, drop = FALSE], 2, min,
           na.rm = TRUE))
         pts.ii = c(pts.ii, pts.jj[m.ii])
         pts.jj = pts.jj[-m.ii]
@@ -116,18 +116,18 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     pc.all.df$reference = pc.all.df$sample %in% rownames(sp.o)
     if (plot) {
       PC1 = PC2 = reference = NULL  ## Uglily appease R checks
-      print(ggplot2::ggplot(pc.all.df, ggplot2::aes(x = PC1, y = PC2, size = reference)) + 
+      print(ggplot2::ggplot(pc.all.df, ggplot2::aes(x = PC1, y = PC2, size = reference)) +
               ggplot2::geom_point(alpha = 0.8) + ggplot2::theme_bw() + ggplot2::scale_size_manual(values = 2:3))
     }
     ref.samples = rownames(sp.o)
     bc.rand = bc.rand[, c("chr", "start", "end", ref.samples)]
   }
-  
+
   files.df = files.df[which(files.df$sample %in% ref.samples), ]
   bin.df = bin.df[order(bin.df$chr, bin.df$start, bin.df$end),]
   if (nrow(bin.df) < 1.3 * chunk.size) {
     bc.df = read.bc.samples(bin.df, files.df, nb.cores)
-    write.table(bc.df, file = outfile.prefix, quote = FALSE, row.names = FALSE, 
+    write.table(bc.df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
                 sep = "\t")
   } else {
     nb.chunks = ceiling(nrow(bin.df)/chunk.size)
@@ -135,13 +135,13 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     analyze.chunk <- function(df) {
       ch.nb = as.numeric(df$chunk[1])
       df.o = read.bedix(as.character(files.df[1, col.bc]), df,exact.match=TRUE)
-      read.bc.samples(df.o, files.df, nb.cores, med.med, med.samp, file = outfile.prefix, 
+      read.bc.samples(df.o, files.df, nb.cores, med.med, med.samp, file = outfile.prefix,
                       append.f = ch.nb > 1, sub.bc = chunk.size/nb.chunks)
     }
     if (is.null(bc.rand)) {
       bc.rand = read.bc.samples(bin.df[sample.int(nrow(bin.df), min(c(nrow(bin.df)/2,1000))), ], files.df, med.med = 1, med.samp = rep(list(1), nrow(files.df)))
     }
-    med.samp = lapply(as.character(files.df$sample), function(samp.i) median(bc.rand[, 
+    med.samp = lapply(as.character(files.df$sample), function(samp.i) median(bc.rand[,
       samp.i], na.rm = TRUE))  ## Normalization of the median coverage
     med.med = median(unlist(med.samp), na.rm = TRUE)
     bc.res = lapply(unique(bin.df$chunk), function(chunk.i) {
@@ -149,17 +149,13 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     })
     bc.df = plyr::ldply(bc.res, identity)
   }
-  
+
   ## Compress and index
   if (appendIndex.outfile) {
-    final.file = paste(outfile.prefix, ".bgz", sep = "")
-    Rsamtools::bgzip(outfile.prefix, dest = final.file, overwrite = TRUE)
-    file.remove(outfile.prefix)
-    Rsamtools::indexTabix(final.file, format = "bed")
-    outfile.prefix = final.file
+    outfile.prefix = comp.index.files(outfile.prefix, rm.input=TRUE, overwrite.out=TRUE, reorder=any(order(bin.df$chr, bin.df$start, bin.df$end)!=1:nrow(bin.df)))
   }
-  ## 
-  
+  ##
+
   ## QC
   bc.mv = medvar.norm.internal(bc.df[, ref.samples])
   if(any(is.infinite(bc.mv))){
@@ -170,11 +166,11 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
   pc.ref.df$sample = ref.samples
   if (plot) {
     PC1 = PC2 = NULL  ## Uglily appease R checks
-    print(ggplot2::ggplot(pc.ref.df, ggplot2::aes(x = PC1, y = PC2)) + ggplot2::geom_point(alpha = 0.8) + 
+    print(ggplot2::ggplot(pc.ref.df, ggplot2::aes(x = PC1, y = PC2)) + ggplot2::geom_point(alpha = 0.8) +
             ggplot2::theme_bw())
   }
   cont.sample = center.pt(pc.ref$x[, 1:2])
   bc.df = outfile.prefix
-  return(list(bc = bc.df, ref.samples = ref.samples, cont.sample = cont.sample, 
+  return(list(bc = bc.df, ref.samples = ref.samples, cont.sample = cont.sample,
               pca.all.df = pc.all.df, pca.ref.df = pc.ref.df))
-} 
+}
