@@ -18,6 +18,7 @@ comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrit
   sapply(1:length(files), function(file.ii) {
     if(reorder){
       dt = data.table::fread(files[file.ii])
+      dt[, chr:= as.character(chr)]
       data.table::setkey(dt, chr, start)
       write.table(dt, file=files[file.ii], quote=FALSE, row.names=FALSE, sep="\t")
     }

@@ -1,6 +1,6 @@
 ##' Using \code{Rsamtools} functions to manipulate tabix file, the indexed BED file is read
-##' and only regions defined by the desired subset are retrieved. 
-##' @title Retrieve a subset of an indexed BED file. 
+##' and only regions defined by the desired subset are retrieved.
+##' @title Retrieve a subset of an indexed BED file.
 ##' @param file the name of the file which the data are to be read from.
 ##' Should be compressed with |code{bgzip} and indexed by tabix algorithm.
 ##' @param subset.reg a data.frame or GRanges object with the regions to subset from.
@@ -40,9 +40,9 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
     stop("'subset.reg' must be a data.frame or a GRanges object.")
   }
 
-  
+
   subset.reg = subset.reg[order(as.character(GenomicRanges::seqnames(subset.reg)), GenomicRanges::start(subset.reg))]
-  
+
   read.chunk <- function(gr){
     bed = tryCatch(unlist(Rsamtools::scanTabix(file, param = GenomicRanges::reduce(gr))), error = function(e) c())
     if (length(bed) == 0) {
@@ -58,7 +58,7 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
     bed = as.data.frame(bed)
     return(bed)
   }
-  
+
   if (length(subset.reg) > 10000) {
     chunks = cut(1:length(subset.reg), ceiling(length(subset.reg)/10000))
     bed.df = do.call(rbind, lapply(levels(chunks), function(ch.id){
@@ -71,8 +71,8 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
   if(is.null(bed.df)){
     return(NULL)
   }
-  
-  bed.df = bed.df[order(bed.df$chr, bed.df$start),]
+
+  bed.df = bed.df[order(as.character(bed.df$chr), bed.df$start),]
 
   bed.bins.names = with(bed.df, paste(chr,start,end,sep="-"))
   if(any(dup <- duplicated(bed.bins.names))){
@@ -84,6 +84,6 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
     bins.names = paste(as.character(GenomicRanges::seqnames(subset.reg)), GenomicRanges::start(subset.reg),GenomicRanges::end(subset.reg),sep="-")
     bed.df = bed.df[which(bed.bins.names %in% bins.names),]
   }
-  
+
   return(bed.df)
-} 
+}

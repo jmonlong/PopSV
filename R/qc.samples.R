@@ -71,7 +71,7 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     for (samp.i in 1:nrow(files.df)) {
       bc.df[, as.character(files.df$sample[samp.i])] = round(bc.l[[samp.i]] * med.med/med.samp[[samp.i]], 2)
     }
-    bc.df = bc.df[order(bc.df$chr, bc.df$start, bc.df$end),]
+    bc.df = bc.df[order(as.character(bc.df$chr), bc.df$start, bc.df$end),]
     if (!is.null(file)) {
       write.table(bc.df, file = file, quote = FALSE, row.names = FALSE, sep = "\t",
                   append = append.f, col.names = !append.f)
@@ -124,7 +124,7 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
   }
 
   files.df = files.df[which(files.df$sample %in% ref.samples), ]
-  bin.df = bin.df[order(bin.df$chr, bin.df$start, bin.df$end),]
+  bin.df = bin.df[order(as.character(bin.df$chr), bin.df$start, bin.df$end),]
   if (nrow(bin.df) < 1.3 * chunk.size) {
     bc.df = read.bc.samples(bin.df, files.df, nb.cores)
     write.table(bc.df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
