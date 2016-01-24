@@ -6,7 +6,7 @@ samps = paste0("samp",1:4)
 samps.f = paste0(samps, "-bc.tsv")
 samp.med = c(1000,2000,3000,5000)
 sapply(1:4, function(ii){
-  bin.df = bin.df[order(bin.df$chr, bin.df$start),]
+  bin.df = bin.df[order(as.character(bin.df$chr), bin.df$start),]
   bin.df$bc = round(rnorm(100,samp.med[ii],100),2)
   write.table(bin.df, file=samps.f[ii], row.names=FALSE, quote=FALSE, sep="\t")
 })
@@ -81,7 +81,7 @@ test_that("Samples and coordinates are correctly merged",{
   bcm = read.table(qc.o$bc, header=TRUE, as.is=TRUE)
   expect_true(all(samps %in% colnames(bcm)))
   bc2 = read.table(paste0(samps.f[2], ".bgz"), header=TRUE, as.is=TRUE)
-  bc2 = bc2[order(bc2$chr, bc2$start), ]
+  bc2 = bc2[order(as.character(bc2$chr), bc2$start), ]
   expect_equal(rank(bc2$bc), rank(bcm[,samps[2]]))
   expect_true(file.remove("temp.tsv"))
 })
@@ -98,7 +98,7 @@ test_that("PCA is computed",{
 
 test_that("It's robust to NA/Infinite values",{
   ii = 3
-  bin.df = bin.df[order(bin.df$chr, bin.df$start),]
+  bin.df = bin.df[order(as.character(bin.df$chr), bin.df$start),]
   bin.df$bc = rnorm(100,samp.med[ii],100)
   bin.df$bc[1:2] = c(NA, Inf)
   write.table(bin.df, file=samps.f[ii], row.names=FALSE, quote=FALSE, sep="\t")

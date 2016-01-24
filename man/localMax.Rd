@@ -9,7 +9,7 @@ localMax(x, min.max.prop = 0.1)
 \arguments{
 \item{x}{a vector with numeric values}
 
-\item{min.max.prop}{the minimum height of the maximum to be considered. Default is 0.1, i.e. all maximum at least 10% as height as the highest maximum.}
+\item{min.max.prop}{the minimum height of the maximum to be considered. Default is 0.1, i.e. all maximum at least 10\% as height as the highest maximum.}
 }
 \value{
 a list with the local maximum position and height.
