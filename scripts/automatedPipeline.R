@@ -137,7 +137,9 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
   ## Write normalized bin counts and reference metrics
   out.files = paste(paste0("ref",file.suffix), c("bc-norm.tsv", "msd.tsv"), sep="-")
   if(rewrite | all(!file.exists(out.files))){
-    tmp = file.remove(out.files)
+    if(any(file.exists(out.files))){
+      tmp = file.remove(out.files[which(!file.exists(out.files))])
+    }
     tmp = reduceResultsList(reg, fun=function(res, job){
       write.table(res$bc.norm, file=out.files[1], sep="\t", row.names=FALSE, quote=FALSE, append=file.exists(out.files[1]), col.names=!file.exists(out.files[1]))
       write.table(res$norm.stats, file=out.files[2], sep="\t", row.names=FALSE, quote=FALSE, append=file.exists(out.files[2]), col.names=!file.exists(out.files[2]))

@@ -17,14 +17,23 @@ files.df = init.filenames(subset(bam.files, gender=="female"), code="5kbpFemale"
 save(files.df, file="filesFemale.RData")
 ####
 
-#### Count 
-male.GCcounts = autoGCcounts("filesMale.RData", "bins.RData", file.suffix="male", lib.loc="/home/jmonlong/R/PopSVforPaper", status=TRUE)
-female.GCcounts = autoGCcounts("filesFemale.RData", "bins.RData", file.suffix="female", lib.loc="/home/jmonlong/R/PopSVforPaper", skip=1, status=TRUE)
+## Reference samples: normal samples
+ref.samples = subset(bam.files, status=="normal")$sample
+
+## Count
+male.GCcounts = autoGCcounts("filesMale.RData", "bins.RData", file.suffix="male")
+female.GCcounts = autoGCcounts("filesFemale.RData", "bins.RData", file.suffix="female", skip=1)
+##
+
 
 #### Run PopSV
-resFemale.df = autoNormTest("filesFemale.RData", "bins.RData", file.suffix="female", lib.loc="/home/jmonlong/R/PopSVforPaper")
-resMale.df = autoNormTest("filesMale.RData", "bins.RData", file.suffix="male", lib.loc="/home/jmonlong/R/PopSVforPaper")
+resMale.df = autoNormTest("filesMale.RData", "bins.RData", file.suffix="male", ref.samples=ref.samples)
+resFemale.df = autoNormTest("filesFemale.RData", "bins.RData", file.suffix="female", ref.samples=ref.samples)
+
 
 #### Merge results
 res.df = rbind(resFemale.df, resMale.df)
+## Eventually merge useful information on the samples
+res.df = merge(res.df, bam.files[,c("sample","gender","status")])
 res.filt.df = sv.summary.interactive(res.df) ## Run locally because it opens an interactive web browser application
+
