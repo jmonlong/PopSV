@@ -16,6 +16,12 @@
 sv.summary.interactive <- function(res.df, height="500px"){
   sample = gen.kb = col = cn = chr = nb = fc = type = start = end = prop = . = freq.n = nb.bin.cons = NULL ## Uglily appease R checks
 
+  chrs.names = chr.o = unique(res.df$chr)
+  if(any(grepl("chr",chrs.names))){
+    chr.o = gsub("chr","",chrs.names)
+  } 
+  chrs.names = chrs.names[order(as.numeric(chr.o))]
+    
   nb.samp = length(unique(res.df$sample))
   freq.chr.gr <- function(cnv.o){
     gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
@@ -54,7 +60,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
                                       shiny::numericInput("cnMin", "Minimum CN shown", 0, 0, Inf, 1),
                                       shiny::numericInput("cnMax", "Maximum CN shown", 5, 1, Inf, 1)),
               shiny::conditionalPanel(condition = "input.conditionPanels == 'Frequency across the genome'",
-                                      shiny::selectInput("chr","Chromosome",c("all",1:22)),shiny::radioButtons("fchr.rep","Representation",c("Stacked","Sample"))),
+                                      shiny::selectInput("chr","Chromosome",c("all",chrs.names)),shiny::radioButtons("fchr.rep","Representation",c("Stacked","Sample"))),
               shiny::conditionalPanel(condition = "input.conditionPanels == 'Frequency across the genome' | input.conditionPanels == 'Frequency distribution'",
                                       shiny::radioButtons("freq.rep","Frequency:", c("Number of samples"="nb","Proportion of samples"="prop"))),
               shiny::conditionalPanel(condition = "input.conditionPanels == 'Frequency distribution'",
@@ -176,9 +182,9 @@ sv.summary.interactive <- function(res.df, height="500px"){
         output$freq.chr = shiny::renderPlot({
             if(input$chr=="all"){
               chr.df = freq.df()
-              chr.df$chr = factor(chr.df$chr, levels=c(1:22,"X","Y"))
+              chr.df$chr = factor(chr.df$chr, levels=chrs.names)
               pdf = plot.df()
-              pdf$chr = factor(pdf$chr, levels=c(1:22,"X","Y"))
+              pdf$chr = factor(pdf$chr, levels=chrs.names)
               facet.o = ggplot2::facet_wrap(~chr,scales="free")
             } else {
               chr.df = freq.df()
