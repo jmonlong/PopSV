@@ -57,6 +57,9 @@ coverage.plot.raw <- function(chr, start, end, files.df, samples, proper=TRUE, m
   } else {
     norm.f = rep(1,length(samples))
   }
+  if(any(norm.f==0)){
+    norm.f[which(norm.f==0)] = 1
+  }
   cov = cov %*% diag(mean(norm.f)/norm.f)
   colnames(cov) = samples
   rownames(cov) = GenomicRanges::start(gr.frag)
