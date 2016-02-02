@@ -5,7 +5,8 @@
 \title{Targeted-normalization of bin counts}
 \usage{
 tn.norm(bc, cont.sample, nb.support.bins = 1000, bins = NULL,
-  save.support.bins = TRUE, norm = c("1pass", "bootstrap"))
+  save.support.bins = TRUE, norm = c("1pass", "bootstrap"),
+  force.diff.chr = TRUE)
 }
 \arguments{
 \item{bc}{a matrix or data.frame with the bin counts (bin x sample).}
@@ -22,6 +23,8 @@ bins are normalized.}
 saved in the output object 'norm.stats'.}
 
 \item{norm}{the type of normalization. '1pass' (default) means one pass of normalization. Other options is 'bootstrap'.}
+
+\item{force.diff.chr}{should the supporting bins be forced to be in a different chromosome. Default is TRUE.}
 }
 \value{
 a list with

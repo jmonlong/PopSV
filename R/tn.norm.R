@@ -14,6 +14,7 @@
 ##' @param save.support.bins if TRUE (default) the bins used for the normalization are
 ##' saved in the output object 'norm.stats'.
 ##' @param norm the type of normalization. '1pass' (default) means one pass of normalization. Other options is 'bootstrap'.
+##' @param force.diff.chr should the supporting bins be forced to be in a different chromosome. Default is TRUE.
 ##' @return a list with
 ##' \item{norm.stats}{a data.frame witht some metrics about the normalization of each
 ##' bin (row) : correlation with worst supporting bin ('d.max'); coverage average ('m') and standard deviation ('sd'); number of outlier reference samples ('nb.remove'); supporting bins.}
@@ -21,7 +22,7 @@
 ##' \item{nb.support.bins, cont.sample}{a backup of the input parameters.}
 ##' @author Jean Monlong
 ##' @export
-tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.support.bins = TRUE, norm = c("1pass", "bootstrap")) {
+tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.support.bins = TRUE, norm = c("1pass", "bootstrap"), force.diff.chr=TRUE) {
 
   all.samples = setdiff(colnames(bc), c("chr", "start", "end"))
   rownames(bc) = paste(bc$chr, as.integer(bc$start), sep = "-")
@@ -44,13 +45,13 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
   norm.stats$start = bc.norm$start = bc[bins, "start"]
   norm.stats$end = bc.norm$end = bc[bins, "end"]
 
+  chrs = bc$chr
   denorm.factor = runif(length(all.samples), 1,1.5)
   denorm.factor[which(all.samples==cont.sample)] = 1
   bc = t(as.matrix(bc[, all.samples]))
   bc = denorm.factor * bc
 
   for (bin.ii in 1:length(bins)) {
-
     bin = bins[bin.ii]
     bc.i = bc[, bin]
     if (any(!is.na(bc.i) & bc.i != 0)) {
@@ -69,6 +70,12 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
           }
         } else {
           d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs")))
+        }
+        if(force.diff.chr){
+          chr.i = bc.norm$chr[bin.ii]
+          if(any(chr.i==chrs)){
+            d.i[which(chr.i==chrs)] = NA
+          }
         }
         d.o.i = order(d.i)[1:nb.support.bins]
         d.max = as.numeric(d.i[d.o.i[nb.support.bins]])
