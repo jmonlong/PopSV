@@ -24,7 +24,8 @@ makeClusterFunctionsAdaptive <- function (template.file)
         cfKillBatchJob("canceljob", batch.job.id)
     }
     listJobs = function(conf, reg) {
-         BatchJobs:::runOSCommandLinux("showq", "-u $USER")$output
+      lj = BatchJobs:::runOSCommandLinux("showq", "-u $USER")$output
+      unique(as.numeric(gsub("([0-9]+)[ ]+.*","\\1",lj[grep("Running", lj)])))
     }
     getArrayEnvirName = function() "PBS_ARRAYID"
     makeClusterFunctions(name = "Adaptive", submitJob = submitJob, 
