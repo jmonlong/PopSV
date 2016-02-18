@@ -6,7 +6,7 @@
 #PBS -o /gs/scratch/jmonlong/jobs_output/
 #PBS -l walltime=<%= resources$walltime %>
 #PBS -l nodes=<%= resources$nodes %>:ppn=<%= resources$cores %>
-#PBS -A bws-221-ae
+#PBS -A <%= resources$supervisor.group %>
 #PBS -V
 
 ## Run R:
