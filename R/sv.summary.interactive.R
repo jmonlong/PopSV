@@ -19,9 +19,9 @@ sv.summary.interactive <- function(res.df, height="500px"){
   chrs.names = chr.o = unique(res.df$chr)
   if(any(grepl("chr",chrs.names))){
     chr.o = gsub("chr","",chrs.names)
-  } 
+  }
   chrs.names = chrs.names[order(as.numeric(chr.o))]
-    
+
   nb.samp = length(unique(res.df$sample))
   freq.chr.gr <- function(cnv.o){
     gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
@@ -214,6 +214,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
               wmin = max(chr.df$end/1e3)
               if(any(widths<wmin))widths[widths<wmin] = wmin
               pdf$end = pdf$start + widths
+              pdf$sample = reorder(pdf$sample, pdf$end-pdf$start, sum)
               return(ggplot2::ggplot(pdf, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=as.numeric(sample)-.5, ymax=as.numeric(sample)+.5, fill=type)) +
                          ggplot2::scale_fill_brewer(palette="Set1") +
                              ggplot2::scale_x_continuous(breaks=seq(0,max(chr.df$end)/1e6,20)) +
