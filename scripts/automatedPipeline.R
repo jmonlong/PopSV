@@ -5,71 +5,44 @@ message("Two functions :
 - 'autoNormTest' to normalize and test all the samples.
 ")
 
-autoGCcounts <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, skip=NULL){
+autoGCcounts <- function(files.f, bins.f, redo=NULL, sleep=180, status=FALSE, file.suffix="", lib.loc=NULL, skip=NULL){
   load(files.f)
   
-  message("\n== 1) Get GC content in each bin.\n")
-  stepName = paste0("getGC",file.suffix)
+  message("\n== 1) Get bin counts in each sample and correct for GC bias.\n")
+  stepName = paste0("getBC",file.suffix)
   if(any(redo==1)) unlink(paste0(stepName, "-files"), recursive=TRUE)
   reg <- makeRegistry(id=stepName, seed=123)
   if(!any(skip==1) & length(findJobs(reg))==0){
-    getGC.f <- function(imF){
-      load(imF)
-      library(PopSV, lib.loc=lib.loc)
-      bins.df = getGC.hg19(bins.df)
-      save(bins.df, file=imF)
-    }
-    batchMap(reg, getGC.f,bins.f)
-    submitJobs(reg, findJobs(reg), resources=c(list(walltime="2:0:0", nodes="1", cores="1"), other.resources))
-    waitForJobs(reg, sleep=sleep)
-  }
-  if(length(findJobs(reg))!=length(findDone(reg))){
-    showStatus(reg)
-    if(length(findExpired(reg))>0){
-      message("Re-submitting ", findExpired(reg))
-      submitJobs(reg, findExpired(reg), resources=c(list(walltime="2:0:0", nodes="1", cores="1"), other.resources))
-    }
-    waitForJobs(reg, sleep=sleep)
-    if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
-  }
-  if(status) showStatus(reg)
-
-  message("\n== 2) Get bin counts in each sample and correct for GC bias.\n")
-  stepName = paste0("getBC",file.suffix)
-  if(any(redo==2)) unlink(paste0(stepName, "-files"), recursive=TRUE)
-  reg <- makeRegistry(id=stepName, seed=123)
-  if(!any(skip==2) & length(findJobs(reg))==0){
     getBC.f <- function(file.i, bins.f, files.df){
       library(PopSV, lib.loc=lib.loc)
       load(bins.f)
-      bb.o = bin.bam(files.df$bam[file.i], bins.df, files.df$bc[file.i])
+      system(paste0("/icgc/icgc-storage-client/bin/icgc-storage-client --profile collab download --object-id ",files.df$object[file.i]," --output-dir /root/bams"))
+      bb.o = bin.bam(paste0("/root/bams/",files.df$bam[file.i]), bins.df, files.df$bc[file.i])
       correct.GC(files.df$bc.gz[file.i], bins.df, files.df$bc.gc[file.i])
+      ## system(paste0("rm /root/bams/",files.df$bam[file.i]))
       bb.o
     }
     batchMap(reg, getBC.f,1:nrow(files.df), more.args=list(bins.f=bins.f, files.df=files.df))
-    submitJobs(reg, findJobs(reg), resources=c(list(walltime="20:0:0", nodes="1", cores="1"), other.resources))
+    submitJobs(reg, findJobs(reg))
     waitForJobs(reg, sleep=sleep)
   }
   if(length(findJobs(reg))!=length(findDone(reg))){
     showStatus(reg)
     if(length(findExpired(reg))>0){
       message("Re-submitting ", findExpired(reg))
-      submitJobs(reg, findExpired(reg), resources=c(list(walltime="20:0:0", nodes="1", cores="1"), other.resources))
+      submitJobs(reg, findExpired(reg))
     }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
-      submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime="20:0:0", nodes="1", cores="1"), other.resources))
+      submitJobs(reg, findNotSubmitted(reg))
     }
     waitForJobs(reg, sleep=sleep)
     if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
   }
   if(status) showStatus(reg)
-
-  ## load(bins.f)
-  ## quick.count(files.df, bins.df, col.files="bc.gc.gz", nb.rand.bins=1e3) 
 }
   
-autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, ref.samples=NULL){
+autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, ref.samples=NULL){
   load(files.f)
   
   message("\n== 1) Sample QC and reference definition.\n")
@@ -93,18 +66,18 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
       qc.o 
     }
     batchMap(reg, sampQC.f,bc.ref.f, more.args=list(bins.f=bins.f, files.df=files.ref, sampQC.pdf.f=sampQC.pdf.f, lib.loc=lib.loc))
-    submitJobs(reg, 1, resources=c(list(walltime="10:0:0", nodes="1", cores="6"), other.resources))
+    submitJobs(reg, 1)
     waitForJobs(reg, sleep=sleep)
   }
   if(length(findJobs(reg))!=length(findDone(reg))){
     showStatus(reg)
     if(length(findExpired(reg))>0){
       message("Re-submitting ", findExpired(reg))
-      submitJobs(reg, findExpired(reg), resources=c(list(walltime="10:0:0", nodes="1", cores="6"), other.resources))
+      submitJobs(reg, findExpired(reg))
     }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
-      submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime="20:0:0", nodes="1", cores="1"), other.resources))
+      submitJobs(reg, findNotSubmitted(reg))
     }
     waitForJobs(reg, sleep=sleep)
     if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
@@ -130,18 +103,18 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
       tn.norm(bc.df, cont.sample, bins=subset(bins.df, sm.chunk==chunk.id)$bin)
     }
     batchMap(reg, bcNormTN.f,unique(bins.df$sm.chunk), more.args=list(file.bc=samp.qc.o$bc, file.bin=bins.f,cont.sample=samp.qc.o$cont.sample, lib.loc=lib.loc))
-    submitJobs(reg, findJobs(reg) , resources=c(list(walltime="12:0:0", nodes="1", cores="1"), other.resources))
+    submitJobs(reg, findJobs(reg))
     waitForJobs(reg, sleep=sleep)
   } 
   if(length(findJobs(reg))!=length(findDone(reg))){
     showStatus(reg)
     if(length(findExpired(reg))>0){
       message("Re-submitting ", findExpired(reg))
-      submitJobs(reg, findExpired(reg), resources=c(list(walltime="12:0:0", nodes="1", cores="1"), other.resources))
+      submitJobs(reg, findExpired(reg))
     }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
-      submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime="20:0:0", nodes="1", cores="1"), other.resources))
+      submitJobs(reg, findNotSubmitted(reg))
     }
     waitForJobs(reg, sleep=sleep)
     if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
@@ -169,18 +142,18 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
       z.comp(bc.f=bc.f, files.df=files.df, nb.cores=3, z.poisson=TRUE, chunk.size=1e3)
     }
     batchMap(reg, zRef.f,out.files[1], more.args=list(files.df=files.df, lib.loc=lib.loc))
-    submitJobs(reg, 1, resources=c(list(walltime="6:0:0", nodes="1", cores="3"), other.resources))
+    submitJobs(reg, 1)
     waitForJobs(reg, sleep=sleep)
   }
   if(length(findJobs(reg))!=length(findDone(reg))){
     showStatus(reg)
     if(length(findExpired(reg))>0){
       message("Re-submitting ", findExpired(reg))
-      submitJobs(reg, findExpired(reg), resources=c(list(walltime="6:0:0", nodes="1", cores="3"), other.resources))
+      submitJobs(reg, findExpired(reg))
     }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
-      submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime="20:0:0", nodes="1", cores="1"), other.resources))
+      submitJobs(reg, findNotSubmitted(reg))
     }
     waitForJobs(reg, sleep=sleep)
     if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
@@ -197,18 +170,18 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
       tn.test.sample(samp, files.df, cont.sample, bc.ref.f, norm.stats.f, z.poisson=TRUE, aberrant.cases=TRUE)
     }
     batchMap(reg, callOthers.f,setdiff(files.df$sample, samp.qc.o$ref.samples), more.args=list(cont.sample=samp.qc.o$cont.sample, files.df=files.df, norm.stats.f=out.files[2], bc.ref.f=samp.qc.o$bc, lib.loc=lib.loc))
-    submitJobs(reg, findJobs(reg), resources=c(list(walltime="6:0:0", nodes="1", cores="1"), other.resources))
+    submitJobs(reg, findJobs(reg))
     waitForJobs(reg, sleep=sleep)
   }
   if(length(findJobs(reg))!=length(findDone(reg))){
     showStatus(reg)
     if(length(findExpired(reg))>0){
       message("Re-submitting ", findExpired(reg))
-      submitJobs(reg, findExpired(reg), resources=c(list(walltime="6:0:0", nodes="1", cores="1"), other.resources))
+      submitJobs(reg, findExpired(reg))
     }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
-      submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime="20:0:0", nodes="1", cores="1"), other.resources))
+      submitJobs(reg, findNotSubmitted(reg))
     }
     waitForJobs(reg, sleep=sleep)
     if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
@@ -226,18 +199,18 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
       call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"-sdest-abCovCall.pdf"), FDR.th=.001, merge.cons.bins="stitch", z.th="sdest", norm.stats=norm.stats.f, stitch.dist=stitch.dist, gc.df=bins.df,  min.normal.prop=.6)
     }
     batchMap(reg, abCovCallCases.f, files.df$sample, more.args=list(files.df=files.df, norm.stats.f=out.files[2], bins.f=bins.f, stitch.dist=5e3, lib.loc=lib.loc))
-    submitJobs(reg, findJobs(reg) , resources=c(list(walltime="1:0:0", nodes="1", cores="1"), other.resources))
+    submitJobs(reg, findJobs(reg))
     waitForJobs(reg, sleep=sleep)
   }
   if(length(findJobs(reg))!=length(findDone(reg))){
     showStatus(reg)
     if(length(findExpired(reg))>0){
       message("Re-submitting ", findExpired(reg))
-      submitJobs(reg, findExpired(reg), resources=c(list(walltime="1:0:0", nodes="1", cores="1"), other.resources))
+      submitJobs(reg, findExpired(reg))
     }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
-      submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime="20:0:0", nodes="1", cores="1"), other.resources))
+      submitJobs(reg, findNotSubmitted(reg))
     }
     waitForJobs(reg, sleep=sleep)
     if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
@@ -257,18 +230,18 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
         call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(project,"/",samp,"/",samp,"-sdest-abCovCall.pdf"), FDR.th=.05, merge.cons.bins="stitch", z.th="sdest", norm.stats=norm.stats.f, stitch.dist=stitch.dist, gc.df=bins.df,  min.normal.prop=.6)
       }
       batchMap(reg, abCovCallCases.f, files.df$sample, more.args=list(files.df=files.df, norm.stats.f=out.files[2], bins.f=bins.f, stitch.dist=5e3, lib.loc=lib.loc))
-      submitJobs(reg, findJobs(reg) , resources=c(list(walltime="1:0:0", nodes="1", cores="1"), other.resources))
+      submitJobs(reg, findJobs(reg))
       waitForJobs(reg, sleep=sleep)
     }
     if(length(findJobs(reg))!=length(findDone(reg))){
       showStatus(reg)
       if(length(findExpired(reg))>0){
         message("Re-submitting ", findExpired(reg))
-        submitJobs(reg, findExpired(reg), resources=c(list(walltime="1:0:0", nodes="1", cores="1"), other.resources))
+        submitJobs(reg, findExpired(reg))
       }
       if(length(findNotSubmitted(reg))>0){
         message("Re-submitting ", findNotSubmitted(reg))
-        submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime="20:0:0", nodes="1", cores="1"), other.resources))
+        submitJobs(reg, findNotSubmitted(reg))
       }
       waitForJobs(reg, sleep=sleep)
       if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
