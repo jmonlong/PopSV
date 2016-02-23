@@ -6,7 +6,7 @@
 \usage{
 bin.bam(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile = TRUE,
   proper = TRUE, map.quality = 30, chunk.size = 10000,
-  check.chr.name = TRUE, no.checks = FALSE)
+  check.chr.name = TRUE, no.checks = FALSE, bai.file = NULL)
 }
 \arguments{
 \item{bam.file}{the BAM file}
@@ -36,6 +36,8 @@ definition of chromosome (e.g. '1' vs 'chr1') are consistent between the bin
 definition and the BAM file. If FALSE, the analysis will continue either way.}
 
 \item{no.checks}{if TRUE, won't stop if there are no reads or the chromosome names are inconsistent. Default is FALSE.}
+
+\item{bai.file}{the index file of the BAM. If NULL it will be guessed.}
 }
 \value{
 a list:

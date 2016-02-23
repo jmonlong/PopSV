@@ -17,7 +17,9 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, sleep=180, status=FALSE, fi
       library(PopSV, lib.loc=lib.loc)
       load(bins.f)
       system(paste0("/icgc/icgc-storage-client/bin/icgc-storage-client --profile collab download --object-id ",files.df$object[file.i]," --output-dir /root/bams"))
-      bb.o = bin.bam(paste0("/root/bams/",files.df$bam[file.i]), bins.df, files.df$bc[file.i])
+      bam.f = paste0("/root/bams/",files.df$bam[file.i],"/",files.df$object[file.i])
+      bai.f = paste0("/root/bams/",files.df$bam[file.i],".bai")
+      bb.o = bin.bam(bam.f, bins.df, files.df$bc[file.i], bai.file=bai.f)
       correct.GC(files.df$bc.gz[file.i], bins.df, files.df$bc.gc[file.i])
       ## system(paste0("rm /root/bams/",files.df$bam[file.i]))
       bb.o
