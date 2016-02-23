@@ -25,7 +25,8 @@ makeClusterFunctionsAdaptive <- function (template.file)
     }
     listJobs = function(conf, reg) {
       lj = BatchJobs:::runOSCommandLinux("showq", "-u $USER")$output
-      unique(as.numeric(gsub("([0-9]+)[ ]+.*","\\1",lj[grep("Running", lj)])))
+      lj = grep("^([0-9]+)[ ]+", lj, value=TRUE)
+      unique(as.numeric(gsub("^([0-9]+)[ ]+.*","\\1",lj)))
     }
     getArrayEnvirName = function() "PBS_ARRAYID"
     makeClusterFunctions(name = "Adaptive", submitJob = submitJob, 
