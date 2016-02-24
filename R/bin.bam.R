@@ -21,6 +21,7 @@
 ##' definition of chromosome (e.g. '1' vs 'chr1') are consistent between the bin
 ##' definition and the BAM file. If FALSE, the analysis will continue either way.
 ##' @param no.checks if TRUE, won't stop if there are no reads or the chromosome names are inconsistent. Default is FALSE.
+##' @param bai.file the index file of the BAM. If NULL it will be guessed.
 ##' @return a list:
 ##' \item{bc}{the final output file name if 'appendIndex.outfile' was TRUE; a data.frame with
 ##' the bin counts if not.}
@@ -28,7 +29,7 @@
 ##' @author Jean Monlong
 ##' @export
 bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile = TRUE,
-                    proper = TRUE, map.quality = 30, chunk.size = 10000, check.chr.name = TRUE, no.checks=FALSE) {
+                    proper = TRUE, map.quality = 30, chunk.size = 10000, check.chr.name = TRUE, no.checks=FALSE, bai.file=NULL) {
   if (is.null(outfile.prefix) & appendIndex.outfile) {
     stop("If 'appendIndex.outfile' is TRUE, please provide 'outfile.prefix'.")
   }
@@ -42,7 +43,9 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
   bin.df = bin.df[order(as.character(bin.df$chr), bin.df$start),]
   bin.df$chunk = rep(1:ceiling(nrow(bin.df)/chunk.size), each = chunk.size)[1:nrow(bin.df)]
 
-  bai.file = sub("bam$", "bai", bam.file, perl = TRUE)
+  if(is.null(bai.file)){
+    bai.file = sub("bam$", "bai", bam.file, perl = TRUE)
+  }
   if (!file.exists(bai.file)) {
     bai.file = paste0(bam.file, ".bai")
     if (!file.exists(bai.file)) {
