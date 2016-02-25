@@ -23,7 +23,7 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, sleep=180, status=FALSE, fi
       bai.f = paste0("/root/bams/",files.df$bam[file.i],".bai/",files.df$bam[file.i],".bai")
       bb.o = bin.bam(bam.f, bins.df, files.df$bc[file.i], bai.file=bai.f)
       correct.GC(files.df$bc.gz[file.i], bins.df, files.df$bc.gc[file.i])
-      ## system(paste0("rm /root/bams/",files.df$bam[file.i]))
+      system(paste0("rm -r /root/bams/",files.df$bam[file.i],"*"))
       bb.o
     }
     batchMap(reg, getBC.f,1:nrow(files.df), more.args=list(bins.f=bins.f, files.df=files.df))
