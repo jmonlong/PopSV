@@ -32,7 +32,7 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, sleep=180, status=FALSE, fi
     }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
-      submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime=step.walltime[1], nodes="1", cores=step.cores[1], other.resources))
+      submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime=step.walltime[1], nodes="1", cores=step.cores[1]), other.resources))
     }
     waitForJobs(reg, sleep=sleep)
     if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
@@ -285,3 +285,4 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
   res.df = do.call(rbind, reduceResultsList(reg))
   return(res.df)
 }
+
