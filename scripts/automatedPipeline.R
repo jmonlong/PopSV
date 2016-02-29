@@ -46,7 +46,7 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, sleep=180, status=FALSE, fi
   if(status) showStatus(reg)
 }
   
-autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, ref.samples=NULL){
+autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, ref.samples=NULL, FDR.th=.001){
   load(files.f)
   
   message("\n== 1) Sample QC and reference definition.\n")
@@ -197,12 +197,12 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
   if(any(redo==5)) unlink(paste0(stepName, "-files"), recursive=TRUE)
   reg <- makeRegistry(id=stepName, seed=123)
   if(length(findJobs(reg))==0){
-    abCovCallCases.f <- function(samp, files.df, norm.stats.f, bins.f, stitch.dist, lib.loc){
+    abCovCallCases.f <- function(samp, files.df, norm.stats.f, bins.f, stitch.dist, lib.loc, FDR.th){
       library(PopSV, lib.loc=lib.loc)
       load(bins.f)
-      call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"-sdest-abCovCall.pdf"), FDR.th=.001, merge.cons.bins="stitch", z.th="sdest", norm.stats=norm.stats.f, stitch.dist=stitch.dist, gc.df=bins.df,  min.normal.prop=.6)
+      call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"-sdest-abCovCall.pdf"), FDR.th=FDR.th, merge.cons.bins="stitch", z.th="sdest", norm.stats=norm.stats.f, stitch.dist=stitch.dist, gc.df=bins.df,  min.normal.prop=.6)
     }
-    batchMap(reg, abCovCallCases.f, files.df$sample, more.args=list(files.df=files.df, norm.stats.f=out.files[2], bins.f=bins.f, stitch.dist=5e3, lib.loc=lib.loc))
+    batchMap(reg, abCovCallCases.f, files.df$sample, more.args=list(files.df=files.df, norm.stats.f=out.files[2], bins.f=bins.f, stitch.dist=5e3, lib.loc=lib.loc, FDR.th=FDR.th))
     submitJobs(reg, findJobs(reg))
     waitForJobs(reg, sleep=sleep)
   }
