@@ -44,6 +44,7 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplic
   cnv.df = data.frame(as.data.frame(ol.l), sample=cnv.gr$sample)
   ol.prof = unique(cnv.df[,1:length(feat.grl), drop=FALSE])
   null.gr = parallel::mclapply(1:nrow(ol.prof), function(ii){
+    message(ii)
     gr.ii = cnv.gr[which(apply(t(as.matrix(cnv.df[,1:length(feat.grl), drop=FALSE]))==unlist(ol.prof[ii,]),2,all))]
     widths = width(gr.ii)
     w.class = cut(widths, breaks=c(0,unique(quantile(widths, probs=ppoints(nb.class))), Inf))
@@ -51,8 +52,12 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplic
     tt = tapply(1:length(gr.ii), w.class, function(iii){
       w.i = widths[iii]
       demi.w = mean(w.i, na.rm=TRUE) / 2
-      good.d = apply(t(as.matrix(d.df)-demi.w)*ifelse(unlist(ol.prof[ii,]),1,-1),2, function(x)all(x<0))
-      gr = GenomicRanges::resize(d.gr[sample(which(good.d), length(w.i), TRUE)], w.i, fix="center")
+      good.d = colSums(t(as.matrix(d.df)-demi.w)*ifelse(unlist(ol.prof[ii,]),1,-1)<0)
+      nb.feat.good = ncol(ol.prof)
+      while(all(good.d!=nb.feat.good)){
+        nb.feat.good = nb.feat.good - 1
+      }
+      gr = GenomicRanges::resize(d.gr[sample(which(good.d==nb.feat.good), length(w.i), TRUE)], w.i, fix="center")
       gr$sample = gr.ii$sample[iii]
       gr
     })
