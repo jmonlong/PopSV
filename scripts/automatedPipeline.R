@@ -74,7 +74,7 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, sleep=180, status=FALSE, fi
   ## quick.count(files.df, bins.df, col.files="bc.gc.gz", nb.rand.bins=1e3)
 }
 
-autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, ref.samples=NULL, FDR.th=.001, step.walltime=c(10,12,6,6,1,1), step.cores=c(6,1,3,1,1,1)){
+autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, norm=c("1pass","bootstrap"), ref.samples=NULL, FDR.th=.001, step.walltime=c(10,12,6,6,1,1), step.cores=c(6,1,3,1,1,1)){
   load(files.f)
   step.walltime = paste0(step.walltime, ":0:0")
 
@@ -129,13 +129,13 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
       bins.df = chunk.bin(bins.df, bg.chunk.size=1e5, sm.chunk.size=1e4, large.chr.chunks=TRUE)
       save(bins.df, file=bins.f)
     }
-    bcNormTN.f <- function(chunk.id, file.bc, file.bin, cont.sample, lib.loc){
+    bcNormTN.f <- function(chunk.id, file.bc, file.bin, cont.sample, lib.loc, norm){
       load(file.bin)
       library(PopSV, lib.loc=lib.loc)
       bc.df = read.table(file.bc, header=TRUE, as.is=TRUE)
-      tn.norm(bc.df, cont.sample, bins=subset(bins.df, sm.chunk==chunk.id)$bin)
+      tn.norm(bc.df, cont.sample, bins=subset(bins.df, sm.chunk==chunk.id)$bin, norm=norm)
     }
-    batchMap(reg, bcNormTN.f,unique(bins.df$sm.chunk), more.args=list(file.bc=samp.qc.o$bc, file.bin=bins.f,cont.sample=samp.qc.o$cont.sample, lib.loc=lib.loc))
+    batchMap(reg, bcNormTN.f,unique(bins.df$sm.chunk), more.args=list(file.bc=samp.qc.o$bc, file.bin=bins.f,cont.sample=samp.qc.o$cont.sample, lib.loc=lib.loc, norm=norm))
     submitJobs(reg, findJobs(reg) , resources=c(list(walltime=step.walltime[2], nodes="1", cores=step.cores[2]), other.resources))
     waitForJobs(reg, sleep=sleep)
   }
