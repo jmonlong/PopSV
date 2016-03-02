@@ -132,7 +132,7 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     bcNormTN.f <- function(chunk.id, file.bc, file.bin, cont.sample, lib.loc, norm){
       load(file.bin)
       library(PopSV, lib.loc=lib.loc)
-      bc.df = read.table(file.bc, header=TRUE, as.is=TRUE)
+      bc.df = read.bedix(file.bc, subset(bins.df, bg.chunk==subset(bins.df, sm.chunk==chunk.id)$bg.chunk[1]))
       tn.norm(bc.df, cont.sample, bins=subset(bins.df, sm.chunk==chunk.id)$bin, norm=norm)
     }
     batchMap(reg, bcNormTN.f,unique(bins.df$sm.chunk), more.args=list(file.bc=samp.qc.o$bc, file.bin=bins.f,cont.sample=samp.qc.o$cont.sample, lib.loc=lib.loc, norm=norm))
