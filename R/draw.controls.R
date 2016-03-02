@@ -23,7 +23,7 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplic
   }
 
   if(is.data.frame(cnv.gr)){
-    cnv.gr = GenomicRanges::makeGRangesFromDataFrame(cnv.gr)
+    cnv.gr = GenomicRanges::makeGRangesFromDataFrame(cnv.gr, keep.extra.columns = TRUE)
   }
   if(!is.null(min.nb.gr) && min.nb.gr > length(cnv.gr)){
     cnv.gr = cnv.gr[sample.int(length(cnv.gr), min.nb.gr, replace=TRUE)]
