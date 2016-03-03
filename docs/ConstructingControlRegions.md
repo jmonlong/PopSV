@@ -52,13 +52,13 @@ ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge") + scal
 mean(overlapsAny(dgv, genes))
 ```
 
-    ## [1] 0.3961
+    ## [1] 0.4091
 
 ``` {.r}
 mean(overlapsAny(dgv.cont, genes))
 ```
 
-    ## [1] 0.3993
+    ## [1] 0.4125
 
 `draw.controls` functions can **accept any number of genomic features to control**. Let's import two additional genomic annotation that we would like to control for our enrichment analysis: assembly gaps and segmental duplications.
 
@@ -91,37 +91,37 @@ ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge") + scal
 mean(overlapsAny(dgv, genes))
 ```
 
-    ## [1] 0.3961
+    ## [1] 0.4091
 
 ``` {.r}
 mean(overlapsAny(dgv.cont2, genes))
 ```
 
-    ## [1] 0.4001
+    ## [1] 0.4139
 
 ``` {.r}
 mean(overlapsAny(dgv, gap))
 ```
 
-    ## [1] 0.0069
+    ## [1] 0.0073
 
 ``` {.r}
 mean(overlapsAny(dgv.cont2, gap))
 ```
 
-    ## [1] 0.0069
+    ## [1] 0.0073
 
 ``` {.r}
 mean(overlapsAny(dgv, segdups))
 ```
 
-    ## [1] 0.2026
+    ## [1] 0.2058
 
 ``` {.r}
 mean(overlapsAny(dgv.cont2, segdups))
 ```
 
-    ## [1] 0.1995
+    ## [1] 0.2045
 
 If we had used the first set of control regions (only genes overlap control) the gap and segmental duplication overlap proportions wouldn't match.
 
@@ -129,13 +129,13 @@ If we had used the first set of control regions (only genes overlap control) the
 mean(overlapsAny(dgv.cont, segdups))
 ```
 
-    ## [1] 0.0891
+    ## [1] 0.0909
 
 ``` {.r}
 mean(overlapsAny(dgv.cont, gap))
 ```
 
-    ## [1] 0.1055
+    ## [1] 0.1019
 
 Controlling for the distance to a feature
 -----------------------------------------
@@ -143,7 +143,7 @@ Controlling for the distance to a feature
 In addition to controlling for the overlap to a set of feature, `draw.controls` can also **control for the distance to one feature**. Although we can control for overlap to several feature the distance control is more complex to multiplex and for now we can only control for distance to one feature.
 
 ``` {.r}
-dgv.cont3 = draw.controls(dgv, list(gene=genes, sd=segdups), chr.prefix="chr", dist.gr=gap, nb.class=50)
+dgv.cont3 = draw.controls(dgv, list(gene=genes, sd=segdups), chr.prefix="chr", dist.gr=gap)
 ```
 
 Again, the size distribution must be the same:
@@ -169,25 +169,25 @@ ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge") + scal
 mean(overlapsAny(dgv, genes))
 ```
 
-    ## [1] 0.3961
+    ## [1] 0.4091
 
 ``` {.r}
 mean(overlapsAny(dgv.cont3, genes))
 ```
 
-    ## [1] 0.3982
+    ## [1] 0.413
 
 ``` {.r}
 mean(overlapsAny(dgv, segdups))
 ```
 
-    ## [1] 0.2026
+    ## [1] 0.2058
 
 ``` {.r}
 mean(overlapsAny(dgv.cont3, segdups))
 ```
 
-    ## [1] 0.2014
+    ## [1] 0.2032
 
 Finally let's check that we now control for the *distance* to a gap.
 
@@ -231,9 +231,9 @@ sessionInfo()
     ## [8] methods   base     
     ## 
     ## other attached packages:
-    ## [1] PopSV_1.0            ggplot2_2.1.0        GenomicRanges_1.22.3
-    ## [4] GenomeInfoDb_1.6.1   IRanges_2.4.6        S4Vectors_0.8.7     
-    ## [7] AnnotationHub_2.2.3  BiocGenerics_0.16.1  rmarkdown_0.9.2     
+    ## [1] ggplot2_2.1.0        GenomicRanges_1.22.3 GenomeInfoDb_1.6.1  
+    ## [4] IRanges_2.4.6        S4Vectors_0.8.7      AnnotationHub_2.2.3 
+    ## [7] BiocGenerics_0.16.1  rmarkdown_0.9.2      PopSV_1.0           
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] Rcpp_0.12.3                       plyr_1.8.3                       

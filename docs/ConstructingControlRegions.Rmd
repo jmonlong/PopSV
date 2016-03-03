@@ -98,7 +98,7 @@ mean(overlapsAny(dgv.cont, gap))
 In addition to controlling for the overlap to a set of feature, `draw.controls` can also **control for the distance to one feature**. Although we can control for overlap to several feature the distance control is more complex to multiplex and for now we can only control for distance to one feature. 
 
 ```{r, message=FALSE}
-dgv.cont3 = draw.controls(dgv, list(gene=genes, sd=segdups), chr.prefix="chr", dist.gr=gap, nb.class=50)
+dgv.cont3 = draw.controls(dgv, list(gene=genes, sd=segdups), chr.prefix="chr", dist.gr=gap)
 ```
 
 Again, the size distribution must be the same:
