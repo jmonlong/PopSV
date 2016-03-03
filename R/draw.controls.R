@@ -22,7 +22,6 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplic
     starts = runif(n, 0, seql.1.22[chrs])
     return(GenomicRanges::GRanges(paste0(chr.prefix, chrs), IRanges::IRanges(starts, width=1)))
   }
-
   if(is.data.frame(cnv.gr)){
     cnv.gr = GenomicRanges::makeGRangesFromDataFrame(cnv.gr, keep.extra.columns = TRUE)
   }
@@ -60,9 +59,13 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplic
     ## w.class = cut(widths, breaks=c(0,unique(quantile(widths, probs=ppoints(nb.class))), Inf))
     ## w.class = factor(w.class, levels=unique(w.class))
     w.uniq = unique(widths)
-    w.class = cutree(hclust(dist(w.uniq), method="ward.D"), min(nb.class, length(w.uniq)))
-    names(w.class) = as.character(w.uniq)
-    w.class = w.class[as.character(widths)]
+    if(length(w.uniq) < nb.class){
+      w.class = widths
+    } else {
+      w.class = cutree(hclust(dist(w.uniq), method="ward.D"), nb.class)
+      names(w.class) = as.character(w.uniq)
+      w.class = w.class[as.character(widths)]
+    }
     tt = tapply(1:length(gr.ii), w.class, function(iii){
       w.i = widths[iii]
       demi.w = mean(w.i, na.rm=TRUE) / 2
@@ -95,4 +98,5 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplic
     null.gr = c(null.gr[which(!dup)], redo.gr)
   }
   null.gr
+    
 }
