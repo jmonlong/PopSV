@@ -93,6 +93,48 @@ mean(overlapsAny(dgv.cont, segdups))
 mean(overlapsAny(dgv.cont, gap))
 ```
 
+## Controlling for the distance to a feature
+
+```{r, message=FALSE}
+dgv.cont3 = draw.controls.dist(dgv, list(gene=genes, gap=gap, sd=segdups), chr.prefix="chr", dist.gr=gap, nb.class=50)
+```
+
+Again, the size distribution must be the same:
+
+```{r, message=FALSE}
+## Same size distribution ?
+size.df = rbind(data.frame(reg="dgv", size=width(dgv)),
+                 data.frame(reg="control", size=width(dgv.cont3)))
+ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge")
+ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge") + scale_x_log10()
+```
+
+And the overlap with the three different genomic annotations similar.
+
+```{r, message=FALSE}
+## Same overlap with features ?
+mean(overlapsAny(dgv, genes))
+mean(overlapsAny(dgv.cont3, genes))
+mean(overlapsAny(dgv, gap))
+mean(overlapsAny(dgv.cont3, gap))
+mean(overlapsAny(dgv, segdups))
+mean(overlapsAny(dgv.cont3, segdups))
+```
+
+Although the *overlap* with a gap is not exactly the same anymore, we now control for the *distance* to a gap, as shown in the next graphs.
+
+
+```{r, message=FALSE}
+## Same distance to gap ?
+dist.df = rbind(data.frame(reg="dgv", dist=as.data.frame(distanceToNearest(dgv, gap))$distance),
+    data.frame(reg="simple control", dist=as.data.frame(distanceToNearest(dgv.cont2, gap))$distance),
+    data.frame(reg="distance control", dist=as.data.frame(distanceToNearest(dgv.cont3, gap))$distance))
+ggplot(dist.df, aes(x=dist, fill=reg)) + geom_histogram(position="dodge") + xlab("distance to a gap")
+ggplot(dist.df, aes(x=dist, colour=reg)) + stat_ecdf() + ylab("cumulative proportion of regions") + xlab("distance to a gap")
+```
+
+
+
 ## R session
 
 ```{r}
