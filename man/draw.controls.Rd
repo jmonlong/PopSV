@@ -6,7 +6,7 @@
 \usage{
 draw.controls(cnv.gr, feat.grl, nb.class = 20, nb.cores = 3,
   redo.duplicates = TRUE, seed.nb.max = 1e+05, min.nb.gr = NULL,
-  chr.prefix = "")
+  chr.prefix = "", dist.gr = NULL)
 }
 \arguments{
 \item{cnv.gr}{the input regions}
@@ -24,6 +24,8 @@ draw.controls(cnv.gr, feat.grl, nb.class = 20, nb.cores = 3,
 \item{min.nb.gr}{the minimum number of control regions. If NULL (default), as many controls as input are simulated.}
 
 \item{chr.prefix}{the chromosome name prefix. Default is "" (no prefix). Other value could be "chr" if chromosome are defined as 'chr1', 'chr2', etc.}
+
+\item{dist.gr}{a GRanges defining the feature for which we want to control the distance to. Default is NULL, i.e. no control.}
 }
 \value{
 a GRanges object defining the control regions

@@ -8,12 +8,13 @@
 ##' @param seed.nb.max the maximum number of genomic position to use as seeds. Default is 1e5.
 ##' @param min.nb.gr the minimum number of control regions. If NULL (default), as many controls as input are simulated.
 ##' @param chr.prefix the chromosome name prefix. Default is "" (no prefix). Other value could be "chr" if chromosome are defined as 'chr1', 'chr2', etc.
+##' @param dist.gr a GRanges defining the feature for which we want to control the distance to. Default is NULL, i.e. no control.
 ##' @return a GRanges object defining the control regions
 ##' @author Jean Monlong
 ##' @import GenomicRanges
 ##' @import GenomeInfoDb
 ##' @export
-draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplicates=TRUE, seed.nb.max=1e5, min.nb.gr=NULL, chr.prefix=""){
+draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplicates=TRUE, seed.nb.max=1e5, min.nb.gr=NULL, chr.prefix="", dist.gr=NULL){
 
   randGR.bp <- function(n=10){
     seql.1.22 = seqlengths(BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)[paste0("chr",1:22)]
@@ -34,12 +35,22 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplic
   d.gr = randGR.bp(max(seed.nb.max, 3*length(cnv.gr)))
   d.l = parallel::mclapply(feat.grl, function(feat.gr){
     dtn = GenomicRanges::distanceToNearest(d.gr, feat.gr)
-    as.data.frame(dtn)$distance
+    ret = rep(median(as.data.frame(dtn)$distance), length(d.gr))
+    ret[queryHits(dtn)] = as.data.frame(dtn)$distance
+    ret
   }, mc.cores=nb.cores)
   d.df = as.data.frame(d.l)
   ol.l = parallel::mclapply(feat.grl, function(feat.gr)GenomicRanges::overlapsAny(cnv.gr, feat.gr), mc.cores=nb.cores)
   if(is.null(cnv.gr$sample)) {
     cnv.gr$sample = ""
+  }
+  if(!is.null(dist.gr)){
+    dtn = GenomicRanges::distanceToNearest(cnv.gr, dist.gr, ignore.strand=TRUE)
+    cnv.gr$dist.feat = median(as.data.frame(dtn)$distance)
+    cnv.gr$dist.feat[queryHits(dtn)] = as.data.frame(dtn)$distance
+    dtn = GenomicRanges::distanceToNearest(d.gr, dist.gr)
+    d.gr$dist.feat = median(as.data.frame(dtn)$distance)
+    d.gr$dist.feat[queryHits(dtn)] = as.data.frame(dtn)$distance
   }
   cnv.df = data.frame(as.data.frame(ol.l), sample=cnv.gr$sample)
   ol.prof = unique(cnv.df[,1:length(feat.grl), drop=FALSE])
@@ -56,7 +67,13 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplic
       while(all(good.d!=nb.feat.good)){
         nb.feat.good = nb.feat.good - 1
       }
-      gr = GenomicRanges::resize(d.gr[sample(which(good.d==nb.feat.good), length(w.i), TRUE)], w.i, fix="center")
+      good.d = which(good.d==nb.feat.good)
+      if(!is.null(dist.gr) & length(good.d) > length(w.i)){
+        good.d = head(good.d[sapply(gr.ii$dist.feat[iii], function(d)which.min(abs(d-d.gr$dist.feat[good.d])))], length(w.i))
+      } else {
+        good.d = sample(good.d, length(w.i), TRUE)
+      }
+      gr = GenomicRanges::resize(d.gr[good.d], w.i, fix="center")
       gr$sample = gr.ii$sample[iii]
       gr
     })
@@ -68,8 +85,9 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplic
   if(all(unique(null.gr$sample)=="")) {
     null.gr$sample = NULL
   }
+  null.gr$dist.feat = NULL
   if(redo.duplicates && any((dup = duplicated(as.data.frame(null.gr))))){
-    redo.gr = draw.controls(null.gr[which(dup)], feat.grl, nb.class=nb.class, nb.cores=nb.cores, redo.duplicates=FALSE, min.nb.gr=NULL, chr.prefix = chr.prefix)
+    redo.gr = draw.controls(null.gr[which(dup)], feat.grl, nb.class=nb.class, nb.cores=nb.cores, redo.duplicates=FALSE, min.nb.gr=NULL, chr.prefix = chr.prefix, dist.gr=dist.gr)
     null.gr = c(null.gr[which(!dup)], redo.gr)
   }
   null.gr
