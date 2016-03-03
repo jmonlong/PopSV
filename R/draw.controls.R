@@ -57,8 +57,12 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplic
   null.gr = parallel::mclapply(1:nrow(ol.prof), function(ii){
     gr.ii = cnv.gr[which(apply(t(as.matrix(cnv.df[,1:length(feat.grl), drop=FALSE]))==unlist(ol.prof[ii,]),2,all))]
     widths = width(gr.ii)
-    w.class = cut(widths, breaks=c(0,unique(quantile(widths, probs=ppoints(nb.class))), Inf))
-    w.class = factor(w.class, levels=unique(w.class))
+    ## w.class = cut(widths, breaks=c(0,unique(quantile(widths, probs=ppoints(nb.class))), Inf))
+    ## w.class = factor(w.class, levels=unique(w.class))
+    w.uniq = unique(widths)
+    w.class = cutree(hclust(dist(w.uniq), method="ward.D"), min(nb.class, length(w.uniq)))
+    names(w.class) = as.character(w.uniq)
+    w.class = w.class[as.character(widths)]
     tt = tapply(1:length(gr.ii), w.class, function(iii){
       w.i = widths[iii]
       demi.w = mean(w.i, na.rm=TRUE) / 2
