@@ -1,7 +1,7 @@
 ---
 title: Constructing control regions for enrichment analysis
 author: Jean Monlong
-date: January 15, 2016
+date: March 3, 2016
 output:
    md_document:
      fig_width: 10
@@ -95,8 +95,10 @@ mean(overlapsAny(dgv.cont, gap))
 
 ## Controlling for the distance to a feature
 
+In addition to controlling for the overlap to a set of feature, `draw.controls` can also **control for the distance to one feature**. Although we can control for overlap to several feature the distance control is more complex to multiplex and for now we can only control for distance to one feature. 
+
 ```{r, message=FALSE}
-dgv.cont3 = draw.controls.dist(dgv, list(gene=genes, gap=gap, sd=segdups), chr.prefix="chr", dist.gr=gap, nb.class=50)
+dgv.cont3 = draw.controls(dgv, list(gene=genes, sd=segdups), chr.prefix="chr", dist.gr=gap, nb.class=50)
 ```
 
 Again, the size distribution must be the same:
@@ -115,13 +117,11 @@ And the overlap with the three different genomic annotations similar.
 ## Same overlap with features ?
 mean(overlapsAny(dgv, genes))
 mean(overlapsAny(dgv.cont3, genes))
-mean(overlapsAny(dgv, gap))
-mean(overlapsAny(dgv.cont3, gap))
 mean(overlapsAny(dgv, segdups))
 mean(overlapsAny(dgv.cont3, segdups))
 ```
 
-Although the *overlap* with a gap is not exactly the same anymore, we now control for the *distance* to a gap, as shown in the next graphs.
+Finally let's check that we now control for the *distance* to a gap.
 
 
 ```{r, message=FALSE}
