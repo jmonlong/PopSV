@@ -39,7 +39,7 @@ We imported a gene annotation and 10 thousands SVs from DGV. If we want to const
 dgv.cont = draw.controls(dgv, list(gene=genes), chr.prefix="chr")
 ```
 
-Now let's verify that the size distribution is the same.
+Now let's verify that the size distribution is the same. By construction it should be **exactly** the same.
 
 ```{r, message=FALSE}
 library(ggplot2)
@@ -49,7 +49,7 @@ ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge")
 ggplot(size.df, aes(x=size, fill=reg)) + geom_histogram(position="dodge") + scale_x_log10()
 ```
 
-And that the input and output regions overlap genes similarly.
+And that the input and output regions **overlap** genes **similarly**. By default an **approximation** is used and might lead to small differences. To switch off the approximation see further down.
 
 ```{r, message=FALSE}
 mean(overlapsAny(dgv, genes))
@@ -133,6 +133,19 @@ ggplot(dist.df, aes(x=dist, fill=reg)) + geom_histogram(position="dodge") + xlab
 ggplot(dist.df, aes(x=dist, colour=reg)) + stat_ecdf() + ylab("cumulative proportion of regions") + xlab("distance to a gap")
 ```
 
+## Approximation or exact overlap ?
+
+In order to speed up the process, the input regions are grouped by size. Control regions are then built  for each group using the average size. **This approximation leads to small differences between feature overlap with input and output regions**. It's **not a problem usually**, especially when the input regions have specific size patterns (e.g. CNVs from a binned genome).
+
+If you want **to force the control regions to have exactly the same overlap with the feature, use** `nb.class=Inf`. However it will **take more time to compute**, especially if the size distribution of the input regions is very diverse. Of note the computation time also increases with additional features to control.
+
+```{r, message=FALSE}
+system.time((dgv.cont.approx = draw.controls(dgv, list(gene=genes), chr.prefix="chr")))
+system.time((dgv.cont.exact = draw.controls(dgv, list(gene=genes), chr.prefix="chr", nb.class=Inf)))
+mean(overlapsAny(dgv, genes))
+mean(overlapsAny(dgv.cont.approx, genes))
+mean(overlapsAny(dgv.cont.exact, genes))
+```
 
 
 ## R session
