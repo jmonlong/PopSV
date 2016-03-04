@@ -78,7 +78,7 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=100, nb.cores=3, redo.dupli
       if(!is.null(dist.gr) & length(good.d) > length(w.i)){
         good.d = head(good.d[sapply(gr.ii$dist.feat[iii], function(d)which.min(abs(d-d.gr$dist.feat[good.d])))], length(w.i))
       } else {
-        good.d = sample(good.d, length(w.i), TRUE)
+        good.d = sample(good.d, length(w.i), length(good.d) < length(w.i))
       }
       gr = GenomicRanges::resize(d.gr[good.d], w.i, fix="center")
       gr$sample = gr.ii$sample[iii]
