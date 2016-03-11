@@ -60,7 +60,7 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
         d.max = -1
       } else {
         if(norm[1]=="bootstrap"){
-          d.i = sapply(1:5, function(ee){
+          d.i = sapply(1:7, function(ee){
             bs.samps = sample.int(length(bc.i), length(bc.i)*.5)
             1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i)[bs.samps], bc[bs.samps,], use = "pairwise.complete.obs")))
           })
