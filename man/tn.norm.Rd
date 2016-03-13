@@ -5,7 +5,7 @@
 \title{Targeted-normalization of bin counts}
 \usage{
 tn.norm(bc, cont.sample, nb.support.bins = 1000, bins = NULL,
-  save.support.bins = TRUE, norm = c("1pass", "bootstrap"),
+  save.support.bins = TRUE, norm = c("1pass", "trim"),
   force.diff.chr = TRUE)
 }
 \arguments{
@@ -22,7 +22,7 @@ bins are normalized.}
 \item{save.support.bins}{if TRUE (default) the bins used for the normalization are
 saved in the output object 'norm.stats'.}
 
-\item{norm}{the type of normalization. '1pass' (default) means one pass of normalization. Other options is 'bootstrap'.}
+\item{norm}{the type of normalization. '1pass' (default) means one pass of normalization. Other options is 'trim'.}
 
 \item{force.diff.chr}{should the supporting bins be forced to be in a different chromosome. Default is TRUE.}
 }
@@ -40,7 +40,7 @@ similar across the reference samples.
 \details{
 A specific set of bins, defined by 'bins=', can de normalized using all the bins in 'bc'. The bin names in 'bins=' should be the chr and start position as in '1-501' (for chr 1, start 501).
 
-The default approach ('norm="1pass"') looks for supporting across all samples. A more robust approach, finds supporting bins on different subset of samples with a bootstrap appoach. 'norm="bootstrap"' normalization is better and recommended for small bins, but it takes more time to run.
+The default approach ('norm="1pass"') looks for supporting across all samples. A more robust approach, finds supporting bins after trimming a few outlier samples (potential CNV). 'norm="trim"' normalization is better and recommended for small bins.
 }
 \author{
 Jean Monlong

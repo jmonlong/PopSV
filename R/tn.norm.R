@@ -3,7 +3,7 @@
 ##'
 ##' A specific set of bins, defined by 'bins=', can de normalized using all the bins in 'bc'. The bin names in 'bins=' should be the chr and start position as in '1-501' (for chr 1, start 501).
 ##'
-##' The default approach ('norm="1pass"') looks for supporting across all samples. A more robust approach, finds supporting bins on different subset of samples with a bootstrap appoach. 'norm="bootstrap"' normalization is better and recommended for small bins, but it takes more time to run.
+##' The default approach ('norm="1pass"') looks for supporting across all samples. A more robust approach, finds supporting bins after trimming a few outlier samples (potential CNV). 'norm="trim"' normalization is better and recommended for small bins.
 ##' @title Targeted-normalization of bin counts
 ##' @param bc a matrix or data.frame with the bin counts (bin x sample).
 ##' @param cont.sample the sample to use as baseline for the pairwise normalization.
@@ -13,7 +13,7 @@
 ##' bins are normalized.
 ##' @param save.support.bins if TRUE (default) the bins used for the normalization are
 ##' saved in the output object 'norm.stats'.
-##' @param norm the type of normalization. '1pass' (default) means one pass of normalization. Other options is 'bootstrap'.
+##' @param norm the type of normalization. '1pass' (default) means one pass of normalization. Other options is 'trim'.
 ##' @param force.diff.chr should the supporting bins be forced to be in a different chromosome. Default is TRUE.
 ##' @return a list with
 ##' \item{norm.stats}{a data.frame witht some metrics about the normalization of each
@@ -22,7 +22,7 @@
 ##' \item{nb.support.bins, cont.sample}{a backup of the input parameters.}
 ##' @author Jean Monlong
 ##' @export
-tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.support.bins = TRUE, norm = c("1pass", "bootstrap"), force.diff.chr=TRUE) {
+tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.support.bins = TRUE, norm = c("1pass", "trim"), force.diff.chr=TRUE) {
 
   all.samples = setdiff(colnames(bc), c("chr", "start", "end"))
   rownames(bc) = paste(bc$chr, as.integer(bc$start), sep = "-")
@@ -51,6 +51,11 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
   bc = t(as.matrix(bc[, all.samples]))
   bc = denorm.factor * bc
 
+  trim.i <- function(x,nb.trim=5){
+    xs = sort(x)
+    which(x>xs[nb.trim] & x<xs[length(x)-nb.trim+1])
+  }
+
   for (bin.ii in 1:length(bins)) {
     bin = bins[bin.ii]
     bc.i = bc[, bin]
@@ -59,15 +64,9 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
         d.o.i = sample(1:ncol(bc), nb.support.bins)
         d.max = -1
       } else {
-        if(norm[1]=="bootstrap"){
-          d.i = sapply(1:5, function(ee){
-            bs.samps = sample.int(length(bc.i), length(bc.i)*.5)
-            1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i)[bs.samps], bc[bs.samps,], use = "pairwise.complete.obs")))
-          })
-          d.i = apply(d.i, 1, max, na.rm=TRUE)
-          if(any(is.infinite(d.i))) {
-            d.i[which(is.infinite(d.i))] = NA
-          }
+        if(norm[1]=="trim"){
+          trim.i = trim.i(bc.i/denorm.factor, 3)
+          d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i[trim.i]), bc[trim.i,], method="spearman", use = "pairwise.complete.obs")))
         } else {
           d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs")))
         }
