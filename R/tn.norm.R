@@ -53,20 +53,24 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
 
   trimmed.index <- function(x,nb.trim=5){
     xs = sort(x)
-    which(x>xs[nb.trim] & x<xs[length(x)-nb.trim+1])
+    which(x>xs[nb.trim] & x<rev(xs)[nb.trim])
   }
 
   for (bin.ii in 1:length(bins)) {
     bin = bins[bin.ii]
     bc.i = bc[, bin]
     if (any(!is.na(bc.i) & bc.i != 0)) {
-      if (sum(as.numeric(bc.i) > 0) < 5) {
+      if(norm[1]=="trim"){
+        trim.i = trimmed.index(bc.i/denorm.factor, 3)
+      } else {
+        trim.i = 1:length(bc.i)
+      }
+      if (sum(as.numeric(bc.i) > 0) < 5 | length(trim.i) < 5) {
         d.o.i = sample(1:ncol(bc), nb.support.bins)
         d.max = -1
       } else {
         if(norm[1]=="trim"){
-          trim.i = trimmed.index(bc.i/denorm.factor, 3)
-          d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i[trim.i]), bc[trim.i,], method="spearman", use = "pairwise.complete.obs")))
+          d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i[trim.i]), bc[trim.i,], method="spearman", use="pairwise.complete.obs")))
         } else {
           d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs")))
         }
