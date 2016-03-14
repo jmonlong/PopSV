@@ -70,7 +70,7 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
         d.max = -1
       } else {
         if(norm[1]=="trim"){
-          d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i[trim.i]), bc[trim.i,], method="spearman", use="pairwise.complete.obs")))
+          d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i[trim.i]), bc[trim.i,], use="pairwise.complete.obs")))
         } else {
           d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs")))
         }
