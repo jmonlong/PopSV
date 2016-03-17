@@ -85,7 +85,7 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), plot = TRUE, z.th
           ggplot2::xlim(z.lim))
 
     print(ggplot2::ggplot(plot.df, ggplot2::aes(x = pv, fill=cut(qv, breaks = c(-Inf, 0.001, 0.01, 0.5, 0.1,1)))) + ggplot2::geom_histogram() +
-          ggplot2::xlab("P-value") + ggplot2::xlim(0, 1) + ggplot2::ylab("number of bins") +
+          ggplot2::xlab("P-value") + ggplot2::xlim(-0.2, 1) + ggplot2::ylab("number of bins") +
           ggplot2::scale_fill_hue(name="Q-value") +
           ggplot2::theme_bw() + ggplot2::theme(legend.position="bottom"))
   }
