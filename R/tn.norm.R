@@ -13,7 +13,7 @@
 ##' bins are normalized.
 ##' @param save.support.bins if TRUE (default) the bins used for the normalization are
 ##' saved in the output object 'norm.stats'.
-##' @param norm the type of normalization. '1pass' (default) means one pass of normalization. Other options is 'trim'.
+##' @param norm the type of normalization. '1pass' (default) means one pass of normalization. Other options is 'trim' (/!\ experimental /!\).
 ##' @param force.diff.chr should the supporting bins be forced to be in a different chromosome. Default is TRUE.
 ##' @return a list with
 ##' \item{norm.stats}{a data.frame witht some metrics about the normalization of each
@@ -53,7 +53,7 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
 
   trimmed.index <- function(x,nb.trim=5){
     xs = sort(x)
-    which(x>xs[nb.trim] & x<rev(xs)[nb.trim])
+    which(x>=xs[nb.trim+1] & x<=rev(xs)[nb.trim+1])
   }
 
   for (bin.ii in 1:length(bins)) {
