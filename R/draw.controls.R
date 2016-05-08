@@ -2,7 +2,7 @@
 ##' @title Select control genomic regions for enrichment analysis
 ##' @param cnv.gr the input regions
 ##' @param feat.grl a list of the GRanges defining the features to fit. E.g. gene annotation, centromere, etc
-##' @param nb.class the number of size class to speed up the computation. Default is 20.
+##' @param nb.class the number of size class to speed up the computation. Default is 100. Inf will ensure exactly the same overlap proportion but might take some time if the size distribution is diverse.
 ##' @param nb.cores the number of cores to use. Default is 3.
 ##' @param redo.duplicates should duplicate regions be reselected. Default is TRUE.
 ##' @param seed.nb.max the maximum number of genomic position to use as seeds. Default is 1e5.
@@ -14,7 +14,7 @@
 ##' @import GenomicRanges
 ##' @import GenomeInfoDb
 ##' @export
-draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplicates=TRUE, seed.nb.max=1e5, min.nb.gr=NULL, chr.prefix="", dist.gr=NULL){
+draw.controls <- function(cnv.gr, feat.grl, nb.class=100, nb.cores=3, redo.duplicates=TRUE, seed.nb.max=1e5, min.nb.gr=NULL, chr.prefix="", dist.gr=NULL){
 
   randGR.bp <- function(n=10){
     seql.1.22 = seqlengths(BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)[paste0("chr",1:22)]
@@ -78,7 +78,7 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplic
       if(!is.null(dist.gr) & length(good.d) > length(w.i)){
         good.d = head(good.d[sapply(gr.ii$dist.feat[iii], function(d)which.min(abs(d-d.gr$dist.feat[good.d])))], length(w.i))
       } else {
-        good.d = sample(good.d, length(w.i), TRUE)
+        good.d = sample(good.d, length(w.i), length(good.d) < length(w.i))
       }
       gr = GenomicRanges::resize(d.gr[good.d], w.i, fix="center")
       gr$sample = gr.ii$sample[iii]
@@ -94,7 +94,7 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=20, nb.cores=3, redo.duplic
   }
   null.gr$dist.feat = NULL
   if(redo.duplicates && any((dup = duplicated(as.data.frame(null.gr))))){
-    redo.gr = draw.controls(null.gr[which(dup)], feat.grl, nb.class=nb.class, nb.cores=nb.cores, redo.duplicates=FALSE, min.nb.gr=NULL, chr.prefix = chr.prefix, dist.gr=dist.gr)
+    redo.gr = draw.controls(null.gr[which(dup)], feat.grl, nb.class=nb.class, nb.cores=nb.cores, redo.duplicates=FALSE, min.nb.gr=min.nb.gr, chr.prefix = chr.prefix, dist.gr=dist.gr)
     null.gr = c(null.gr[which(!dup)], redo.gr)
   }
   null.gr
