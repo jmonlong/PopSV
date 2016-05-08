@@ -1,4 +1,4 @@
-message(" /!\ Still need to be tested /!\ ")
+message(" /!\ Might need to be tweaked /!\ ")
 
 message("Two functions :
 - 'autoGCcounts' to count BC in each sample.
@@ -74,7 +74,7 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, sleep=180, status=FALSE, fi
   ## quick.count(files.df, bins.df, col.files="bc.gc.gz", nb.rand.bins=1e3)
 }
 
-autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, norm=c("1pass","bootstrap"), ref.samples=NULL, FDR.th=.001, step.walltime=c(10,12,6,6,1,1), step.cores=c(6,1,3,1,1,1)){
+autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, norm=c("1pass","trim"), ref.samples=NULL, FDR.th=.001, step.walltime=c(10,12,6,6,1,1), step.cores=c(6,1,3,1,1,1)){
   load(files.f)
   step.walltime = paste0(step.walltime, ":0:0")
 
@@ -126,14 +126,14 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
   if(length(findJobs(reg))==0){
     load(bins.f)
     if(all(colnames(bins.df)!="sm.chunk")){
-      bins.df = chunk.bin(bins.df, bg.chunk.size=1e5, sm.chunk.size=1e4, large.chr.chunks=TRUE)
+      bins.df = chunk.bin(bins.df, bg.chunk.size=5e5, sm.chunk.size=1e4)
       save(bins.df, file=bins.f)
     }
     bcNormTN.f <- function(chunk.id, file.bc, file.bin, cont.sample, lib.loc, norm){
       load(file.bin)
       library(PopSV, lib.loc=lib.loc)
       bc.df = read.bedix(file.bc, subset(bins.df, bg.chunk==subset(bins.df, sm.chunk==chunk.id)$bg.chunk[1]))
-      tn.norm(bc.df, cont.sample, bins=subset(bins.df, sm.chunk==chunk.id)$bin, norm=norm)
+      tn.norm(bc.df, cont.sample, bins=subset(bins.df, sm.chunk==chunk.id)$bin, norm=norm, force.diff.chr=TRUE)
     }
     batchMap(reg, bcNormTN.f,unique(bins.df$sm.chunk), more.args=list(file.bc=samp.qc.o$bc, file.bin=bins.f,cont.sample=samp.qc.o$cont.sample, lib.loc=lib.loc, norm=norm))
     submitJobs(reg, findJobs(reg) , resources=c(list(walltime=step.walltime[2], nodes="1", cores=step.cores[2]), other.resources))
@@ -153,7 +153,7 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
   }
   ## Write normalized bin counts and reference metrics
-  out.files = paste(paste0("ref",file.suffix), c("bc-norm.tsv", "msd.tsv"), sep="-")
+  out.files = paste(paste0("ref",file.suffix), c("bc-norm.tsv", "norm-stats.tsv"), sep="-")
   if(rewrite | all(!file.exists(out.files))){
     if(any(file.exists(out.files))){
       tmp = file.remove(out.files[which(file.exists(out.files))])
@@ -170,11 +170,11 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
   if(any(redo==3)) unlink(paste0(stepName, "-files"), recursive=TRUE)
   reg <- makeRegistry(id=stepName, seed=123)
   if(length(findJobs(reg))==0){
-    zRef.f <- function(bc.f, files.df, lib.loc){
+    zRef.f <- function(bc.f, files.df, lib.loc, nb.cores){
       library(PopSV, lib.loc=lib.loc)
-      z.comp(bc.f=bc.f, files.df=files.df, nb.cores=3, z.poisson=TRUE, chunk.size=1e3)
+      z.comp(bc.f=bc.f, files.df=files.df, nb.cores=nb.cores, z.poisson=TRUE, chunk.size=1e3)
     }
-    batchMap(reg, zRef.f,out.files[1], more.args=list(files.df=files.df, lib.loc=lib.loc))
+    batchMap(reg, zRef.f,out.files[1], more.args=list(files.df=files.df, lib.loc=lib.loc, nb.cores=step.cores[3]))
     submitJobs(reg, 1, resources=c(list(walltime=step.walltime[3], nodes="1", cores=step.cores[3]), other.resources))
     waitForJobs(reg, sleep=sleep)
   }
@@ -221,36 +221,37 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
   }
   if(status) showStatus(reg)
 
-  message("\n== 5) Calling abnormal bin.\n")
-  stepName = paste0("call",file.suffix)
-  if(any(redo==5)) unlink(paste0(stepName, "-files"), recursive=TRUE)
-  reg <- makeRegistry(id=stepName, seed=123)
-  if(length(findJobs(reg))==0){
-    abCovCallCases.f <- function(samp, files.df, norm.stats.f, bins.f, stitch.dist, lib.loc, FDR.th){
-      library(PopSV, lib.loc=lib.loc)
-      load(bins.f)
-      call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"-sdest-abCovCall.pdf"), FDR.th=FDR.th, merge.cons.bins="stitch", z.th="sdest", norm.stats=norm.stats.f, stitch.dist=stitch.dist, gc.df=bins.df,  min.normal.prop=.6)
+  if(!loose){
+    message("\n== 5) Calling abnormal bin.\n")
+    stepName = paste0("call",file.suffix)
+    if(any(redo==5)) unlink(paste0(stepName, "-files"), recursive=TRUE)
+    reg <- makeRegistry(id=stepName, seed=123)
+    if(length(findJobs(reg))==0){
+      abCovCallCases.f <- function(samp, files.df, norm.stats.f, bins.f, stitch.dist, lib.loc, FDR.th){
+        library(PopSV, lib.loc=lib.loc)
+        load(bins.f)
+        call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"-sdest-abCovCall.pdf"), FDR.th=FDR.th, merge.cons.bins="stitch", z.th="sdest", norm.stats=norm.stats.f, stitch.dist=stitch.dist, gc.df=bins.df,  min.normal.prop=.6)
+      }
+      batchMap(reg, abCovCallCases.f, files.df$sample, more.args=list(files.df=files.df, norm.stats.f=out.files[2], bins.f=bins.f, stitch.dist=5e3, lib.loc=lib.loc, FDR.th=FDR.th))
+      submitJobs(reg, findJobs(reg) , resources=c(list(walltime=step.walltime[5], nodes="1", cores=step.cores[5]), other.resources))
+      waitForJobs(reg, sleep=sleep)
     }
-    batchMap(reg, abCovCallCases.f, files.df$sample, more.args=list(files.df=files.df, norm.stats.f=out.files[2], bins.f=bins.f, stitch.dist=5e3, lib.loc=lib.loc, FDR.th=FDR.th))
-    submitJobs(reg, findJobs(reg) , resources=c(list(walltime=step.walltime[5], nodes="1", cores=step.cores[5]), other.resources))
-    waitForJobs(reg, sleep=sleep)
-  }
-  if(length(findJobs(reg))!=length(findDone(reg))){
-    showStatus(reg)
-    if(length(findExpired(reg))>0){
-      message("Re-submitting ", findExpired(reg))
-      submitJobs(reg, findExpired(reg), resources=c(list(walltime=step.walltime[5], nodes="1", cores=step.cores[5]), other.resources))
+    if(length(findJobs(reg))!=length(findDone(reg))){
+      showStatus(reg)
+      if(length(findExpired(reg))>0){
+        message("Re-submitting ", findExpired(reg))
+        submitJobs(reg, findExpired(reg), resources=c(list(walltime=step.walltime[5], nodes="1", cores=step.cores[5]), other.resources))
+      }
+      if(length(findNotSubmitted(reg))>0){
+        message("Re-submitting ", findNotSubmitted(reg))
+        submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime=step.walltime[5], nodes="1", cores=step.cores[5]), other.resources))
+      }
+      waitForJobs(reg, sleep=sleep)
+      if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
     }
-    if(length(findNotSubmitted(reg))>0){
-      message("Re-submitting ", findNotSubmitted(reg))
-      submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime=step.walltime[5], nodes="1", cores=step.cores[5]), other.resources))
-    }
-    waitForJobs(reg, sleep=sleep)
-    if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
-  }
-  if(status) showStatus(reg)
-
-  if(loose){
+    if(status) showStatus(reg)
+    
+  } else {
     message("\n== 6) Calling abnormal bin with loose threshold.\n")
     stepName = paste0("callLoose",file.suffix)
     if(any(redo==6)) unlink(paste0(stepName, "-files"), recursive=TRUE)
@@ -260,7 +261,7 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
         library(PopSV, lib.loc=lib.loc)
         load(bins.f)
         project = subset(files.df, sample==samp)$project
-        call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(project,"/",samp,"/",samp,"-sdest-abCovCall.pdf"), FDR.th=.05, merge.cons.bins="stitch", z.th="sdest", norm.stats=norm.stats.f, stitch.dist=stitch.dist, gc.df=bins.df,  min.normal.prop=.6)
+        call.abnormal.cov(files.df=files.df, samp=samp, out.pdf=paste0(samp,"/",samp,"-sdest-abCovCall.pdf"), FDR.th=.05, merge.cons.bins="stitch", z.th="sdest", norm.stats=norm.stats.f, stitch.dist=stitch.dist, gc.df=bins.df,  min.normal.prop=.6)
       }
       batchMap(reg, abCovCallCases.f, files.df$sample, more.args=list(files.df=files.df, norm.stats.f=out.files[2], bins.f=bins.f, stitch.dist=5e3, lib.loc=lib.loc))
       submitJobs(reg, findJobs(reg) , resources=c(list(walltime=step.walltime[6], nodes="1", cores=step.cores[6]), other.resources))
@@ -281,7 +282,7 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     }
     if(status) showStatus(reg)
   }
-
+  
   res.df = do.call(rbind, reduceResultsList(reg))
   return(res.df)
 }
