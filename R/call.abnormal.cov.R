@@ -46,6 +46,8 @@ call.abnormal.cov <- function(files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05
   res.df$fc = fc$fc
   rm(fc)
 
+  res.df = res.df[which(!is.na(res.df$z)),]
+  
   if (!is.null(norm.stats)) {
     if (is.character(norm.stats) & length(norm.stats) == 1) {
       headers = read.table(norm.stats, nrows = 1, as.is = TRUE)
