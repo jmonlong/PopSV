@@ -35,4 +35,4 @@ Imports:
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     testthat
-RoxygenNote: 5.0.0
+RoxygenNote: 5.0.1.9000
