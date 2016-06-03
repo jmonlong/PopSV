@@ -28,7 +28,7 @@ medvar.norm <- function(bc, ref.samples, bc.support = NULL, z.poisson = FALSE) {
     if (z.poisson) {
         z.comp <- function(x, mean.c, sd.c) {
             z.n = (x - mean.c)/sd.c
-            z.p = qnorm(ppois(x, mean.c))
+            z.p = stats::qnorm(stats::ppois(x, mean.c))
             n.ii = abs(z.n) < abs(z.p)
             z.p[n.ii] = z.n[n.ii]
             z.p
@@ -44,12 +44,12 @@ medvar.norm <- function(bc, ref.samples, bc.support = NULL, z.poisson = FALSE) {
     } else {
         bc.support = bc.support[, all.samples]
     }
-    med = apply(bc.support, 2, median, na.rm = TRUE)
+    med = apply(bc.support, 2, stats::median, na.rm = TRUE)
     med.c = mean(med)
     bc.support = t(t(bc.support) * med.c/med)
     bc.support = bc.support - med.c
-    md = apply(bc.support, 2, function(x) median(abs(x), na.rm = TRUE))
-    md.c = median(abs(bc.support), na.rm = TRUE)
+    md = apply(bc.support, 2, function(x) stats::median(abs(x), na.rm = TRUE))
+    md.c = stats::median(abs(bc.support), na.rm = TRUE)
     bc = bc[, all.samples] - med.c
     bc.norm[, -(1:3)] = t(t(bc) * md.c/md) + med.c
     if (any(bc.norm[, -(1:3)] < 0)) {

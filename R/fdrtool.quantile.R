@@ -18,7 +18,7 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), plot = TRUE, z.th
     if(any(x > 10 * sort(x, decreasing=TRUE)[2])){
       x = x[which(x < 10 * sort(x, decreasing=TRUE)[2])]
     }
-    d = density(x, na.rm = TRUE)
+    d = stats::density(x, na.rm = TRUE)
     im = 1 + which(diff(sign(diff(d$y))) == -2)
     my = max(d$y)
     max.id = im[which(d$y[im] >= min.max.prop * my)]
@@ -37,7 +37,7 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), plot = TRUE, z.th
   z.dup = sample(c(-1, 1), length(z.dup), replace = TRUE) * z.dup
   if(!is.null(quant.int)){
     sd.df = plyr::ldply(quant.int, function(qi) {
-      data.frame(quant = qi, sd.est = fdrtool::censored.fit(z.dup, quantile(abs(z.dup),
+      data.frame(quant = qi, sd.est = fdrtool::censored.fit(z.dup, stats::quantile(abs(z.dup),
                                probs = qi, na.rm = TRUE))[5])
     })
     sd.e = localMax(sd.df$sd.est)$lM[1]
@@ -51,7 +51,7 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), plot = TRUE, z.th
   z.del = sample(c(-1, 1), length(z.del), replace = TRUE) * z.del
   if(!is.null(quant.int)){
     sd.df = plyr::ldply(quant.int, function(qi) {
-      data.frame(quant = qi, sd.est = fdrtool::censored.fit(z.del, quantile(abs(z.del),
+      data.frame(quant = qi, sd.est = fdrtool::censored.fit(z.del, stats::quantile(abs(z.del),
                                probs = qi, na.rm = TRUE))[5])
     })
     sd.e = localMax(sd.df$sd.est)$lM[1]
@@ -64,18 +64,18 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), plot = TRUE, z.th
   }
   res$sigma.est.del = sd.e
 
-  res$pval[non.na.i[z.non.na > 0]] = 2 * pnorm(-abs(z.dup), 0, res$sigma.est.dup)
-  res$pval[non.na.i[z.non.na < 0]] = 2 * pnorm(-abs(z.del), 0, res$sigma.est.del)
+  res$pval[non.na.i[z.non.na > 0]] = 2 * stats::pnorm(-abs(z.dup), 0, res$sigma.est.dup)
+  res$pval[non.na.i[z.non.na < 0]] = 2 * stats::pnorm(-abs(z.del), 0, res$sigma.est.del)
   if (any(res$pval == 0, na.rm = TRUE))
   res$pval[which(res$pval == 0)] = .Machine$double.xmin
-  res$qval = p.adjust(res$pval, method = "fdr")
+  res$qval = stats::p.adjust(res$pval, method = "fdr")
 
   if (plot & any(!is.na(res$pval))) {
     pv = qv = ..density.. = y = NULL  ## Uglily appease R checks
     plot.df = data.frame(z = z, pv = res$pval, qv = res$qval)
 
     z.lim = c(-res$sigma.est.del, res$sigma.est.dup)*ifelse(mean(res$pval<.01)>.1,8,5)
-    null.df = data.frame(y=c(dnorm(seq(z.lim[1],0,.05),0,res$sigma.est.del),dnorm(seq(0,z.lim[2],.05),0,res$sigma.est.dup)), z=c(seq(z.lim[1],0,.05),seq(0,z.lim[2],.05)))
+    null.df = data.frame(y=c(stats::dnorm(seq(z.lim[1],0,.05),0,res$sigma.est.del),stats::dnorm(seq(0,z.lim[2],.05),0,res$sigma.est.dup)), z=c(seq(z.lim[1],0,.05),seq(0,z.lim[2],.05)))
     null.df$y = null.df$y * mean(z> -4*res$sigma.est.del & z<4*res$sigma.est.dup)
 
     print(ggplot2::ggplot(plot.df, ggplot2::aes(x = z)) +

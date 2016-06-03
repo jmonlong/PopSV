@@ -20,7 +20,7 @@ write.split.samples <- function(res, files.df, samples, files.col = c("z","fc"),
       res.f = res[[ii]][, c("chr", "start", "end", samp)]
       colnames(res.f)[4] = files.col[ii]
       res.f = with(res.f, dplyr::arrange(res.f, chr, start))
-      write.table(res.f, file = files.df[which(files.df$sample == samp), files.col[ii]], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
+      utils::write.table(res.f, file = files.df[which(files.df$sample == samp), files.col[ii]], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
     }
   }, mc.cores=nb.cores)
 

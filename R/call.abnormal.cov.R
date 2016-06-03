@@ -33,10 +33,10 @@ call.abnormal.cov <- function(files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05
 
   z.f = files.df$z[which(files.df$sample==samp)]
   if(!file.exists(z.f)) z.f = paste0(z.f, ".bgz")
-  res.df = read.table(z.f, header=TRUE, as.is=TRUE)
+  res.df = utils::read.table(z.f, header=TRUE, as.is=TRUE)
   fc.f = files.df$fc[which(files.df$sample==samp)]
   if(!file.exists(fc.f)) fc.f = paste0(fc.f, ".bgz")
-  fc = read.table(fc.f, header=TRUE, as.is=TRUE)
+  fc = utils::read.table(fc.f, header=TRUE, as.is=TRUE)
   ## Check the order is consistent in both files
   rand.ii = sample.int(nrow(res.df),100)
   if(nrow(res.df)!=nrow(fc) | any(res.df$start[rand.ii]!=fc$start[rand.ii]) | any(res.df$chr[rand.ii]!=fc$chr[rand.ii])){
@@ -50,10 +50,10 @@ call.abnormal.cov <- function(files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05
   
   if (!is.null(norm.stats)) {
     if (is.character(norm.stats) & length(norm.stats) == 1) {
-      headers = read.table(norm.stats, nrows = 1, as.is = TRUE)
+      headers = utils::read.table(norm.stats, nrows = 1, as.is = TRUE)
       colC = rep("NULL", length(headers))
       colC[1:4] = c("character","integer","integer","numeric")
-      norm.stats = read.table(norm.stats, header = TRUE, colClasses = colC)
+      norm.stats = utils::read.table(norm.stats, header = TRUE, colClasses = colC)
     }
     colnames(norm.stats)[4] = "mean.cov"
     res.df = merge(res.df, norm.stats, all.x=TRUE)
@@ -68,11 +68,11 @@ call.abnormal.cov <- function(files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05
   }
 
   if (!is.null(out.pdf)) {
-    pdf(out.pdf, 13, 10)
+    grDevices::pdf(out.pdf, 13, 10)
   }
 
   res.df = res.df[which(!is.na(res.df$z) & !is.infinite(res.df$z) & res.df$z!=0),]
-  bin.width = median(round(res.df$end - res.df$start + 1), na.rm=TRUE)
+  bin.width = stats::median(round(res.df$end - res.df$start + 1), na.rm=TRUE)
   ## Pvalue/Qvalue estimation
   if (all(is.na(res.df$z)))
     return(NULL)
@@ -139,7 +139,7 @@ call.abnormal.cov <- function(files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05
   }
 
   if (!is.null(out.pdf)) {
-    dev.off()
+    grDevices::dev.off()
   }
 
   ## Deviation from copy number 2

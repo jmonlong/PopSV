@@ -40,7 +40,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
 
   ## Normalize the different sets
   if(length(bc.f)>1){
-    med.v = tapply(bc.all$value, bc.all$bc.f, quantile, probs=.9, na.rm=TRUE)
+    med.v = tapply(bc.all$value, bc.all$bc.f, stats::quantile, probs=.9, na.rm=TRUE)
     med.mean = mean(med.v, na.rm=TRUE)
     bc.all$value = med.mean * bc.all$value / med.v[as.character(bc.all$bc.f)]
   }
@@ -63,7 +63,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
     message("PopSV calls...")
     bin.gr = unique(with(bc.all, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end))))
     sv.gr =  with(sv.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
-    sv.df = sv.df[overlapsAny(sv.gr, gr),]
+    sv.df = sv.df[IRanges::overlapsAny(sv.gr, gr),]
     bc.sv = bc.all[which(bc.all$sample %in% unique(sv.df$sample)), ]
   }
   if(!is.null(samples)){
@@ -95,7 +95,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
   }
   
   ## Plot reference samples
-  pos = m = value = ggpSck = NULL ## Uglily appease R checks
+  pos = m = value = ggpSck = sd = NULL ## Uglily appease R checks
   gp.o = ggplot2::ggplot(bc.ref) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::xlab("position")
   if(flanks>0){
     gp.o = gp.o + ggplot2::geom_rect(xmin=start, xmax=end, ymin=0, ymax=max.bc, fill="yellow2", ggplot2::aes(alpha=ggpSck), data=data.frame(ggpSck=0)) + ggplot2::guides(alpha=FALSE)

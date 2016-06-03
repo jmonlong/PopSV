@@ -11,15 +11,13 @@
 ##' @param dist.gr a GRanges defining the feature for which we want to control the distance to. Default is NULL, i.e. no control.
 ##' @return a GRanges object defining the control regions
 ##' @author Jean Monlong
-##' @import GenomicRanges
-##' @import GenomeInfoDb
 ##' @export
 draw.controls <- function(cnv.gr, feat.grl, nb.class=100, nb.cores=3, redo.duplicates=TRUE, seed.nb.max=1e5, min.nb.gr=NULL, chr.prefix="", dist.gr=NULL){
 
   randGR.bp <- function(n=10){
     seql.1.22 = seqlengths(BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)[paste0("chr",1:22)]
-    chrs = apply(rmultinom(n, 1, (seql.1.22/1e3)/sum(seql.1.22/1e3)),2,function(e)which(e==1))
-    starts = runif(n, 0, seql.1.22[chrs])
+    chrs = apply(stats::rmultinom(n, 1, (seql.1.22/1e3)/sum(seql.1.22/1e3)),2,function(e)which(e==1))
+    starts = stats::runif(n, 0, seql.1.22[chrs])
     return(GenomicRanges::GRanges(paste0(chr.prefix, chrs), IRanges::IRanges(starts, width=1)))
   }
   if(is.data.frame(cnv.gr)){
@@ -34,22 +32,22 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=100, nb.cores=3, redo.dupli
   d.gr = randGR.bp(max(seed.nb.max, 3*length(cnv.gr)))
   d.l = parallel::mclapply(feat.grl, function(feat.gr){
     dtn = GenomicRanges::distanceToNearest(d.gr, feat.gr)
-    ret = rep(median(as.data.frame(dtn)$distance), length(d.gr))
-    ret[queryHits(dtn)] = as.data.frame(dtn)$distance
+    ret = rep(stats::median(as.data.frame(dtn)$distance), length(d.gr))
+    ret[S4Vectors::queryHits(dtn)] = as.data.frame(dtn)$distance
     ret
   }, mc.cores=nb.cores)
   d.df = as.data.frame(d.l)
-  ol.l = parallel::mclapply(feat.grl, function(feat.gr)GenomicRanges::overlapsAny(cnv.gr, feat.gr), mc.cores=nb.cores)
+  ol.l = parallel::mclapply(feat.grl, function(feat.gr)IRanges::overlapsAny(cnv.gr, feat.gr), mc.cores=nb.cores)
   if(is.null(cnv.gr$sample)) {
     cnv.gr$sample = ""
   }
   if(!is.null(dist.gr)){
     dtn = GenomicRanges::distanceToNearest(cnv.gr, dist.gr, ignore.strand=TRUE)
-    cnv.gr$dist.feat = median(as.data.frame(dtn)$distance)
-    cnv.gr$dist.feat[queryHits(dtn)] = as.data.frame(dtn)$distance
+    cnv.gr$dist.feat = stats::median(as.data.frame(dtn)$distance)
+    cnv.gr$dist.feat[S4Vectors::queryHits(dtn)] = as.data.frame(dtn)$distance
     dtn = GenomicRanges::distanceToNearest(d.gr, dist.gr)
-    d.gr$dist.feat = median(as.data.frame(dtn)$distance)
-    d.gr$dist.feat[queryHits(dtn)] = as.data.frame(dtn)$distance
+    d.gr$dist.feat = stats::median(as.data.frame(dtn)$distance)
+    d.gr$dist.feat[S4Vectors::queryHits(dtn)] = as.data.frame(dtn)$distance
   }
   cnv.df = data.frame(as.data.frame(ol.l), sample=cnv.gr$sample)
   ol.prof = unique(cnv.df[,1:length(feat.grl), drop=FALSE])
@@ -62,7 +60,7 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=100, nb.cores=3, redo.dupli
     if(length(w.uniq) < nb.class){
       w.class = widths
     } else {
-      w.class = cutree(hclust(dist(w.uniq), method="ward.D"), nb.class)
+      w.class = stats::cutree(stats::hclust(stats::dist(w.uniq), method="ward.D"), nb.class)
       names(w.class) = as.character(w.uniq)
       w.class = w.class[as.character(widths)]
     }
@@ -76,7 +74,7 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=100, nb.cores=3, redo.dupli
       }
       good.d = which(good.d==nb.feat.good)
       if(!is.null(dist.gr) & length(good.d) > length(w.i)){
-        good.d = head(good.d[sapply(gr.ii$dist.feat[iii], function(d)which.min(abs(d-d.gr$dist.feat[good.d])))], length(w.i))
+        good.d = utils::head(good.d[sapply(gr.ii$dist.feat[iii], function(d)which.min(abs(d-d.gr$dist.feat[good.d])))], length(w.i))
       } else {
         good.d = sample(good.d, length(w.i), length(good.d) < length(w.i))
       }

@@ -18,7 +18,7 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
     gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
     gr.d = GenomicRanges::disjoin(gr)
     ol = GenomicRanges::findOverlaps(gr.d, gr)
-    thits = base::table(IRanges::queryHits(ol))
+    thits = base::table(S4Vectors::queryHits(ol))
     freq.df = data.frame(win.id = as.numeric(names(thits)), nb=as.numeric(thits))
     win.df = GenomicRanges::as.data.frame(gr.d[as.numeric(freq.df$win.id)])[,1:3]
     freq.df$chr = as.character(win.df$seqnames)
@@ -30,7 +30,7 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
 
   res.df$gen.kb = with(res.df, (end-start)/1e3)
 
-  samp.o = aggregate(gen.kb~sample, data=res.df, sum)
+  samp.o = stats::aggregate(gen.kb~sample, data=res.df, sum)
   res.df$sample = factor(res.df$sample, levels=samp.o$sample[order(samp.o$gen.kb)])
 
   info.df = data.frame(variable="kb-meanPerSamp",value=mean(samp.o$gen.kb), stringsAsFactors=FALSE)
@@ -71,7 +71,7 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
       ggplot2::theme(legend.position=c(.5,1),legend.justification=c(.5,1)) + ggplot2::xlab("Copy Number estimates") + ggplot2::ylab("number of calls")
 
 
-  f.df = dplyr::summarize(dplyr::group_by(freq.df, chr, start, end), nb=sum(nb), prop=sum(prop), gen.kb=head((end-start)/1e3, 1))
+  f.df = dplyr::summarize(dplyr::group_by(freq.df, chr, start, end), nb=sum(nb), prop=sum(prop), gen.kb=utils::head((end-start)/1e3, 1))
   f.df = dplyr::summarize(dplyr::group_by(f.df, chr, nb, prop), gen.kb=sum(gen.kb))
   output$freq = ggplot2::ggplot(dplyr::arrange(f.df, chr), ggplot2::aes(x=nb,  y=gen.kb, fill=chr)) + ggplot2::xlab("number of samples") +
     ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() + ggplot2::ylab("abnormal genome (Kb)") +
@@ -84,11 +84,11 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
   info.df = rbind(info.df, data.frame(variable="freq<10%-propBp", value=sum(f.df$gen.kb[which(f.df$prop<.1)])/sum(f.df$gen.kb), stringsAsFactors=FALSE))
 
   if(!is.null(out.pdf)){
-    pdf(out.pdf, 9,6)
+    grDevices::pdf(out.pdf, 9,6)
     lapply(output, print)
-    dev.off()
+    grDevices::dev.off()
   } else if(print) {
-    par(ask=TRUE)
+    graphics::par(ask=TRUE)
     lapply(output, print)
   }
 

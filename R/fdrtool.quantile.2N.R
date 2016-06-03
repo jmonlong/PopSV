@@ -12,7 +12,7 @@
 fdrtool.quantile.2N <- function(z, plot = TRUE) {
 
   localMax <- function(x, min.max.prop = 0.1) {
-    d = density(x, na.rm = TRUE)
+    d = stats::density(x, na.rm = TRUE)
     im = 1 + which(diff(sign(diff(d$y))) == -2)
     my = max(d$y)
     max.id = im[which(d$y[im] >= min.max.prop * my)]
@@ -22,22 +22,20 @@ fdrtool.quantile.2N <- function(z, plot = TRUE) {
   fit2norm.sd.cens <- function(z, p0 = c(p = 0.75, s1 = 1, s2 = 2), z0) {
     z = z[abs(z) < z0]
     mix.obj <- function(p, x) {
-      e <- p[1] * dnorm(x/p[2])/((pnorm(z0, 0, p[2]) - pnorm(-z0, 0, p[2])) *
-                                 p[2]) + (1 - p[1]) * dnorm(x/p[3])/((pnorm(z0, 0, p[3]) - pnorm(-z0,
+      e <- p[1] * stats::dnorm(x/p[2])/((stats::pnorm(z0, 0, p[2]) - stats::pnorm(-z0, 0, p[2])) *
+                                 p[2]) + (1 - p[1]) * stats::dnorm(x/p[3])/((stats::pnorm(z0, 0, p[3]) - stats::pnorm(-z0,
                                                                                                  0, p[3])) * p[3])
       if (any(e <= 0, na.rm = TRUE) | p[1] < 0 | p[1] > 1 | p[2]>2*z0 | p[3]>2*z0)
       Inf else -sum(log(e))
     }
-    lmix2a <- deriv(~-log(p * dnorm(x/s1)/((pnorm(z0, 0, s1) - pnorm(-z0, 0,
-                                                                     s1)) * s1) + (1 - p) * dnorm(x/s2)/((pnorm(z0, 0, s2) - pnorm(-z0, 0,
-                                                                                                                                   s2)) * s2)), c("p", "s1", "s2"), function(x, p, s1, s2) NULL)
+    lmix2a <- stats::deriv(~ -log(p * dnorm(x/s1)/((pnorm(z0, 0, s1) - pnorm(-z0, 0, s1)) * s1) + (1 - p) * dnorm(x/s2)/((pnorm(z0, 0, s2) - pnorm(-z0, 0, s2)) * s2)), c("p", "s1", "s2"), function(x, p, s1, s2) NULL)
     mix.gr <- function(pa, x) {
       p <- pa[1]
       s1 <- pa[2]
       s2 <- pa[3]
       colSums(attr(lmix2a(x, p, s1, s2), "gradient"))
     }
-    results = optim(p0, mix.obj, mix.gr, x = z)
+    results = stats::optim(p0, mix.obj, mix.gr, x = z)
     if (results$par[1] < 0.5) {
       results$par[1] = 1 - results$par[1]
       results$par[2:3] = results$par[3:2]
@@ -46,8 +44,8 @@ fdrtool.quantile.2N <- function(z, plot = TRUE) {
   }
   sim2norm.sd <- function(pars, nb.sims = 1e+06) {
     if (pars["p"] < 0 | pars["p"] > 1)
-    return(rnorm(nb.sims, 0, pars["s1"]))
-    c(rnorm(pars["p"] * nb.sims, 0, pars["s1"]), rnorm((1 - pars["p"]) * nb.sims,
+    return(stats::rnorm(nb.sims, 0, pars["s1"]))
+    c(stats::rnorm(pars["p"] * nb.sims, 0, pars["s1"]), stats::rnorm((1 - pars["p"]) * nb.sims,
                                                        0, pars["s2"]))
   }
   find.par <- function(z) {
@@ -55,8 +53,8 @@ fdrtool.quantile.2N <- function(z, plot = TRUE) {
       do.call(rbind, lapply(z0,function(z0){
         p = fit2norm.sd.cens(z, z0 = z0)
         zsim = sim2norm.sd(p$par)
-        dz = density(z[abs(z) < z0], from = -z0, to = z0, n = 512)
-        dzsim = density(zsim[abs(zsim) < z0], from = -z0, to = z0, n = 512)
+        dz = stats::density(z[abs(z) < z0], from = -z0, to = z0, n = 512)
+        dzsim = stats::density(zsim[abs(zsim) < z0], from = -z0, to = z0, n = 512)
         data.frame(z0 = z0, dens.diff = sum(abs(dz$y - dzsim$y))/sum(dzsim$y),
                    p = p$par[1], s1 = p$par[2], s2 = p$par[3])
       }))
@@ -84,7 +82,7 @@ fdrtool.quantile.2N <- function(z, plot = TRUE) {
     list(par = unlist(p.c))
   }
   p2norm <- function(z, pars) {
-    pars["p"] * pnorm(z, 0, pars["s1"]) + (1 - pars["p"]) * pnorm(z, 0, pars["s2"])
+    pars["p"] * stats::pnorm(z, 0, pars["s1"]) + (1 - pars["p"]) * stats::pnorm(z, 0, pars["s2"])
   }
 
   res = list(pval = rep(NA, length(z)), qval = rep(NA, length(z)), sigma.est.dup = NA, sigma.est.del = NA)
@@ -117,14 +115,14 @@ fdrtool.quantile.2N <- function(z, plot = TRUE) {
   if (any(res$pval == 0, na.rm = TRUE)) {
     res$pval[which(res$pval == 0)] = .Machine$double.xmin
   }
-  res$qval = p.adjust(res$pval, method = "fdr")
+  res$qval = stats::p.adjust(res$pval, method = "fdr")
 
   if (plot & any(!is.na(res$pval))) {
     pv = qv = ..density.. = y = NULL  ## Uglily appease R checks
     plot.df = data.frame(z = z, pv = res$pval, qv = res$qval)
 
     z.lim = c(-res$sigma.est.del, res$sigma.est.dup)*ifelse(mean(res$pval<.01)>.1,8,5)
-    null.df = data.frame(y=c(dnorm(seq(z.lim[1],0,.05),0,res$sigma.est.del),dnorm(seq(0,z.lim[2],.05),0,res$sigma.est.dup)), z=c(seq(z.lim[1],0,.05),seq(0,z.lim[2],.05)))
+    null.df = data.frame(y=c(stats::dnorm(seq(z.lim[1],0,.05),0,res$sigma.est.del),stats::dnorm(seq(0,z.lim[2],.05),0,res$sigma.est.dup)), z=c(seq(z.lim[1],0,.05),seq(0,z.lim[2],.05)))
     null.df$y = null.df$y * mean(z> -4*res$sigma.est.del & z<4*res$sigma.est.dup)
 
     print(ggplot2::ggplot(plot.df, ggplot2::aes(x = z)) +
@@ -138,7 +136,7 @@ fdrtool.quantile.2N <- function(z, plot = TRUE) {
           ggplot2::scale_fill_hue(name="Q-value") +
           ggplot2::theme_bw() + ggplot2::theme(legend.position="bottom"))
 
-    print(ggplot2::ggplot(plot.df[which(abs(plot.df$z) < quantile(abs(plot.df$z),
+    print(ggplot2::ggplot(plot.df[which(abs(plot.df$z) < stats::quantile(abs(plot.df$z),
                                                                   probs = 0.95) + 1), ], ggplot2::aes(x = z)) + ggplot2::geom_histogram() +
           ggplot2::xlab("Z-score") + ggplot2::ylab("number of bins") + ggplot2::theme_bw())
     print(ggplot2::ggplot(plot.df, ggplot2::aes(x = pv)) + ggplot2::geom_histogram() +

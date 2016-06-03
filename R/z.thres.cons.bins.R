@@ -13,7 +13,7 @@
 ##' @keywords internal
 z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
   
-  bin.w = round(median(z.df$end - z.df$start + 1, na.rm = TRUE))
+  bin.w = round(stats::median(z.df$end - z.df$start + 1, na.rm = TRUE))
   cons.dist.f <- function(df) {
     if(nrow(df)==0){return(data.frame(nbc = NA, n = NA, p = NA))}
     gr = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
@@ -26,9 +26,9 @@ z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
       if (length(xx) > 1) {
         xx.p = rec.max(xx[-length(xx)])
         if (min) {
-          return(c(xx.p, min(c(tail(xx.p, 1), xx[length(xx)]))))
+          return(c(xx.p, min(c(utils::tail(xx.p, 1), xx[length(xx)]))))
         } else {
-          return(c(xx.p, max(c(tail(xx.p, 1), xx[length(xx)]))))
+          return(c(xx.p, max(c(utils::tail(xx.p, 1), xx[length(xx)]))))
         }
       } else {
         return(xx)
@@ -37,7 +37,7 @@ z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
     cmax = rec.max(y)
     cmax.rle = rle(diff(cmax))
     if (all(cmax.rle$values != 0)) {
-      return(list(x = tail(x, 1), y = tail(y, 1)))
+      return(list(x = utils::tail(x, 1), y = utils::tail(y, 1)))
     }
     rle.i = which(cmax.rle$values == 0)[which.max(cmax.rle$lengths[cmax.rle$values == 
                     0])]
@@ -46,7 +46,7 @@ z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
   }
   localMax <- function(x, y = NULL, min.max.prop = 0.1, loc.max = TRUE) {
     if (is.null(y)) {
-      d = density(x, na.rm = TRUE)
+      d = stats::density(x, na.rm = TRUE)
     } else {
       d = data.frame(x = x, y = y)
       d = dplyr::arrange(d, x)
@@ -82,10 +82,10 @@ z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
   del.df = z.df[which(z.df$z < 0), ]
   
   ## Find threshold; second run scan with more resolution.
-  dup.th = find.th(dup.df, z.int = seq(2, quantile(dup.df$z, probs = 0.999) * 2, 0.2))
+  dup.th = find.th(dup.df, z.int = seq(2, stats::quantile(dup.df$z, probs = 0.999) * 2, 0.2))
   ## dup.th = find.th(dup.df, seq(dup.th-.5, dup.th+.5, .01))
   ## dup.th = find.th(dup.df, seq(dup.th-.1, dup.th+.1, .005))
-  del.th = find.th(del.df, z.int = seq(2, quantile(abs(del.df$z), probs = 0.999) * 2, 0.2))
+  del.th = find.th(del.df, z.int = seq(2, stats::quantile(abs(del.df$z), probs = 0.999) * 2, 0.2))
   ## del.th = find.th(del.df, seq(del.th-.5, del.th+.5, .01))
   ## del.th = find.th(del.df, seq(del.th-.1, del.th+.1, .005))
  

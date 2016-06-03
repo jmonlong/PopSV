@@ -43,7 +43,7 @@ find.comparable.bins <- function(msd1, msd2, plot=TRUE){
 
   ## Polar Kmeans
   theta = atan(log10(m.df$m2+1)/log10(m.df$m1+1))
-  km = kmeans(theta, 4)
+  km = stats::kmeans(theta, 4)
   extreme.cl = c(which.max(km$centers), which.min(km$centers))
   m.df$comparable = !(km$cluster %in% extreme.cl)
 

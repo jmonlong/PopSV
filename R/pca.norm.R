@@ -25,14 +25,14 @@ pca.norm <- function(bc.df, nb.pcs = 3, nb.cores = 1, norm.stats.comp = TRUE) {
   bc.norm$end = bc.df$end
 
   bc = as.matrix(bc.df[, all.samples])
-  bc.cov = as.numeric(parallel::mclapply(1:ncol(bc), function(cc) median(bc[, cc],
+  bc.cov = as.numeric(parallel::mclapply(1:ncol(bc), function(cc) stats::median(bc[, cc],
     na.rm = TRUE), mc.cores = nb.cores))
-  bc = (bc * median(bc.cov)) %*% diag(1/bc.cov)
+  bc = (bc * stats::median(bc.cov)) %*% diag(1/bc.cov)
   if (any(is.na(bc))) {
     bc[is.na(bc)] = 0
   }
 
-  pca.o = prcomp(bc, center=FALSE)
+  pca.o = stats::prcomp(bc, center=FALSE)
   rot = pca.o$rotation
   rot[,1:nb.pcs] = 0
   bc.norm[, all.samples] = pca.o$x %*% t(rot)

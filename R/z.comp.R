@@ -37,7 +37,7 @@ z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.
   if (z.poisson) {
     z.comp.f <- function(x, mean.c, sd.c) {
       z.n = (x - mean.c)/sd.c
-      z.p = qnorm(ppois(x, mean.c))
+      z.p = stats::qnorm(stats::ppois(x, mean.c))
       n.ii = abs(z.n) < abs(z.p)
       z.p[which(n.ii)] = z.n[which(n.ii)]
       z.p
@@ -50,12 +50,12 @@ z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.
 
   if(!is.null(bc.f)){
     read.chunk <- function(chunk.start=NULL, chunk.end=NULL){
-      col.n = read.table(bc.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE)
+      col.n = utils::read.table(bc.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE)
       dt = suppressWarnings(data.table::fread(bc.f,nrows=chunk.end-chunk.start+1, skip=chunk.start, header=FALSE, sep="\t"))
       data.table::setnames(dt, as.character(col.n))
       dt
     }
-    headers = as.character(read.table(bc.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE))
+    headers = as.character(utils::read.table(bc.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE))
   } else {
     read.chunk <- function(chunk.start=NULL, chunk.end=NULL){
       col.n = c("chr","start","end", files.df$sample)
@@ -125,7 +125,7 @@ z.comp <- function(bc.f=NULL, files.df, ref.samples=NULL, z.poisson = FALSE, nb.
     ## Write mean/sd file
     msd = data.frame(as.data.frame(bc.1[, 1:3, with=FALSE]), t(msd))
     if(!is.null(out.msd.f)){
-      write.table(msd, file=out.msd.f, sep="\t", row.names=FALSE, quote=FALSE, append=append | ch.ii>1, col.names=!append & ch.ii==1)
+      utils::write.table(msd, file=out.msd.f, sep="\t", row.names=FALSE, quote=FALSE, append=append | ch.ii>1, col.names=!append & ch.ii==1)
     }
 
   }

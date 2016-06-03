@@ -9,6 +9,7 @@
 ##' @param reorder should the files be read and reordered before compression/indexation. Default is FALSE.
 ##' @return a character vector confirming the creation of the new files.
 ##' @author Jean Monlong
+##' @import data.table
 ##' @export
 comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrite.out = TRUE, reorder=FALSE) {
   chr = start = NULL ## Uglily appeases R checks
@@ -20,7 +21,7 @@ comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrit
       dt = data.table::fread(files[file.ii])
       dt[, chr:= as.character(chr)]
       data.table::setkey(dt, chr, start)
-      write.table(dt, file=files[file.ii], quote=FALSE, row.names=FALSE, sep="\t")
+      utils::write.table(dt, file=files[file.ii], quote=FALSE, row.names=FALSE, sep="\t")
     }
     final.file = paste(outprefix[file.ii], ".bgz", sep = "")
     Rsamtools::bgzip(files[file.ii], dest = final.file, overwrite = TRUE)

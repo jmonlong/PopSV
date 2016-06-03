@@ -15,7 +15,7 @@ aneuploidy.flag <- function(samp, files.df, col.file = "bc.gc.gz", nb.bins = 100
     bc = aneu.flag = chr = . = NULL  ## Appease R checks
 
     localMax <- function(x, min.max.prop = 0.1) {
-        d = density(x, na.rm = TRUE)
+        d = stats::density(x, na.rm = TRUE)
         im = 1 + which(diff(sign(diff(d$y))) == -2)
         my = max(d$y)
         max.id = im[which(d$y[im] >= min.max.prop * my)]
@@ -23,7 +23,7 @@ aneuploidy.flag <- function(samp, files.df, col.file = "bc.gc.gz", nb.bins = 100
         return(list(lM = d$x[max.id.o], h = d$y[max.id.o]/my))
     }
 
-    df = read.table(files.df[files.df$sample == samp, col.file], header = TRUE, as.is = TRUE)
+    df = utils::read.table(files.df[files.df$sample == samp, col.file], header = TRUE, as.is = TRUE)
     chrs = unique(df$chr)
     df = df[which(df$bc > 0), ]
 
@@ -48,7 +48,7 @@ aneuploidy.flag <- function(samp, files.df, col.file = "bc.gc.gz", nb.bins = 100
 
     if (plot) {
         df$aneu.flag = df$chr %in% aneu.chrs
-        df$bc = winsor(df$bc, u = quantile(df$bc, probs = 0.995, na.rm = TRUE))
+        df$bc = winsor(df$bc, u = stats::quantile(df$bc, probs = 0.995, na.rm = TRUE))
         p1 = ggplot2::ggplot(df, ggplot2::aes(x = bc, fill = aneu.flag)) + ggplot2::geom_density(alpha = 0.4) +
             ggplot2::theme_bw() + ggplot2::facet_grid(chr ~ ., scales = "free") +
             ggplot2::xlab("read coverage") + ggplot2::ylab("bin density") + ggplot2::theme(axis.text.y = ggplot2::element_blank()) +

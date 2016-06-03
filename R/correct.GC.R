@@ -21,17 +21,17 @@ correct.GC <- function(bc.f, gc.df, outfile.prefix, appendIndex.outfile = TRUE) 
     gc.class = cut(gc.df$GCcontent, breaks = seq(0, 1, 0.02), include.lowest = TRUE)
     samp.ii = unlist(tapply(1:length(gc.class), gc.class, function(e) e[sample(1:length(e), 
         min(c(length(e), 500)))]))
-    bc.df = read.table(bc.f, as.is = TRUE, header = TRUE)
+    bc.df = utils::read.table(bc.f, as.is = TRUE, header = TRUE)
     bc.df$GCcontent = gc.df$GCcontent
-    lo = loess(bc ~ GCcontent, data = bc.df[samp.ii, ])
-    bc.df$bc = mean(bc.df$bc, na.rm = TRUE) * bc.df$bc/predict(lo, newdata = bc.df)
+    lo = stats::loess(bc ~ GCcontent, data = bc.df[samp.ii, ])
+    bc.df$bc = mean(bc.df$bc, na.rm = TRUE) * bc.df$bc/stats::predict(lo, newdata = bc.df)
     bc.df$bc = round(bc.df$bc, digits = 2)
     if (any(bc.df$bc < 0, na.rm = TRUE)) 
         bc.df$bc[bc.df$bc < 0] = 0
     bc.df$GCcontent = NULL
     
     if (appendIndex.outfile) {
-        write.table(bc.df, file = outfile.prefix, quote = FALSE, row.names = FALSE, 
+        utils::write.table(bc.df, file = outfile.prefix, quote = FALSE, row.names = FALSE, 
             sep = "\t")
         final.file = paste(outfile.prefix, ".bgz", sep = "")
         Rsamtools::bgzip(outfile.prefix, dest = final.file, overwrite = TRUE)

@@ -99,7 +99,7 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
     df$bc = binBam.single(df)
     if (!is.null(outfile.prefix)) {
       df$chunk = NULL
-      write.table(df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
+      utils::write.table(df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
                   sep = "\t", append = ch.nb > 1, col.names = ch.nb == 1)
       return(data.frame(chunk = ch.nb, nb.reads = sum(as.numeric(df$bc), na.rm = TRUE)))
     } else {

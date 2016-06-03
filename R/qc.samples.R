@@ -65,15 +65,15 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
       })
     }
     if (is.null(med.med) & is.null(med.samp)) {
-      med.samp = lapply(bc.l, median, na.rm = TRUE)  ## Normalization of the median coverage
-      med.med = median(unlist(med.samp), na.rm = TRUE)
+      med.samp = lapply(bc.l, stats::median, na.rm = TRUE)  ## Normalization of the median coverage
+      med.med = stats::median(unlist(med.samp), na.rm = TRUE)
     }
     for (samp.i in 1:nrow(files.df)) {
       bc.df[, as.character(files.df$sample[samp.i])] = round(bc.l[[samp.i]] * med.med/med.samp[[samp.i]], 2)
     }
     bc.df = bc.df[order(as.character(bc.df$chr), bc.df$start, bc.df$end),]
     if (!is.null(file)) {
-      write.table(bc.df, file = file, quote = FALSE, row.names = FALSE, sep = "\t",
+      utils::write.table(bc.df, file = file, quote = FALSE, row.names = FALSE, sep = "\t",
                   append = append.f, col.names = !append.f)
     }
     if (!is.null(sub.bc)) {
@@ -82,7 +82,7 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     return(bc.df)
   }
   center.pt <- function(m) {
-    dm = as.matrix(dist(m))
+    dm = as.matrix(stats::dist(m))
     diag(dm) = NA
     rownames(m)[which.min(apply(dm, 2, mean, na.rm = TRUE))]
   }
@@ -92,7 +92,7 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
   pc.all.df = bc.rand = NULL
   if (length(ref.samples) > nb.ref.samples) {
     sparse.pts <- function(m, nb.pts) {
-      dm = as.matrix(dist(m))
+      dm = as.matrix(stats::dist(m))
       diag(dm) = NA
       pts.jj = 1:nrow(dm)
       pts.ii = which.max(apply(dm, 1, max, na.rm = TRUE))
@@ -109,7 +109,7 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     bc.rand = read.bc.samples(bin.df[sample.int(nrow(bin.df), min(c(nrow(bin.df)/2,1000))), ], files.df, med.med = 1, med.samp = rep(list(1), nrow(files.df)))
     ## PCA
     bc.mv = medvar.norm.internal(bc.rand[, ref.samples])
-    pc.all = prcomp(t(na.exclude(bc.mv)))
+    pc.all = stats::prcomp(t(stats::na.exclude(bc.mv)))
     pc.all.df = data.frame(pc.all$x[, 1:3])
     pc.all.df$sample = ref.samples
     sp.o = sparse.pts(pc.all$x[, 1:2], nb.ref.samples)
@@ -127,7 +127,7 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
   bin.df = bin.df[order(as.character(bin.df$chr), bin.df$start, bin.df$end),]
   if (nrow(bin.df) < 1.3 * chunk.size) {
     bc.df = read.bc.samples(bin.df, files.df, nb.cores)
-    write.table(bc.df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
+    utils::write.table(bc.df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
                 sep = "\t")
   } else {
     nb.chunks = ceiling(nrow(bin.df)/chunk.size)
@@ -141,9 +141,9 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     if (is.null(bc.rand)) {
       bc.rand = read.bc.samples(bin.df[sample.int(nrow(bin.df), min(c(nrow(bin.df)/2,1000))), ], files.df, med.med = 1, med.samp = rep(list(1), nrow(files.df)))
     }
-    med.samp = lapply(as.character(files.df$sample), function(samp.i) median(bc.rand[,
+    med.samp = lapply(as.character(files.df$sample), function(samp.i) stats::median(bc.rand[,
       samp.i], na.rm = TRUE))  ## Normalization of the median coverage
-    med.med = median(unlist(med.samp), na.rm = TRUE)
+    med.med = stats::median(unlist(med.samp), na.rm = TRUE)
     bc.res = lapply(unique(bin.df$chunk), function(chunk.i) {
       analyze.chunk(bin.df[which(bin.df$chunk == chunk.i), ])
     })
@@ -161,7 +161,7 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
   if(any(is.infinite(bc.mv))){
     bc.mv[which(is.infinite(bc.mv))] = NA
   }
-  pc.ref = prcomp(t(na.exclude(bc.mv)))
+  pc.ref = stats::prcomp(t(stats::na.exclude(bc.mv)))
   pc.ref.df = data.frame(pc.ref$x[, 1:3])
   pc.ref.df$sample = ref.samples
   if (plot) {

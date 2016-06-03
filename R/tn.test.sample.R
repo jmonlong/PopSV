@@ -35,17 +35,17 @@
 ##' @export
 tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f=NULL, norm.stats.f, write.out.file=TRUE, compress.index=TRUE, z.poisson = FALSE, aberrant.cases = FALSE, append=FALSE, col.file="bc.gc.gz") {
   chunk.size = 1000
-  test.bc = read.table(files.df[which(files.df$sample == test.sample),col.file], colClasses = c("character", "integer", "integer", "numeric"), header = TRUE)
+  test.bc = utils::read.table(files.df[which(files.df$sample == test.sample),col.file], colClasses = c("character", "integer", "integer", "numeric"), header = TRUE)
   id.test = 1:nrow(test.bc)
   names(id.test) = paste(test.bc$chr, as.integer(test.bc$start), sep = "-")
   if(!is.null(bc.ref.f)){
-    ref.headers = read.table(bc.ref.f, nrows = 1, as.is = TRUE)
+    ref.headers = utils::read.table(bc.ref.f, nrows = 1, as.is = TRUE)
     colC = ifelse(ref.headers == cont.sample, "numeric", "NULL")
     colC[1:3] = c("character", "integer", "integer")
-    cont.bc = read.table(bc.ref.f, colClasses = colC, header = TRUE)
+    cont.bc = utils::read.table(bc.ref.f, colClasses = colC, header = TRUE)
     colnames(cont.bc)[4] = "bc"
   } else {
-    cont.bc = read.table(files.df[which(files.df$sample == cont.sample), col.file], colClasses = c("character", "integer", "integer", "numeric"), header = TRUE)
+    cont.bc = utils::read.table(files.df[which(files.df$sample == cont.sample), col.file], colClasses = c("character", "integer", "integer", "numeric"), header = TRUE)
   }
   id.cont = 1:nrow(cont.bc)
   names(id.cont) = paste(cont.bc$chr, as.integer(cont.bc$start), sep = "-")
@@ -53,7 +53,7 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f=NULL, no
   if (z.poisson) {
     z.comp.f <- function(x, mean.c, sd.c) {
       z.n = (x - mean.c)/sd.c
-      z.p = qnorm(ppois(x, mean.c))
+      z.p = stats::qnorm(stats::ppois(x, mean.c))
       n.ii = abs(z.n) < abs(z.p)
       z.p[which(n.ii)] = z.n[which(n.ii)]
       z.p
@@ -114,9 +114,9 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f=NULL, no
 
   if(write.out.file){
     files.out = c(files.df[which(files.df$sample == test.sample), "z"], files.df[which(files.df$sample == test.sample), "fc"], files.df[which(files.df$sample == test.sample), "bc.gc.norm"])
-    write.table(res.df[,c("chr","start","end","z")], file = files.out[1], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
-    write.table(res.df[,c("chr","start","end","fc")], file = files.out[2], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
-    write.table(res.df[,c("chr","start","end","bc")], file = files.out[3], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
+    utils::write.table(res.df[,c("chr","start","end","z")], file = files.out[1], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
+    utils::write.table(res.df[,c("chr","start","end","fc")], file = files.out[2], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
+    utils::write.table(res.df[,c("chr","start","end","bc")], file = files.out[3], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
     if (compress.index) {
       comp.index.files(files.out)
     }

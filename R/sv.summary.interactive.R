@@ -27,7 +27,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
     gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
     gr.d = GenomicRanges::disjoin(gr)
     ol = GenomicRanges::findOverlaps(gr.d, gr)
-    thits = base::table(IRanges::queryHits(ol))
+    thits = base::table(S4Vectors::queryHits(ol))
     freq.df = data.frame(win.id = as.numeric(names(thits)), nb=as.numeric(thits))
     win.df = GenomicRanges::as.data.frame(gr.d[as.numeric(freq.df$win.id)])[,1:3]
     freq.df$chr = as.character(win.df$seqnames)
@@ -98,7 +98,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
             } else {
               warning("No column with the mean coverage in the reference.")
             }
-            samp.o = aggregate(gen.kb~sample, data=pdf, sum)
+            samp.o = stats::aggregate(gen.kb~sample, data=pdf, sum)
             pdf$sample = factor(pdf$sample, levels=samp.o$sample[order(samp.o$gen.kb)])
             pdf
           })
@@ -167,7 +167,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
 
         output$freq = shiny::renderPlot({
             f.all.df = freq.df()
-            f.df = dplyr::summarize(dplyr::group_by(f.all.df, chr, start, end), nb=sum(nb), prop=sum(prop), gen.kb=head((end-start)/1e3, 1))
+            f.df = dplyr::summarize(dplyr::group_by(f.all.df, chr, start, end), nb=sum(nb), prop=sum(prop), gen.kb=utils::head((end-start)/1e3, 1))
             f.df = dplyr::summarize(dplyr::group_by(f.df, chr, nb, prop), gen.kb=sum(gen.kb))
             if(input$freq.rep=="nb"){
               ggp = ggplot2::ggplot(dplyr::arrange(f.df[which(f.df$nb>=input$nbMin),], chr), ggplot2::aes(x=nb,  y=gen.kb, fill=chr)) + ggplot2::xlab("number of samples")
@@ -215,7 +215,7 @@ sv.summary.interactive <- function(res.df, height="500px"){
               wmin = max(chr.df$end/1e3)
               if(any(widths<wmin))widths[widths<wmin] = wmin
               pdf$end = pdf$start + widths
-              pdf$sample = reorder(pdf$sample, pdf$end-pdf$start, sum)
+              pdf$sample = stats::reorder(pdf$sample, pdf$end-pdf$start, sum)
               return(ggplot2::ggplot(pdf, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=as.numeric(sample)-.5, ymax=as.numeric(sample)+.5, fill=type)) +
                          ggplot2::scale_fill_brewer(palette="Set1") +
                              ggplot2::scale_x_continuous(breaks=seq(0,max(chr.df$end)/1e6,20)) +

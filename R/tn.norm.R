@@ -46,7 +46,7 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
   norm.stats$end = bc.norm$end = bc[bins, "end"]
 
   chrs = bc$chr
-  denorm.factor = runif(length(all.samples), 1,1.5)
+  denorm.factor = stats::runif(length(all.samples), 1,1.5)
   denorm.factor[which(all.samples==cont.sample)] = 1
   bc = t(as.matrix(bc[, all.samples]))
   bc = denorm.factor * bc
@@ -70,9 +70,9 @@ tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.s
         d.max = -1
       } else {
         if(norm[1]=="trim"){
-          d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i[trim.i]), bc[trim.i,], use="pairwise.complete.obs")))
+          d.i = 1 - as.numeric(suppressWarnings(stats::cor(as.numeric(bc.i[trim.i]), bc[trim.i,], use="pairwise.complete.obs")))
         } else {
-          d.i = 1 - as.numeric(suppressWarnings(cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs")))
+          d.i = 1 - as.numeric(suppressWarnings(stats::cor(as.numeric(bc.i), bc, use = "pairwise.complete.obs")))
         }
         if(force.diff.chr){
           chr.i = bc.norm$chr[bin.ii]

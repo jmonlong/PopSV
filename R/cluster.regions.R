@@ -16,22 +16,22 @@ cluster.regions <- function(cnv.df,cl.method="complete", nb.cores=3, geom.approx
   if(geom.approx){
     dj.gr = GenomicRanges::disjoin(cnv.gr)
     cnv.geom = parallel::mclapply(sample.names, function(samp){
-      dj.ol = GenomicRanges::overlapsAny(dj.gr, cnv.gr[which(cnv.gr$sample==samp)])
+      dj.ol = IRanges::overlapsAny(dj.gr, cnv.gr[which(cnv.gr$sample==samp)])
       ifelse(dj.ol, GenomicRanges::width(dj.gr), 0)
     }, mc.cores=nb.cores)
     cnv.geom = matrix(unlist(cnv.geom), length(cnv.geom[[1]]))
     colnames(cnv.geom) = sample.names
     cnv.geom = apply(cnv.geom, 2, function(x)x/sum(x))
-    d.mat = as.matrix(dist(t(cnv.geom), method="man"))
+    d.mat = as.matrix(stats::dist(t(cnv.geom), method="man"))
   } else {
     dist.cnv <- function(samp1,samp2){
       cnv1.gr = cnv.gr[which(cnv.gr$sample==samp1)]
       cnv2.gr = cnv.gr[which(cnv.gr$sample==samp2)]
       ol = GenomicRanges::findOverlaps(cnv1.gr, cnv2.gr)
-      w.ol = sum(GenomicRanges::width(GenomicRanges::pintersect(cnv1.gr[GenomicRanges::queryHits(ol)], cnv2.gr[GenomicRanges::subjectHits(ol)]))/1e3)
+      w.ol = sum(GenomicRanges::width(GenomicRanges::pintersect(cnv1.gr[S4Vectors::queryHits(ol)], cnv2.gr[S4Vectors::subjectHits(ol)]))/1e3)
       1-(2 * w.ol / sum(GenomicRanges::width(c(cnv1.gr, cnv2.gr))/1e3))
     }
-    sc = combn(sample.names, 2)
+    sc = utils::combn(sample.names, 2)
     d.l = parallel::mclapply(1:ncol(sc), function(ii) dist.cnv(sc[1,ii],sc[2,ii]), mc.cores=nb.cores)
     d.mat = matrix(NA,length(sample.names),length(sample.names))
     rownames(d.mat) = colnames(d.mat) = sample.names
@@ -39,6 +39,6 @@ cluster.regions <- function(cnv.df,cl.method="complete", nb.cores=3, geom.approx
       d.mat[sc[1,ii],sc[2,ii]] = d.mat[sc[2,ii],sc[1,ii]] = d.l[[ii]]
     cnv.geom = NULL
   }
-  hc = hclust(as.dist(d.mat),method=cl.method)
+  hc = stats::hclust(stats::as.dist(d.mat),method=cl.method)
   return(list(d=d.mat,hc=hc, cnv.geom=cnv.geom))
 }
