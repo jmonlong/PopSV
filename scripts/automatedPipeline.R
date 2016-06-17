@@ -47,7 +47,9 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, sleep=180, status=FALSE, fi
     getBC.f <- function(file.i, bins.f, files.df){
       library(PopSV, lib.loc=lib.loc)
       load(bins.f)
-      bb.o = bin.bam(files.df$bam[file.i], bins.df, files.df$bc[file.i])
+      bam.f = files.df$bam[file.i]
+      if("bam2" %in% colnames(files.df)) bam.f = c(bam.f, files.df$bam2[file.i])
+      bb.o = bin.bam(bam.f, bins.df, files.df$bc[file.i])
       correct.GC(files.df$bc.gz[file.i], bins.df, files.df$bc.gc[file.i])
       bb.o
     }
@@ -250,7 +252,7 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
       if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
     }
     if(status) showStatus(reg)
-    
+
   } else {
     message("\n== 6) Calling abnormal bin with loose threshold.\n")
     stepName = paste0("callLoose",file.suffix)
@@ -282,7 +284,7 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     }
     if(status) showStatus(reg)
   }
-  
+
   res.df = do.call(rbind, reduceResultsList(reg))
   return(res.df)
 }
