@@ -5,7 +5,7 @@
 \title{Fragment hg19 genome}
 \usage{
 fragment.genome.hg19(bin.size = 1000, slid.window = bin.size,
-  chr.prefix = FALSE, XY.chr = FALSE)
+  chr.prefix = FALSE, XY.chr = FALSE, quiet = FALSE)
 }
 \arguments{
 \item{bin.size}{the size of the bins}
@@ -15,6 +15,8 @@ fragment.genome.hg19(bin.size = 1000, slid.window = bin.size,
 \item{chr.prefix}{should chromosome name be in the form "chr1" instead of "1". Default is FALSE.}
 
 \item{XY.chr}{should chromosome X and Y be included. Default is FALSE. If TRUE, male and female should be analyzed separately, at least for chromosomes X and Y.}
+
+\item{quiet}{should any verbose display be avoided ? Default is FALSE.}
 }
 \value{
 a data.frame with columns 'chr', 'start' and 'end'.
