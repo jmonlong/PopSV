@@ -12,6 +12,7 @@ chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NU
   cnv = seg = . = chr = NULL
   
   bins.df = fragment.genome.hg19(bin.size, XY.chr=TRUE, quiet=TRUE)
+  bins.df$chr = factor(bins.df$chr, levels=c(1:22,"X","Y"))
 
   if(is.null(chr.df)){
     chr.df = lapply(unique(cnv.df$chr), function(chr.a){
@@ -30,8 +31,15 @@ chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NU
     df$seg = NULL
     df
   }
+
+  makeGRanges <- function(df){
+    if(all(c("chr","start","end") %in% colnames(df))){
+      df = df[,c("chr","start","end")]
+    }
+    GenomicRanges::makeGRangesFromDataFrame(df)
+  }
   
-  if(type=="sample"){
+  if(type[1]=="sample"){
     binF <- function(df, bins.df){
       bins.df = bins.df[which(bins.df$chr %in% unique(df$chr)),]
       bins.df$cnv = IRanges::overlapsAny(GenomicRanges::makeGRangesFromDataFrame(bins.df), GenomicRanges::makeGRangesFromDataFrame(df))
@@ -50,6 +58,11 @@ chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NU
   sampChr = unique(cnv.b[, c("sample","chr")])
   chr.df = merge(chr.df, sampChr)
 
-  ggplot2::ggplot(cnv.b, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=as.numeric(sample)-.5, ymax=as.numeric(sample)+.5)) + ggplot2::geom_rect(data=chr.df, alpha=0, colour="red") + ggplot2::geom_rect() + ggplot2::scale_y_continuous(breaks=1:nlevels(cnv.b$sample), labels=levels(cnv.b$sample)) + ggplot2::theme_bw() + ggplot2::xlab("position (Mb)") + ggplot2::facet_grid(chr~., scales="free", labeller=ggplot2::label_both)
-  
+  ggp = ggplot2::ggplot(cnv.b, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=as.numeric(sample)-.5, ymax=as.numeric(sample)+.5)) + ggplot2::geom_rect(data=chr.df, alpha=0, colour="red") + ggplot2::geom_rect() + ggplot2::scale_y_continuous(breaks=1:nlevels(cnv.b$sample), labels=levels(cnv.b$sample)) + ggplot2::theme_bw() + ggplot2::xlab("position (Mb)") + ggplot2::facet_grid(chr~., scales="free", labeller=ggplot2::label_both)
+
+  if(length(unique(cnv.b$sample))==1){
+    ggp = ggp + ggplot2::theme(axis.text.y=ggplot2::element_blank()) + ggplot2::ggtitle(cnv.b$sample[1])
+  }
+
+  ggp
 }
