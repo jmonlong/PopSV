@@ -5,7 +5,7 @@
 \title{Chromosom plot of CNVs}
 \usage{
 chrplot(cnv.df, type = c("sample", "stacked"), bin.size = 5e+05,
-  chr.df = NULL)
+  chr.df = NULL, showSampleNames = FALSE)
 }
 \arguments{
 \item{cnv.df}{a data.frame with the CNVs (columns 'chr', 'start', 'end') for each sample (column 'sample')}
@@ -15,6 +15,8 @@ chrplot(cnv.df, type = c("sample", "stacked"), bin.size = 5e+05,
 \item{bin.size}{the bin size. Default is 1e6.}
 
 \item{chr.df}{a data.frame with the chromosome boundaries.}
+
+\item{showSampleNames}{should the sample names be displayed. Default is FALSE (it quickly becomes unreadable).}
 }
 \value{
 a ggplot graph object
