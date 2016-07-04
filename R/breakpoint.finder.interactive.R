@@ -115,8 +115,8 @@ breakpoint.finder.interactive <- function(chr, start, end, test.sample, files.df
       output$export = shiny::renderText({
         if(input$exp){
           pdf = gp.flanks()
-          start.c = input$start*(2*input$flanks+(end-start)) + start - input$flanks
-          end.c = input$end*(2*input$flanks+(end-start)) + start - input$flanks
+          start.c = round(input$start*(2*input$flanks+(end-start)) + start - input$flanks)
+          end.c = round(input$end*(2*input$flanks+(end-start)) + start - input$flanks)
           pdf = pdf + ggplot2::geom_vline(xintercept=c(start.c, end.c),linetype=2)
           shiny::stopApp(list(bk.df=data.frame(chr=chr,start=start.c, end=end.c, comment=input$comment, orig=paste0(chr, ":", start, "-", end)),
                               graph=pdf))
