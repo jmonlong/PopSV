@@ -64,6 +64,7 @@ bin.bam.disc <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.ou
     mrev = floor(flag / 2**5) %% 2
     rrev == mrev
   }
+  DPLOOP = NULL ## Uglily appeases R checks
   Rcpp::cppFunction('
 NumericVector DPLOOP(NumericVector p, NumericVector id)
 {
@@ -105,9 +106,9 @@ NumericVector DPLOOP(NumericVector p, NumericVector id)
     param = Rsamtools::ScanBamParam(which = gr.o, what = c("rname","pos","flag","isize","mrnm","mpos","cigar","mapq"))
     reads.l = Rsamtools::scanBam(bam.file, index = bai.file, param = param)
     insert.size = unlist(lapply(reads.l, function(e)abs(e$isize)))
-    is.med = median(insert.size, na.rm=TRUE)
+    is.med = stats::median(insert.size, na.rm=TRUE)
     is.dev = abs(insert.size-is.med)
-    is.q = quantile(is.dev, na.rm=TRUE, probs=.99)
+    is.q = stats::quantile(is.dev, na.rm=TRUE, probs=.99)
     scores.l = lapply(reads.l, function(ll){
       if(length(ll[[1]])==0){
         return(0)
@@ -165,7 +166,7 @@ NumericVector DPLOOP(NumericVector p, NumericVector id)
     df$bc = binBam.single(df)
     if (!is.null(outfile.prefix)) {
       df$chunk = NULL
-      write.table(df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
+      utils::write.table(df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
                   sep = "\t", append = ch.nb > 1, col.names = ch.nb == 1)
       return(data.frame(chunk = ch.nb, nb.reads = sum(as.numeric(df$bc), na.rm = TRUE)))
     } else {
