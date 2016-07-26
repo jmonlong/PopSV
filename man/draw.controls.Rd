@@ -4,7 +4,7 @@
 \alias{draw.controls}
 \title{Select control genomic regions for enrichment analysis}
 \usage{
-draw.controls(cnv.gr, feat.grl, nb.class = 20, nb.cores = 3,
+draw.controls(cnv.gr, feat.grl, nb.class = 100, nb.cores = 3,
   redo.duplicates = TRUE, seed.nb.max = 1e+05, min.nb.gr = NULL,
   chr.prefix = "", dist.gr = NULL)
 }
@@ -13,7 +13,7 @@ draw.controls(cnv.gr, feat.grl, nb.class = 20, nb.cores = 3,
 
 \item{feat.grl}{a list of the GRanges defining the features to fit. E.g. gene annotation, centromere, etc}
 
-\item{nb.class}{the number of size class to speed up the computation. Default is 20.}
+\item{nb.class}{the number of size class to speed up the computation. Default is 100. Inf will ensure exactly the same overlap proportion but might take some time if the size distribution is diverse.}
 
 \item{nb.cores}{the number of cores to use. Default is 3.}
 

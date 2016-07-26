@@ -57,7 +57,7 @@ mergeConsBin.z <- function(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06, s
     }
   }
   ## Simulate the empirical null distribution
-  z.null = apply(rbind(rnorm(nb.sim, 0, sd.null), rnorm(nb.sim, 0, sd.null)), 2, sort)
+  z.null = apply(rbind(stats::rnorm(nb.sim, 0, sd.null), stats::rnorm(nb.sim, 0, sd.null)), 2, sort)
   ## Compute P-values
   res.df = with(res.df, dplyr::arrange(res.df, chr, start))
   pvLink.f <- function(df) {
@@ -80,14 +80,14 @@ mergeConsBin.z <- function(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06, s
   dup.gr = with(res.df[which(res.df$qv <= fdr.th & res.df$z>0), ], c(dup.gr, GenomicRanges::GRanges(chr, IRanges::IRanges(start,end))))
   dup.gr = GenomicRanges::reduce(dup.gr, min.gapwidth = stitch.dist)
   ol.dup = GenomicRanges::findOverlaps(gr.f, dup.gr)
-  res.df$red.i[IRanges::queryHits(ol.dup)] = paste0("dup", IRanges::subjectHits(ol.dup))
+  res.df$red.i[S4Vectors::queryHits(ol.dup)] = paste0("dup", S4Vectors::subjectHits(ol.dup))
   ## Merge deletions
   del.gr = with(link.df[which(link.df$qv.del <= fdr.th), ], GenomicRanges::GRanges(chr, IRanges::IRanges(start,end)))
   del.gr = GenomicRanges::reduce(del.gr, min.gapwidth = stitch.dist)
   del.gr = with(res.df[which(res.df$qv <= fdr.th & res.df$z<0), ], c(del.gr, GenomicRanges::GRanges(chr, IRanges::IRanges(start,end))))
   del.gr = GenomicRanges::reduce(del.gr, min.gapwidth = stitch.dist)
   ol.del = GenomicRanges::findOverlaps(gr.f, del.gr)
-  res.df$red.i[IRanges::queryHits(ol.del)] = paste0("del", IRanges::subjectHits(ol.del))
+  res.df$red.i[S4Vectors::queryHits(ol.del)] = paste0("del", S4Vectors::subjectHits(ol.del))
 
   merge.event.f <- function(df.f) {
     df.o = with(df.f, data.frame(start = min(start), end = max(end), nb.bin.cons = nrow(df.f)))

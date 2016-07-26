@@ -35,7 +35,7 @@ init.filenames <- function(files.df, dest.folder = ".", sample.folder = TRUE, co
     ## Check duplicate sample names
     files.df = unique(files.df)
     if (any(duplicated(files.df$sample))) {
-        stop("Duplicated sample names: ", head(files.df$sample[duplicated(files.df$sample)]))
+        stop("Duplicated sample names: ", utils::head(files.df$sample[duplicated(files.df$sample)]))
     }
     
     ## Create folder structure as required

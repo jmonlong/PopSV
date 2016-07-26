@@ -9,12 +9,12 @@
 tn.norm.qc <- function(norm.stats, out.pdf = "normStats-QC.pdf", bin.size = FALSE) {
   ## load norm statistics
   if (is.character(norm.stats) & length(norm.stats) == 1) {
-    headers = read.table(norm.stats, nrows = 1, as.is = TRUE)
+    headers = utils::read.table(norm.stats, nrows = 1, as.is = TRUE)
     colC = rep("NULL", length(headers))
     names(colC) = headers
     colC[c("chr", "start", "end", "d.max", "m", "sd", "nb.remove")] = c("character", 
                                                                         rep("integer", 2), rep("numeric", 4))
-    res.df = read.table(norm.stats, header = TRUE, colClasses = colC)
+    res.df = utils::read.table(norm.stats, header = TRUE, colClasses = colC)
   } else {
     res.df = norm.stats[, c("chr", "start", "end", "d.max", "m", "sd", "nb.remove")]
     rm(norm.stats)
@@ -22,7 +22,7 @@ tn.norm.qc <- function(norm.stats, out.pdf = "normStats-QC.pdf", bin.size = FALS
   res.df = res.df[which(res.df$d.max != -1 & !is.na(res.df$d.max)), ]
 
   d.max = m = nb.remove = ..count.. = NULL  ## Uglily appease R checks
-  pdf(out.pdf, 8, 6)
+  grDevices::pdf(out.pdf, 8, 6)
   print(ggplot2::ggplot(res.df, ggplot2::aes(x = d.max)) + ggplot2::geom_histogram() + 
         ggplot2::theme_bw() + ggplot2::xlab("correlation distance to last supporting bin") + 
         ggplot2::ylab("number of bins"))
@@ -62,7 +62,7 @@ tn.norm.qc <- function(norm.stats, out.pdf = "normStats-QC.pdf", bin.size = FALS
           ggplot2::scale_fill_gradient(name = "log10(nb bins)", low = "white", 
                                        high = "red"))
   }
-  dev.off()
+  grDevices::dev.off()
   
   return(out.pdf)
 } 

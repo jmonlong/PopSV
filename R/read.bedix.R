@@ -13,7 +13,6 @@
 ##' @return a data.frame with the retrieved BED information.
 ##' @author Jean Monlong
 ##' @export
-##' @import data.table
 read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.match=FALSE) {
 
   if(!is.character(file)){
@@ -29,7 +28,7 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
     stop(paste0(file,".tbi"),"Index file not found.")
   }
   if(is.null(subset.reg)){
-    return(read.table(file, as.is=as.is, header=header))
+    return(utils::read.table(file, as.is=as.is, header=header))
   }
   if (is.data.frame(subset.reg)) {
     if(!all(c("chr","start","end") %in% colnames(subset.reg))){
@@ -52,9 +51,9 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
     bed = matrix(unlist(strsplit(bed, "\t")), length(bed), ncol, byrow = TRUE)
     bed = data.table::data.table(bed)
     if (header) {
-      data.table::setnames(bed, as.character(read.table(file, nrows = 1, as.is = TRUE)))
+      data.table::setnames(bed, as.character(utils::read.table(file, nrows = 1, as.is = TRUE)))
     }
-    bed = bed[, lapply(.SD, function(ee)type.convert(as.character(ee), as.is=TRUE))]
+    bed = bed[, lapply(.SD, function(ee)utils::type.convert(as.character(ee), as.is=TRUE))]
     bed = as.data.frame(bed)
     return(bed)
   }

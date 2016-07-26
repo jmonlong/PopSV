@@ -6,7 +6,7 @@
 ##' @author Jean Monlong
 ##' @keywords internal
 localMax <- function(x, min.max.prop = 0.1) {
-  d = density(x, na.rm = TRUE)
+  d = stats::density(x, na.rm = TRUE)
   im = 1 + which(diff(sign(diff(d$y))) == -2)
   my = max(d$y)
   max.id = im[which(d$y[im] >= min.max.prop * my)]

@@ -18,7 +18,7 @@
 ##' \item{graph}{the ggplot object with the final graph}
 ##' @author Jean Monlong
 ##' @export
-breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, ref.samples, proper = TRUE, nb.cores=1, bp.res=1, flanks=2000, related.samples=NULL) {
+breakpoint.finder.interactive <- function(chr, start, end, test.sample, files.df, ref.samples, proper = TRUE, nb.cores=1, bp.res=1, flanks=2000, related.samples=NULL) {
 
   if(!all(c(test.sample, ref.samples, related.samples) %in% files.df$sample)){
     stop("One of the 'test.sample' or 'ref.samples' is not in 'files.df'.")
@@ -58,8 +58,8 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
         shiny::textInput("comment", "Comment:"),
         shiny::actionButton("exp","Done"), shiny::textOutput("export")),
       shiny::mainPanel(shiny::plotOutput("cov"),
-                       shiny::wellPanel(shiny::sliderInput("start", "Start", start-2*flanks,end+2*flanks, value=start),
-                                        shiny::sliderInput("end", "End", start-2*flanks,end+2*flanks, value=end)))),
+                       shiny::wellPanel(shiny::sliderInput("start", "Start", 0, 1, value=flanks/(2*flanks+(end-start))),
+                                        shiny::sliderInput("end", "End", 0, 1, value=(flanks+end-start)/(2*flanks+(end-start)))))),
 
     server = function(input, output) {
 
@@ -101,18 +101,24 @@ breakpoint.finder.interactive <- function(chr,start,end, test.sample, files.df, 
 
       output$cov = shiny::renderPlot({
         pdf = gp.flanks()
-        pdf + ggplot2::geom_vline(xintercept=c(input$start, input$end),linetype=2)
+        start.c = input$start*(2*input$flanks+(end-start)) + start - input$flanks
+        end.c = input$end*(2*input$flanks+(end-start)) + start - input$flanks
+        pdf + ggplot2::geom_vline(xintercept=c(start.c, end.c),linetype=2)
       })
 
       output$stats = shiny::renderText({
-        paste0("Size: ", input$end-input$start+1," bp")
+        start.c = input$start*(2*input$flanks+(end-start)) + start - input$flanks
+        end.c = input$end*(2*input$flanks+(end-start)) + start - input$flanks
+        paste0("Size: ", round(end.c-start.c+1)," bp")
       })
 
       output$export = shiny::renderText({
         if(input$exp){
           pdf = gp.flanks()
-          pdf = pdf + ggplot2::geom_vline(xintercept=c(input$start, input$end),linetype=2)
-          shiny::stopApp(list(bk.df=data.frame(chr=chr,start=input$start, end=input$end, comment=input$comment),
+          start.c = floor(input$start*(2*input$flanks+(end-start)) + start - input$flanks)
+          end.c = floor(input$end*(2*input$flanks+(end-start)) + start - input$flanks)
+          pdf = pdf + ggplot2::geom_vline(xintercept=c(start.c, end.c),linetype=2)
+          shiny::stopApp(list(bk.df=data.frame(chr=chr,start=start.c, end=end.c, comment=input$comment, orig=paste0(chr, ":", start, "-", end)),
                               graph=pdf))
         }
         ""

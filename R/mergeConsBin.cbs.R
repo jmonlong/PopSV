@@ -39,7 +39,7 @@ mergeConsBin.cbs <- function(df, pv.th=.01) {
   gr.seg = with(df[which(df$qv <= pv.th),], c(gr.seg, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end))))
   gr.seg = GenomicRanges::reduce(gr.seg)
   ol.o = GenomicRanges::findOverlaps(gr.f, gr.seg)
-  df$red.i[IRanges::queryHits(ol.o)] = IRanges::subjectHits(ol.o)
+  df$red.i[S4Vectors::queryHits(ol.o)] = S4Vectors::subjectHits(ol.o)
 
   merge.event.f <- function(df.f) {
     df.o = with(df.f, data.frame(start = min(start), end = max(end), nb.bin.cons = nrow(df.f)))

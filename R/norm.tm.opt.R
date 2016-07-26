@@ -28,7 +28,7 @@ norm.tm.opt <- function(df, ref.col, lm.min.prop = 0.1, bc.mean.norm = NULL, chr
                 ## return(lM.o$lM[which.max(s.mn+s.h+s.c)])
                 return(lM.o$lM[which.max(s.mn + s.h)])
             } else {
-                return(median(r, na.rm = TRUE))
+                return(stats::median(r, na.rm = TRUE))
             }
         } else {
             return(0)

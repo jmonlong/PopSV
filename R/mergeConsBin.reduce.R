@@ -35,11 +35,11 @@ mergeConsBin.reduce <- function(df, stitch.dist = 10000) {
   ## Merge duplications
   gr.red.dup = GenomicRanges::reduce(dup.gr, min.gapwidth = stitch.dist)
   ol.dup = GenomicRanges::findOverlaps(gr.f, gr.red.dup)
-  df$red.i[IRanges::queryHits(ol.dup)] = paste0("dup", IRanges::subjectHits(ol.dup))
+  df$red.i[S4Vectors::queryHits(ol.dup)] = paste0("dup", S4Vectors::subjectHits(ol.dup))
   ## Merge deletions
   gr.red.del = GenomicRanges::reduce(del.gr, min.gapwidth = stitch.dist)
   ol.del = GenomicRanges::findOverlaps(gr.f, gr.red.del)
-  df$red.i[IRanges::queryHits(ol.del)] = paste0("del", IRanges::subjectHits(ol.del))
+  df$red.i[S4Vectors::queryHits(ol.del)] = paste0("del", S4Vectors::subjectHits(ol.del))
   
   merge.event.f <- function(df.f) {
     df.o = with(df.f, data.frame(start = min(start), end = max(end), nb.bin.cons = nrow(df.f)))

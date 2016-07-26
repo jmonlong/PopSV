@@ -52,15 +52,15 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
         res.df$pv.normal = as.numeric(parallel::mclapply(sub.ii, function(bc.i) {
             bc.i = df[bc.i, ]
             if (length(unique(bc.i)) == 1) return(1)
-            return(shapiro.test(bc.i)$p.value)
+            return(stats::shapiro.test(bc.i)$p.value)
         }, mc.cores = nb.cores))
         ## Ranks randomness
         res.df$nb.rank = as.numeric(parallel::mclapply(sub.ii, function(ii) {
-            med.r = apply(df[ii:(ii + win.size - 1), ], 1, median, na.rm = TRUE)
+            med.r = apply(df[ii:(ii + win.size - 1), ], 1, stats::median, na.rm = TRUE)
             med.bin = colSums(df[ii:(ii + win.size - 1), ] > med.r, na.rm=TRUE)
-            pv.bin = pbinom(ifelse(med.bin > 0.5 * length(med.r), length(med.r) -
+            pv.bin = stats::pbinom(ifelse(med.bin > 0.5 * length(med.r), length(med.r) -
                 med.bin, med.bin), size = length(med.r), 0.5)
-            return(sum(p.adjust(pv.bin, method = "bonf") < 0.05))
+            return(sum(stats::p.adjust(pv.bin, method = "bonf") < 0.05))
         }, mc.cores = nb.cores))
         res.df
     }
@@ -78,30 +78,30 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
             return(rep(NA, length(bc.i)))
         }
         bc.i <- as.numeric(bc.i)
-        (bc.i - mean(bc.i, na.rm = TRUE))/sd(bc.i, na.rm = TRUE)
+        (bc.i - mean(bc.i, na.rm = TRUE))/stats::sd(bc.i, na.rm = TRUE)
     }, mc.cores = nb.cores))), ncol(bc.mat))
     rownames(z) = colnames(bc.mat)
     non.norm.z = as.numeric(parallel::mclapply(1:nrow(z), function(z.samp) {
-        z.samp = as.numeric(na.omit(z[z.samp, ]))
+        z.samp = as.numeric(stats::na.omit(z[z.samp, ]))
         z.norm.est = MASS::fitdistr(z.samp, "normal")$estimate
-        f = density(z.samp, n = n.dens, from = min(z.samp), to = max(z.samp))
-        fn = dnorm(seq(min(z.samp), max(z.samp), length.out = n.dens), z.norm.est[1],
+        f = stats::density(z.samp, n = n.dens, from = min(z.samp), to = max(z.samp))
+        fn = stats::dnorm(seq(min(z.samp), max(z.samp), length.out = n.dens), z.norm.est[1],
             z.norm.est[2])
         dis.prop = sum(abs(f$y - fn))/(2 * sum(fn))
         return(dis.prop)
     }, mc.cores = nb.cores))
 
     ## PCA dispersion
-    pca.o = prcomp(t(bc.mat))
-    pca.d = as.matrix(dist(pca.o$x[, 1:2]))
-    pca.dmm = median(pca.d)/mean(pca.d)
+    pca.o = stats::prcomp(t(bc.mat))
+    pca.d = as.matrix(stats::dist(pca.o$x[, 1:2]))
+    pca.dmm = stats::median(pca.d)/mean(pca.d)
 
     if(plot){
       nb.rank = value = NULL  ## Uglily appease R checks
       ## Rank
       print(ggplot2::ggplot(res.df, ggplot2::aes(x=nb.rank)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::xlab("number of samples with rank bias") + ggplot2::ylab("number of regions"))
       ## Best Z-scores
-      zlim = quantile(abs(as.numeric(z)), probs=.99, na.rm=TRUE) + 3
+      zlim = stats::quantile(abs(as.numeric(z)), probs=.99, na.rm=TRUE) + 3
       zt = t(z[samples[order(non.norm.z)[1:6]],])
       print(ggplot2::ggplot(reshape::melt(zt), ggplot2::aes(x=value)) + ggplot2::geom_density() + ggplot2::theme_bw() + ggplot2::xlim(-1*zlim,zlim) + ggplot2::facet_wrap(~X2, scales="free") + ggplot2::xlab("Z-score"))
       ## Worst Z-scores
@@ -110,7 +110,7 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
     }
 
     ## Worst sample Z distribution density
-    z.worst.dens = density(as.numeric(z[which.max(non.norm.z),]), na.rm=TRUE)
+    z.worst.dens = stats::density(as.numeric(z[which.max(non.norm.z),]), na.rm=TRUE)
     z.worst.dens = data.frame(z=z.worst.dens$x,density=z.worst.dens$y)
 
     ##qv.normal = qvalue::qvalue(res.df$pv.normal)

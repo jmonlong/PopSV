@@ -22,10 +22,10 @@ weight.ref.pca <- function(pca.mat, ref.samples, plot = FALSE, output.dist = FAL
         stop("Inconsistent samples in 'ref.samples' and 'pca.mat' row names.")
     }
     
-    centroid.ref = apply(pca.mat[ref.samples, ], 2, median, na.rm = TRUE)
+    centroid.ref = apply(pca.mat[ref.samples, ], 2, stats::median, na.rm = TRUE)
     d.cent = sqrt(rowSums((pca.mat - matrix(centroid.ref, nrow(pca.mat), ncol = ncol(pca.mat), 
         byrow = TRUE))^2))
-    d.cent.med = median(d.cent[ref.samples])
+    d.cent.med = stats::median(d.cent[ref.samples])
     w.pca = sapply(d.cent, weight.f, min.x = d.cent.med, max.x = 2 * d.cent.med)
     
     if (plot) {

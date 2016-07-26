@@ -27,7 +27,7 @@ freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE){
       colnames(cnv.o)[1] = "chr"
     }
     ol = GenomicRanges::findOverlaps(gr.d, gr)
-    thits = tapply(gr$sample[IRanges::subjectHits(ol)], IRanges::queryHits(ol), function(samp) length(unique(samp)))
+    thits = tapply(gr$sample[S4Vectors::subjectHits(ol)], S4Vectors::queryHits(ol), function(samp) length(unique(samp)))
     cnv.o$nb = 0
     cnv.o$nb[as.numeric(names(thits))] = as.numeric(thits)
     cnv.o$prop = cnv.o$nb / nb.samp
@@ -36,7 +36,7 @@ freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE){
   fr.df = freq.chr.gr(range.df)
   if(plot){
     chr = nb = prop = gen.kb = NULL ## Uglily silence R checks
-    f.df = fr.df %>% dplyr::group_by(chr, start, end) %>% dplyr::summarize(nb=sum(nb), prop=sum(prop), gen.kb=head((end-start)/1e3, 1)) %>% dplyr::arrange(chr)
+    f.df = fr.df %>% dplyr::group_by(chr, start, end) %>% dplyr::summarize(nb=sum(nb), prop=sum(prop), gen.kb=utils::head((end-start)/1e3, 1)) %>% dplyr::arrange(chr)
     print(suppressWarnings(ggplot2::ggplot(f.df, ggplot2::aes(x=signif(prop,3), y=gen.kb, fill=chr)) + ggplot2::xlab("proportion of samples") +
           ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() +
           ggplot2::ylab("abnormal genome (Kb)") +

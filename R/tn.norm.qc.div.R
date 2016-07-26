@@ -11,7 +11,7 @@
 tn.norm.qc.div <- function(norm.stats, out.pdf = "normStats-QC-supportDiversity.pdf", chunk.size=1e3, nb.cores=1, plot=TRUE){
 
   read.chunk <- function(chunk.start=NULL, chunk.end=NULL){
-    col.n = read.table(norm.stats, nrows=1, sep="\t", header=FALSE, as.is=TRUE)
+    col.n = utils::read.table(norm.stats, nrows=1, sep="\t", header=FALSE, as.is=TRUE)
     dt = suppressWarnings(data.table::fread(norm.stats,nrows=chunk.end-chunk.start+1, skip=chunk.start, header=FALSE, sep="\t", showProgress=FALSE))
     data.table::setnames(dt, as.character(col.n))
     as.data.frame(dt)

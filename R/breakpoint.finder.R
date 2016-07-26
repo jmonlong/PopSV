@@ -43,7 +43,7 @@ breakpoint.finder <- function(range.df, files.df, test.sample, ref.samples, prop
     }
   }
   comp.diff <- function(cov.m) {
-    cor(cov.m[,1], cov.m[,-1])
+    stats::cor(cov.m[,1], cov.m[,-1])
   }
   middle <- function(gr) round((GenomicRanges::start(gr)+GenomicRanges::end(gr))/2)
   find.bp <- function(chr, start, end, nb.bin.cons, upstream=TRUE) {
@@ -86,7 +86,7 @@ breakpoint.finder <- function(range.df, files.df, test.sample, ref.samples, prop
         }
       })
     })
-    list(bp = median(unlist(diff.l), na.rm=TRUE), sd = sd(unlist(diff.l), na.rm=TRUE))
+    list(bp = stats::median(unlist(diff.l), na.rm=TRUE), sd = stats::sd(unlist(diff.l), na.rm=TRUE))
   }
 
   if(all(colnames(range.df)!="nb.bin.cons")){

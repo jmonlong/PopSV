@@ -5,19 +5,22 @@
 ##' @param slid.window the size of the sliding window. Default is the size of the bin, i.e. not overlapping windows.
 ##' @param chr.prefix should chromosome name be in the form "chr1" instead of "1". Default is FALSE.
 ##' @param XY.chr should chromosome X and Y be included. Default is FALSE. If TRUE, male and female should be analyzed separately, at least for chromosomes X and Y.
+##' @param quiet should any verbose display be avoided ? Default is FALSE.
 ##' @return a data.frame with columns 'chr', 'start' and 'end'.
 ##' @author Jean Monlong
 ##' @import GenomicRanges
 ##' @import GenomeInfoDb
 ##' @export
-fragment.genome.hg19 <- function(bin.size = 1000, slid.window=bin.size, chr.prefix=FALSE, XY.chr=FALSE) {
+fragment.genome.hg19 <- function(bin.size = 1000, slid.window=bin.size, chr.prefix=FALSE, XY.chr=FALSE, quiet=FALSE) {
   if (!require(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE)) {
     stop("Please install BSgenome first by running:\n> source(\"http://bioconductor.org/biocLite.R\")\n> biocLite(\"BSgenome.Hsapiens.UCSC.hg19\")\n")
   }
 
   if(XY.chr){
     chrs = c(1:22, "X", "Y")
-    message("Chromosome X/Y included : male and female should be analyzed separately.")
+    if(!quiet){
+      message("Chromosome X/Y included : male and female should be analyzed separately.")
+    }
   } else {
     chrs = 1:22
   }

@@ -16,7 +16,7 @@ qc.samples.cluster <- function(bc.df, nb.rand.bins=NULL){
   cat("Computing Principal Components...\n")
   bc.mv = medvar.norm.internal(bc.df[, samples])
   ## PCA
-  pc = prcomp(t(na.exclude(bc.mv)))
+  pc = stats::prcomp(t(stats::na.exclude(bc.mv)))
   pc.df = data.frame(pc$x[, 1:3])
   pc.df$sample = samples
   cat("Done.\n")
@@ -44,9 +44,9 @@ qc.samples.cluster <- function(bc.df, nb.rand.bins=NULL){
 
       server = function(input, output) {
         samples.ref <- shiny::reactive({
-            d.pca = dist(pc.df[, c("PC1","PC2")])
-            hc.o = hclust(d.pca, method=input$cl.meth)
-            samp.cl = cutree(hc.o, input$nb.clust)
+            d.pca = stats::dist(pc.df[, c("PC1","PC2")])
+            hc.o = stats::hclust(d.pca, method=input$cl.meth)
+            samp.cl = stats::cutree(hc.o, input$nb.clust)
             data.frame(sample=pc.df$sample,
                        cluster=samp.cl,
                        selected = samp.cl == input$cl.sel)
