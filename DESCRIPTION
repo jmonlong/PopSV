@@ -31,7 +31,8 @@ Imports:
     parallel,
     grid,
     reshape,
-    DNAcopy
+    DNAcopy,
+    Rcpp
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     testthat

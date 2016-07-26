@@ -47,7 +47,7 @@ test_that("Counts concordant reads",{
 })
 
 test_that("Counts discordant reads",{
-  bb = bin.bam(bam.f, bin.df, appendIndex.outfile=FALSE, proper=FALSE, map=0)
+  bb = bin.bam.disc(bam.f, bin.df, appendIndex.outfile=FALSE)
   expect_equal(any(bb$bc$bc!=0), TRUE)
   expect_equal(all(tail(bb$bc$bc)==0), TRUE)
 })
