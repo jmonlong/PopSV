@@ -9,7 +9,7 @@ bin.bam(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile = TRUE,
   check.chr.name = TRUE, no.checks = FALSE, bai.file = NULL)
 }
 \arguments{
-\item{bam.file}{the BAM file}
+\item{bam.file}{the BAM file or a list of BAM files (e.g. reverse and forward)}
 
 \item{bin.df}{a data.frame with the information about the bins. Columns 'chr', 'start'
 and 'end' are required.}

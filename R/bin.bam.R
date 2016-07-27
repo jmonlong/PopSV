@@ -2,7 +2,7 @@
 ##'
 ##' By default, the function tries to check that the bin definition and the BAM file have compatible chromosome names. For example, 'chr1' in both or '1' in both. Moreover it will stop if no reads are found in the BAM file. To switch off these checks use 'no.checks=TRUE'.
 ##' @title Get read counts from BAM file
-##' @param bam.file the BAM file
+##' @param bam.file the BAM file or a list of BAM files (e.g. reverse and forward)
 ##' @param bin.df a data.frame with the information about the bins. Columns 'chr', 'start'
 ##' and 'end' are required.
 ##' @param outfile.prefix the prefix of the name of the output file. The suffix '.bgz' will
@@ -36,7 +36,7 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
   if(!all(c("chr","start","end") %in% colnames(bin.df))){
     stop("Missing column in 'bin.df'. 'chr', 'start' and 'end' are required.")
   }
-  if(!file.exists(bam.file)){
+  if(any(!file.exists(bam.file))){
     stop("'bam.file' (",bam.file," file not found.")
   }
 
@@ -45,26 +45,42 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
 
   if(is.null(bai.file)){
     bai.file = sub("bam$", "bai", bam.file, perl = TRUE)
+  } else if(length(bai.file) != length(bam.file)){
+    stop("Length of 'bam.file' different than length of 'bai.file'")
   }
-  if (!file.exists(bai.file)) {
+  if (any(!file.exists(bai.file))) {
     bai.file = paste0(bam.file, ".bai")
-    if (!file.exists(bai.file)) {
+    if (any(!file.exists(bai.file))) {
       stop("Index file is missing (neither '.bai' nor '.bam.bai').")
     }
   }
-
-  binBam.single <- function(df) {
-    gr.o = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start = start,
-      end = end)))
-    param = Rsamtools::ScanBamParam(which = gr.o, what = c("mapq"), flag = Rsamtools::scanBamFlag(isProperPair = proper,
-                                                                      isDuplicate = FALSE, isNotPassingQualityControls = FALSE, isUnmappedQuery = FALSE))
-    bam = Rsamtools::scanBam(bam.file, index = bai.file, param = param)
-    unlist(lapply(bam, function(e) sum(unlist(e) > map.quality)))
+  
+  if(length(bam.file)==1){
+    binBam.single <- function(df) {
+      gr.o = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start = start,
+                                                                   end = end)))
+      param = Rsamtools::ScanBamParam(which = gr.o, what = c("mapq"), flag = Rsamtools::scanBamFlag(isProperPair = proper,
+                                                                                                    isDuplicate = FALSE, isNotPassingQualityControls = FALSE, isUnmappedQuery = FALSE))
+      bam = Rsamtools::scanBam(bam.file, index = bai.file, param = param)
+      unlist(lapply(bam, function(e) sum(unlist(e) > map.quality)))
+    }
+  } else {
+    binBam.single <- function(df) {
+      gr.o = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start = start,
+                                                                   end = end)))
+      param = Rsamtools::ScanBamParam(which = gr.o, what = c("mapq"), flag = Rsamtools::scanBamFlag(isProperPair = proper,
+                                                                                                    isDuplicate = FALSE, isNotPassingQualityControls = FALSE, isUnmappedQuery = FALSE))
+      bam.l = lapply(1:length(bam.file), function(ii){
+        bam = Rsamtools::scanBam(bam.file[ii], index = bai.file[ii], param = param)
+        unlist(lapply(bam, function(e) sum(unlist(e) > map.quality)))
+      })
+      do.call("+", bam.l)
+    }
   }
-
+  
   if (check.chr.name) {
     ## Check if headers
-    bam.headers = Rsamtools::scanBamHeader(bam.file)
+    bam.headers = Rsamtools::scanBamHeader(bam.file[1])
     if(length(bam.headers[[1]])>0){
       if(!any(paste0("SN:",unique(bin.df$chr)) %in% unlist(lapply(bam.headers[[1]][[2]],"[",1)))) {
         if (!grepl("chr", bin.df$chr[1])) {
