@@ -12,4 +12,6 @@
 #' @title Population-based detection of structural variants from Read-Depth signal.
 #' @author Jean Monlong \email{jean.monlong@@mail.mcgill.ca}
 #' @seealso \url{http://jmonlong.github.io/PopSV/}
+#' @useDynLib PopSV
+#' @importFrom Rcpp sourceCpp
 NULL
