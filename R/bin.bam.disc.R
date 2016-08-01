@@ -14,7 +14,7 @@
 ##' @param min.weight the minimum weight (when a discordant read is isolated). Default is 0.1.
 ##' @param weight.dist the distance from its neighbor where a read is considered isolated in the weighting process. Default is 50 (bp).
 ##' @param chunk.size the number of bins to analyze at a time (for memory optimization).
-##' Default is 10 000. Reduce this number if memory problems arise.
+##' Default is 1 000. Reduce this number if memory problems arise.
 ##' @param check.chr.name if TRUE (default), the function will try to check that the
 ##' definition of chromosome (e.g. '1' vs 'chr1') are consistent between the bin
 ##' definition and the BAM file. If FALSE, the analysis will continue either way.
@@ -27,7 +27,7 @@
 ##' @author Jean Monlong
 ##' @export
 bin.bam.disc <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile = TRUE,
-                           min.weight=.1, weight.dist = 50, chunk.size = 10000, check.chr.name = TRUE, no.checks=FALSE, bai.file=NULL) {
+                           min.weight=.1, weight.dist = 50, chunk.size = 1000, check.chr.name = TRUE, no.checks=FALSE, bai.file=NULL) {
   if (is.null(outfile.prefix) & appendIndex.outfile) {
     stop("If 'appendIndex.outfile' is TRUE, please provide 'outfile.prefix'.")
   }
@@ -69,14 +69,10 @@ bin.bam.disc <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.ou
     dfv = dfv[order(dfv$p),]
     DPLOOP(dfv$p, dfv$id)
   }
-  binBam.single <- function(bins) {
+  binBam.single <- function(bins, is.med=0, is.q=0) {
     gr.o = with(bins, GenomicRanges::GRanges(chr, IRanges::IRanges(start = start, end = end)))
     param = Rsamtools::ScanBamParam(which = gr.o, what = c("rname","pos","flag","isize","mrnm","mpos","cigar","mapq"))
     reads.l = Rsamtools::scanBam(bam.file, index = bai.file, param = param)
-    insert.size = unlist(lapply(reads.l, function(e)abs(e$isize)))
-    is.med = stats::median(insert.size, na.rm=TRUE)
-    is.dev = abs(insert.size-is.med)
-    is.q = stats::quantile(is.dev, na.rm=TRUE, probs=.99)
     scores.l = lapply(reads.l, function(ll){
       if(length(ll[[1]])==0){
         return(0)
@@ -128,10 +124,10 @@ bin.bam.disc <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.ou
     }
   }
 
-  binBam.chunk <- function(df) {
+  binBam.chunk <- function(df, is.med, is.q) {
     ch.nb = as.numeric(df$chunk[1])
     df = df[, c("chr", "start", "end")]
-    df$bc = binBam.single(df)
+    df$bc = binBam.single(df, is.med, is.q)
     if (!is.null(outfile.prefix)) {
       df$chunk = NULL
       utils::write.table(df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
@@ -142,8 +138,21 @@ bin.bam.disc <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.ou
     }
   }
 
+  ## Insert-size distribution
+  insert.size = lapply(1:10, function(ii){
+    bins = bin.df[sample.int(nrow(bin.df), min(nrow(bin.df), 1000)),]
+    gr.o = with(bins, GenomicRanges::GRanges(chr, IRanges::IRanges(start = start, end = end)))
+    param = Rsamtools::ScanBamParam(which = gr.o, what = c("isize"))
+    reads.l = Rsamtools::scanBam(bam.file, index = bai.file, param = param)
+    return(unlist(lapply(reads.l, function(e)abs(e$isize))))
+  })
+  insert.size = unlist(insert.size)
+  is.med = stats::median(insert.size, na.rm=TRUE)
+  is.dev = abs(insert.size-is.med)
+  is.q = stats::quantile(is.dev, na.rm=TRUE, probs=.99)
+
   bc.df = lapply(unique(bin.df$chunk), function(chunk.i){
-    binBam.chunk(bin.df[which(bin.df$chunk==chunk.i),])
+    binBam.chunk(bin.df[which(bin.df$chunk==chunk.i),], is.med, is.q)
   })
   bc.df = do.call(rbind, bc.df)
 

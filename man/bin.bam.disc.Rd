@@ -6,7 +6,7 @@
 \usage{
 bin.bam.disc(bam.file, bin.df, outfile.prefix = NULL,
   appendIndex.outfile = TRUE, min.weight = 0.1, weight.dist = 50,
-  chunk.size = 10000, check.chr.name = TRUE, no.checks = FALSE,
+  chunk.size = 1000, check.chr.name = TRUE, no.checks = FALSE,
   bai.file = NULL)
 }
 \arguments{
@@ -28,7 +28,7 @@ file is created.}
 \item{weight.dist}{the distance from its neighbor where a read is considered isolated in the weighting process. Default is 50 (bp).}
 
 \item{chunk.size}{the number of bins to analyze at a time (for memory optimization).
-Default is 10 000. Reduce this number if memory problems arise.}
+Default is 1 000. Reduce this number if memory problems arise.}
 
 \item{check.chr.name}{if TRUE (default), the function will try to check that the
 definition of chromosome (e.g. '1' vs 'chr1') are consistent between the bin
