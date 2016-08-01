@@ -71,7 +71,7 @@ bin.bam.disc <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.ou
   }
   binBam.single <- function(bins, is.med=0, is.q=0) {
     gr.o = with(bins, GenomicRanges::GRanges(chr, IRanges::IRanges(start = start, end = end)))
-    param = Rsamtools::ScanBamParam(which = gr.o, what = c("rname","pos","flag","isize","mrnm","mpos","cigar","mapq"))
+    param = Rsamtools::ScanBamParam(which = gr.o, what = c("rname","pos","flag","isize","mrnm","mpos","cigar"))
     reads.l = Rsamtools::scanBam(bam.file, index = bai.file, param = param)
     scores.l = lapply(reads.l, function(ll){
       if(length(ll[[1]])==0){
