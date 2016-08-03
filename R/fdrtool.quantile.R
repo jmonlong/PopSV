@@ -20,7 +20,7 @@ fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), plot = TRUE, z.th
     }
     d = stats::density(x, na.rm = TRUE)
     im = 1 + which(diff(sign(diff(d$y))) == -2)
-    my = max(d$y)
+    my = max(d$y[im])
     max.id = im[which(d$y[im] >= min.max.prop * my)]
     max.id.o = max.id[order(d$y[max.id], decreasing = TRUE)]
     return(list(lM = d$x[max.id.o], h = d$y[max.id.o]/my))
