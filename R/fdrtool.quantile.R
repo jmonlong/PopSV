@@ -15,8 +15,8 @@
 fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), plot = TRUE, z.th=NULL) {
   localMax <- function(x, min.max.prop = 0.1) {
     ## Remove extreme outliers
-    if(any(x > 10 * sort(x, decreasing=TRUE)[2])){
-      x = x[which(x < 10 * sort(x, decreasing=TRUE)[2])]
+    if(any(x > 20 * median(x, na.rm=TRUE))){
+      x = x[which(x < 20 * median(x, na.rm=TRUE))]
     }
     d = stats::density(x, na.rm = TRUE)
     im = 1 + which(diff(sign(diff(d$y))) == -2)
