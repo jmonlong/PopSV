@@ -15,6 +15,7 @@
 fdrtool.quantile <- function(z, quant.int = seq(0.4, 1, 0.02), plot = TRUE, z.th=NULL) {
   localMax <- function(x, min.max.prop = 0.1) {
     ## Remove extreme outliers
+    x = x[which(x<100)]
     if(any(x > 20 * median(x, na.rm=TRUE))){
       x = x[which(x < 20 * median(x, na.rm=TRUE))]
     }
