@@ -1,3 +1,7 @@
+## Bug to fix
+
++ Keep/guess best chr factor order (1:22,X,Y). Eg. in `freq.range`'s output.
+
 ## For next version
 
 + Add new chr-frequency graph in `sv.summary.interactive`.
