@@ -1,67 +1,83 @@
 ##' Chromosomes with clear aneuploidy are detected using a simple threshold-based approach. It is used to flag chromosome with complete aneuploidy that could handicap later analysis. However it might not detect partial chromosomal aberration or aneuploidy in samples with noisy read coverage.
 ##' @title Flag chromosomal aneuploidy
-##' @param samp the name of the sample to analyze.
 ##' @param files.df a data.frame with information about samples such as the path to the count files.
 ##' @param col.file the name of the column in 'files.df' with the path information to use. Default is 'bc.gc.gz', i.e. GC corrected bin counts.
-##' @param nb.bins the number of bins to use when subsampling each chromosome. Default is 1000.
-##' @param prop.aneu the minimum proportion of normal bins at which a chromosome is considered normal.
-##' @param plot should the read coverage per chromosome be displayed. Default is FALSE.
-##' @return a list with:
-##' \item{aneu.chrs}{vector with the names of the flagged(aneuploid) chromosomes.}
-##' \item{aneu.chrs.fc}{the fold change in read count in the aneuploid chromosomes.}
+##' @param verbose Shoulf progress be outputted ? Default is TRUE.
+##' @param ref.samples a vector with the names of the samples to be used as reference (e.g. normals). If NULL (default) all samples are used.
+##' @param centromere.pos a vector with the position of the centromeres for each chromosome. Each position should be named with the chromosome name. If NULL (default), full chromosome aneuploidy is tested instead of arm-level deletion/duplication.
+##' @return a data.frame with columns:
+##' \item{sample}{the sample}
+##' \item{chr}{the chromosome}
+##' \item{pv.loss, pv.grain}{the p-value for a loss/gain}
+##' \item{loss/gain}{is the loss/gain significant}
+##' \item{bc.norm}{the normalized coverage}
+##' \item{exp.bc}{the expected normalized coverage}
+##' \item{bc.diff}{the difference between observed and expected coverage}
 ##' @author Jean Monlong
 ##' @export
-aneuploidy.flag <- function(samp, files.df, col.file = "bc.gc.gz", nb.bins = 1000, prop.aneu = 0.1, plot = FALSE) {
-    bc = aneu.flag = chr = . = NULL  ## Appease R checks
+aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.samples=NULL, centromere.pos=NULL) {
+  if(is.null(ref.samples)){
+      ref.samples = as.character(files.df$sample)
+  }
 
-    localMax <- function(x, min.max.prop = 0.1) {
-        d = stats::density(x, na.rm = TRUE)
-        im = 1 + which(diff(sign(diff(d$y))) == -2)
-        my = max(d$y)
-        max.id = im[which(d$y[im] >= min.max.prop * my)]
-        max.id.o = max.id[order(d$y[max.id], decreasing = TRUE)]
-        return(list(lM = d$x[max.id.o], h = d$y[max.id.o]/my))
-    }
+  if(!is.null(centromere.pos) && is.null(names(centromere.pos))){
+      stop("Positions in 'centromere.pos' should be named with the chromosome names")
+  }
 
-    df = utils::read.table(files.df[files.df$sample == samp, col.file], header = TRUE, as.is = TRUE)
-    chrs = unique(df$chr)
-    df = df[which(df$bc > 0), ]
+  if(all(colnames(files.df) != col.file)){
+      stop("'col.file=", col.file, "' is not present in 'files.df'")
+  }
 
-    df.sub = df[unlist(tapply(1:nrow(df), df$chr, function(ii)sample(ii,nb.bins))),]
-    lm.o = localMax(df.sub$bc)$lM[1]
-    core.chrs = df.sub$chr[order(abs(lm.o - df.sub$bc))[1:(nrow(df.sub) * 0.3)]]
-    cchrs.t = table(core.chrs)
-    aneu.chrs = NULL
-    if (length(cchrs.t) < length(chrs)) {
-        aneu.chrs = setdiff(chrs, names(cchrs.t))
-    }
-    if (any(cchrs.t < prop.aneu * nb.bins * 0.3)) {
-        aneu.chrs = c(aneu.chrs, names(cchrs.t)[which(cchrs.t < prop.aneu * nb.bins *
-            0.3)])
-    }
+  ## Compute median coverage per chromosome in each sample
+  med.df = lapply(1:nrow(files.df),function(file.ii){
+                      if(verbose) message("Importing bin counts from sample ", file.ii, "...")
+                      bc.df = utils::read.table(files.df[file.ii, col.file], as.is=TRUE, header=TRUE)
+                      if(!is.null(centromere.pos)){
+                          bc.df$arm = ifelse(bc.df$start<centromere.pos[as.character(bc.df$chr)], "p","q")
+                          bc.df$chr = paste0(bc.df$chr, bc.df$arm)
+                      }
+                      data.frame(sample=files.df$sample[file.ii],
+                                 aggregate(chr~bc,bc.df, median, na.rm=TRUE))
+                  })
+  med.df = do.call(rbind, med.df)
 
-    aneu.chrs.fc = NULL
-    if (!is.null(aneu.chrs)) {
-        aneu.chrs.fc = sapply(aneu.chrs, function(chr.i) localMax(df.sub$bc[which(df.sub$chr ==
-            chr.i)])$lM[1]/lm.o)
-    }
+  ## Adjust the median median counts
+  if(verbose) message("Adjusting coverage...")
+  med.med.df = aggregate(sample~bc, med.df, median, na.rm=TRUE)
+  med.med.df$norm.fact = 1/med.med.df$bc
+  med.med.df$bc = NULL
+  med.df = merge(med.df, med.med.df)
+  med.df$bc.norm = med.df$bc * med.df$norm.fact
 
-    if (plot) {
-        df$aneu.flag = df$chr %in% aneu.chrs
-        df$bc = winsor(df$bc, u = stats::quantile(df$bc, probs = 0.995, na.rm = TRUE))
-        p1 = ggplot2::ggplot(df, ggplot2::aes(x = bc, fill = aneu.flag)) + ggplot2::geom_density(alpha = 0.4) +
-            ggplot2::theme_bw() + ggplot2::facet_grid(chr ~ ., scales = "free") +
-            ggplot2::xlab("read coverage") + ggplot2::ylab("bin density") + ggplot2::theme(axis.text.y = ggplot2::element_blank()) +
-            ggplot2::theme(legend.position = "bottom")
-        df$all = "all"
-        p2 = ggplot2::ggplot(df, ggplot2::aes(x = bc)) + ggplot2::geom_density(fill = "grey70",
-            alpha = 0.4) + ggplot2::theme_bw() + ggplot2::ylab("bin density") + ggplot2::xlab("read coverage") +
-            ggplot2::theme(axis.text.y = ggplot2::element_blank()) + ggplot2::facet_grid(all ~
-            ., scales = "free") + ggplot2::ggtitle(samp)
-        grid::grid.newpage()
-        print(p1, vp = grid::viewport(1, 0.8, x = 0.5, y = 0.4))
-        print(p2, vp = grid::viewport(1, 0.2, x = 0.5, y = 0.9))
-    }
+  ## For each chr, fit null distribution on reference samples and estimate aneuploidy
+  fit2norm.sd <- function(z, p0=c(p=.5,s1=1,s2=1)){ ## Fit 2 gaussian centered in 0
+      mix.obj<-function(p,x){
+          e<-p[1]*dnorm(x/p[2])/p[2] + (1-p[1])*dnorm(x/p[3])/p[3]
+          if (any(e<=0) | p[1]<0 | p[1]>1) Inf
+          else -sum(log(e))
+      }
+      lmix2a<-deriv(~ -log(p*dnorm(x/s1)/s1 + (1-p)*dnorm(x/s2)/s2), c("p","s1","s2"), function(x,p,s1,s2) NULL)
+      mix.gr<-function(pa,x){
+          p<-pa[1]
+          s1<-pa[2]
+          s2<-pa[3]
+          colSums(attr(lmix2a(x,p,s1,s2),"gradient"))}
+      results=optim(p0,mix.obj,mix.gr,x=z)
+      data.frame(p=results$par[1], s1=results$par[2], s2=results$par[3])
+  }
+  aneuChr <- function(df){ ## analyze one chromosome
+      df$exp.bc = median(df$bc.norm[which(df$sample %in% ref.samples)], na.rm=TRUE)
+      df$bc.diff = df$bc.norm - df$exp.bc
+      fit.res = fit2norm.sd(df$bc.diff[which(df$sample %in% ref.samples)])
+      df$pv.loss = pnorm(df$bc.diff, 0, fit.res$s1)
+      df$pv.gain = 1-pnorm(df$bc.diff, 0, fit.res$s1)
+      df$loss = p.adjust(df$pv.loss)<.01
+      df$gain = p.adjust(df$pv.gain)<.01
+      df
+  }
+  if(verbose) message("Testing for aneuploidy...")
+  med.fit = lapply(unique(med.df$chr), function(chr.in)aneuChr(med.df[which(med.df$chr == chr.in),]))
+  med.fit = do.call(rbind, med.fit)
 
-    return(list(aneu.chrs = aneu.chrs, aneu.chrs.fc = aneu.chrs.fc))
+  return(med.fit)
 }

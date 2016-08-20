@@ -4,26 +4,29 @@
 \alias{aneuploidy.flag}
 \title{Flag chromosomal aneuploidy}
 \usage{
-aneuploidy.flag(samp, files.df, col.file = "bc.gc.gz", nb.bins = 1000,
-  prop.aneu = 0.1, plot = FALSE)
+aneuploidy.flag(files.df, col.file = "bc.gc.gz", verbose = TRUE,
+  ref.samples = NULL, centromere.pos = NULL)
 }
 \arguments{
-\item{samp}{the name of the sample to analyze.}
-
 \item{files.df}{a data.frame with information about samples such as the path to the count files.}
 
 \item{col.file}{the name of the column in 'files.df' with the path information to use. Default is 'bc.gc.gz', i.e. GC corrected bin counts.}
 
-\item{nb.bins}{the number of bins to use when subsampling each chromosome. Default is 1000.}
+\item{verbose}{Shoulf progress be outputted ? Default is TRUE.}
 
-\item{prop.aneu}{the minimum proportion of normal bins at which a chromosome is considered normal.}
+\item{ref.samples}{a vector with the names of the samples to be used as reference (e.g. normals). If NULL (default) all samples are used.}
 
-\item{plot}{should the read coverage per chromosome be displayed. Default is FALSE.}
+\item{centromere.pos}{a vector with the position of the centromeres for each chromosome. Each position should be named with the chromosome name. If NULL (default), full chromosome aneuploidy is tested instead of arm-level deletion/duplication.}
 }
 \value{
-a list with:
-\item{aneu.chrs}{vector with the names of the flagged(aneuploid) chromosomes.}
-\item{aneu.chrs.fc}{the fold change in read count in the aneuploid chromosomes.}
+a data.frame with columns:
+\item{sample}{the sample}
+\item{chr}{the chromosome}
+\item{pv.loss, pv.grain}{the p-value for a loss/gain}
+\item{loss/gain}{is the loss/gain significant}
+\item{bc.norm}{the normalized coverage}
+\item{exp.bc}{the expected normalized coverage}
+\item{bc.diff}{the difference between observed and expected coverage}
 }
 \description{
 Chromosomes with clear aneuploidy are detected using a simple threshold-based approach. It is used to flag chromosome with complete aneuploidy that could handicap later analysis. However it might not detect partial chromosomal aberration or aneuploidy in samples with noisy read coverage.
