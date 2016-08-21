@@ -1,7 +1,7 @@
 language: r
 r:
   - oldrel
-  - devel
+  - release
 
 cache: packages
 bioc_required: true
@@ -9,8 +9,6 @@ bioc_required: true
 os:
   - linux
   - osx
-
-osx_image: xcode7
 
 branches:
   only:
