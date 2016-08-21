@@ -48,6 +48,7 @@ aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.s
   med.med.df$bc = NULL
   med.df = merge(med.df, med.med.df)
   med.df$bc.norm = med.df$bc * med.df$norm.fact
+  med.df$norm.fact = med.df$bc = NULL
 
   ## For each chr, fit null distribution on reference samples and estimate aneuploidy
   fit2norm.sd <- function(z, p0=c(p=.5,s1=1,s2=1)){ ## Fit 2 gaussian centered in 0
