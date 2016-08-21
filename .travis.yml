@@ -10,6 +10,10 @@ os:
   - linux
   - osx
 
+env:
+  global:
+    - R_LIBS="http://cran.rstudio.com"
+
 branches:
   only:
     - master
