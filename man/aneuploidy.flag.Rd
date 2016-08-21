@@ -5,7 +5,7 @@
 \title{Flag chromosomal aneuploidy}
 \usage{
 aneuploidy.flag(files.df, col.file = "bc.gc.gz", verbose = TRUE,
-  ref.samples = NULL, centromere.pos = NULL)
+  ref.samples = NULL, centromere.pos = NULL, nb.cores = 1)
 }
 \arguments{
 \item{files.df}{a data.frame with information about samples such as the path to the count files.}
@@ -17,6 +17,8 @@ aneuploidy.flag(files.df, col.file = "bc.gc.gz", verbose = TRUE,
 \item{ref.samples}{a vector with the names of the samples to be used as reference (e.g. normals). If NULL (default) all samples are used.}
 
 \item{centromere.pos}{a vector with the position of the centromeres for each chromosome. Each position should be named with the chromosome name. If NULL (default), full chromosome aneuploidy is tested instead of arm-level deletion/duplication.}
+
+\item{nb.cores}{the number of processing cores to use, Default is 1.}
 }
 \value{
 a data.frame with columns:

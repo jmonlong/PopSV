@@ -5,6 +5,7 @@
 ##' @param verbose Shoulf progress be outputted ? Default is TRUE.
 ##' @param ref.samples a vector with the names of the samples to be used as reference (e.g. normals). If NULL (default) all samples are used.
 ##' @param centromere.pos a vector with the position of the centromeres for each chromosome. Each position should be named with the chromosome name. If NULL (default), full chromosome aneuploidy is tested instead of arm-level deletion/duplication.
+##' @param nb.cores the number of processing cores to use, Default is 1.
 ##' @return a data.frame with columns:
 ##' \item{sample}{the sample}
 ##' \item{chr}{the chromosome}
@@ -15,7 +16,7 @@
 ##' \item{bc.diff}{the difference between observed and expected coverage}
 ##' @author Jean Monlong
 ##' @export
-aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.samples=NULL, centromere.pos=NULL) {
+aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.samples=NULL, centromere.pos=NULL, nb.cores=1) {
   if(is.null(ref.samples)){
       ref.samples = as.character(files.df$sample)
   }
@@ -29,7 +30,7 @@ aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.s
   }
 
   ## Compute median coverage per chromosome in each sample
-  med.df = lapply(1:nrow(files.df),function(file.ii){
+  med.df = parallel::mclapply(1:nrow(files.df),function(file.ii){
                       if(verbose) message("Importing bin counts from sample ", file.ii, "...")
                       bc.df = utils::read.table(files.df[file.ii, col.file], as.is=TRUE, header=TRUE)
                       if(!is.null(centromere.pos)){
@@ -38,7 +39,7 @@ aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.s
                       }
                       data.frame(sample=files.df$sample[file.ii],
                                  aggregate(bc~chr,bc.df, median, na.rm=TRUE))
-                  })
+                  }, mc.cores=nb.cores)
   med.df = do.call(rbind, med.df)
 
   ## Adjust the median median counts
