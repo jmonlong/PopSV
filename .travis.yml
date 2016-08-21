@@ -1,5 +1,6 @@
 language: r
 r:
+  - oldrel
   - devel
 
 cache: packages
@@ -8,11 +9,6 @@ bioc_required: true
 os:
   - linux
   - osx
-
-env:
-  global:
-    - _R_CHECK_FORCE_SUGGESTS_=False
-    - R_LIBS="http://cran.rstudio.com"
 
 branches:
   only:
