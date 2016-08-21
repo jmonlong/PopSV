@@ -15,6 +15,7 @@ env:
     - _R_CHECK_FORCE_SUGGESTS_=False
     - R_LIBS="http://cran.rstudio.com"
 
+
 branches:
   only:
     - master
