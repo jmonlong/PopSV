@@ -78,7 +78,7 @@ aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.s
       df
   }
   if(verbose) message("Testing for aneuploidy...")
-  med.fit = lapply(unique(med.df$chr), function(chr.in)aneuChr(med.df[which(med.df$chr == chr.in),]))
+  med.fit = parallel::mclapply(unique(med.df$chr), function(chr.in)aneuChr(med.df[which(med.df$chr == chr.in),]), mc.cores=nb.cores)
   med.fit = do.call(rbind, med.fit)
 
   return(med.fit)
