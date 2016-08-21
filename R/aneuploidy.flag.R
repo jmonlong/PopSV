@@ -38,13 +38,13 @@ aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.s
                           bc.df$chr = paste0(bc.df$chr, bc.df$arm)
                       }
                       data.frame(sample=files.df$sample[file.ii],
-                                 aggregate(bc~chr,bc.df, median, na.rm=TRUE))
+                                 stats::aggregate(bc~chr,bc.df, stats::median, na.rm=TRUE))
                   }, mc.cores=nb.cores)
   med.df = do.call(rbind, med.df)
 
   ## Adjust the median median counts
   if(verbose) message("Adjusting coverage...")
-  med.med.df = aggregate(bc~sample, med.df, median, na.rm=TRUE)
+  med.med.df = stats::aggregate(bc~sample, med.df, stats::median, na.rm=TRUE)
   med.med.df$norm.fact = 1/med.med.df$bc
   med.med.df$bc = NULL
   med.df = merge(med.df, med.med.df)
@@ -54,27 +54,27 @@ aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.s
   ## For each chr, fit null distribution on reference samples and estimate aneuploidy
   fit2norm.sd <- function(z, p0=c(p=.5,s1=1,s2=1)){ ## Fit 2 gaussian centered in 0
       mix.obj<-function(p,x){
-          e<-p[1]*dnorm(x/p[2])/p[2] + (1-p[1])*dnorm(x/p[3])/p[3]
+          e<-p[1]*stats::dnorm(x/p[2])/p[2] + (1-p[1])*stats::dnorm(x/p[3])/p[3]
           if (any(e<=0) | p[1]<0 | p[1]>1) Inf
           else -sum(log(e))
       }
-      lmix2a<-deriv(~ -log(p*dnorm(x/s1)/s1 + (1-p)*dnorm(x/s2)/s2), c("p","s1","s2"), function(x,p,s1,s2) NULL)
+      lmix2a<-stats::deriv(~ -log(p*stats::dnorm(x/s1)/s1 + (1-p)*stats::dnorm(x/s2)/s2), c("p","s1","s2"), function(x,p,s1,s2) NULL)
       mix.gr<-function(pa,x){
           p<-pa[1]
           s1<-pa[2]
           s2<-pa[3]
           colSums(attr(lmix2a(x,p,s1,s2),"gradient"))}
-      results=optim(p0,mix.obj,mix.gr,x=z)
+      results=stats::optim(p0,mix.obj,mix.gr,x=z)
       data.frame(p=results$par[1], s1=results$par[2], s2=results$par[3])
   }
   aneuChr <- function(df){ ## analyze one chromosome
-      df$exp.bc = median(df$bc.norm[which(df$sample %in% ref.samples)], na.rm=TRUE)
+      df$exp.bc = stats::median(df$bc.norm[which(df$sample %in% ref.samples)], na.rm=TRUE)
       df$bc.diff = df$bc.norm - df$exp.bc
       fit.res = fit2norm.sd(df$bc.diff[which(df$sample %in% ref.samples)])
-      df$pv.loss = pnorm(df$bc.diff, 0, fit.res$s1)
-      df$pv.gain = 1-pnorm(df$bc.diff, 0, fit.res$s1)
-      df$loss = p.adjust(df$pv.loss)<.01
-      df$gain = p.adjust(df$pv.gain)<.01
+      df$pv.loss = stats::pnorm(df$bc.diff, 0, fit.res$s1)
+      df$pv.gain = 1-stats::pnorm(df$bc.diff, 0, fit.res$s1)
+      df$loss = stats::p.adjust(df$pv.loss)<.01
+      df$gain = stats::p.adjust(df$pv.gain)<.01
       df
   }
   if(verbose) message("Testing for aneuploidy...")
