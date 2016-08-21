@@ -10,9 +10,7 @@ os:
   - linux
   - osx
 
-env:
-  global:
-    - R_LIBS="http://cran.rstudio.com"
+osx_image: xcode7
 
 branches:
   only:
