@@ -37,13 +37,13 @@ aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.s
                           bc.df$chr = paste0(bc.df$chr, bc.df$arm)
                       }
                       data.frame(sample=files.df$sample[file.ii],
-                                 aggregate(chr~bc,bc.df, median, na.rm=TRUE))
+                                 aggregate(bc~chr,bc.df, median, na.rm=TRUE))
                   })
   med.df = do.call(rbind, med.df)
 
   ## Adjust the median median counts
   if(verbose) message("Adjusting coverage...")
-  med.med.df = aggregate(sample~bc, med.df, median, na.rm=TRUE)
+  med.med.df = aggregate(bc~sample, med.df, median, na.rm=TRUE)
   med.med.df$norm.fact = 1/med.med.df$bc
   med.med.df$bc = NULL
   med.df = merge(med.df, med.med.df)
