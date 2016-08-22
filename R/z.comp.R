@@ -13,7 +13,7 @@
 ##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
 ##' Details). Default is FALSE.
 ##' @param nb.cores the number of cores to use.
-##' @param chunk.size the chunk size. Default is 1e4. If NULL, no chunks are used. 
+##' @param chunk.size the chunk size. Default is 1e4. If NULL, no chunks are used.
 ##' @param out.msd.f the name of the file to write the mean/sd information. Default is "ref-msd.tsv". If 'NULL' no file is created.
 ##' @param append should the Z-scores be appended to existing files. Default is FALSE.
 ##' @param files.col the name of the column from 'files.df' to use to get the bin counts. Used only if 'bc.f' is NULL.
