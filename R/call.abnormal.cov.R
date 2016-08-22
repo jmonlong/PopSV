@@ -12,7 +12,7 @@
 ##' @param files.df a data.frame with the paths to different sample files (bin count, Z-scores, ..). Here columns 'z' and 'fc' are used to retrieve Z-scores and fold changes.
 ##' @param samp the name of the sample to analyze.
 ##' @param out.pdf the name of the output pdf file.
-##' @param FDR.th the False Discovery Rate to use for the calls. 
+##' @param FDR.th the False Discovery Rate to use for the calls.
 ##' @param merge.cons.bins how the bins should be merged. Default is 'stitch'. 'zscores' is another approch (see Details), 'no' means no bin merging.
 ##' @param stitch.dist the maximal distance between two calls to be merged into one (if 'merge.cons.bins="stitch"'). If NULL (default), the bin size + 1 is used.
 ##' @param z.th how the threshold for abnormal Z-score is chosen. Default is 'sdest' which will use 'FDR.th=' parameter as well. 'consbins' looks at the number of consecutive bins, see Details.
@@ -29,7 +29,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference.}
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL, z.th = c("sdest", "consbins", "sdest2N"), norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, gc.df=NULL) {
+call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL, z.th = c("sdest", "consbins", "sdest2N"), norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, gc.df=NULL) {
 
   z.f = files.df$z[which(files.df$sample==samp)]
   if(!file.exists(z.f)) z.f = paste0(z.f, ".bgz")
@@ -47,7 +47,7 @@ call.abnormal.cov <- function(files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05
   rm(fc)
 
   res.df = res.df[which(!is.na(res.df$z)),]
-  
+
   if (!is.null(norm.stats)) {
     if (is.character(norm.stats) & length(norm.stats) == 1) {
       headers = utils::read.table(norm.stats, nrows = 1, as.is = TRUE)
@@ -156,6 +156,6 @@ call.abnormal.cov <- function(files.df=NULL, samp, out.pdf = NULL, FDR.th = 0.05
   } else if (any(res.df$qv <= FDR.th, na.rm = TRUE)) {
     return(data.frame(sample = samp, res.df[which(res.df$qv <= FDR.th), ], stringsAsFactors = FALSE))
   } else {
-    return(NULL)
+    return(data.frame())
   }
 }

@@ -2,7 +2,7 @@
 ##' @title Z-score thresholding using bin consecutiveness.
 ##' @param z.df a data.frame with at least 'chr', 'start', 'end' and 'z' columns.
 ##' @param plot should some graphs be displayed. Default if FALSE.
-##' @param pvalues should the P-values be deduced from these thresholds. Default is FALSE. Note: the P-values and Q-values derive from custom 'recipes' and should be taken as informative only, for further filtering or priorization. 
+##' @param pvalues should the P-values be deduced from these thresholds. Default is FALSE. Note: the P-values and Q-values derive from custom 'recipes' and should be taken as informative only, for further filtering or priorization.
 ##' @return a list with:
 ##' \item{dup.th}{the threshold for positive Z-scores (duplication signal)}
 ##' \item{del.th}{the threshold for negative Z-scores (deletion signal)}
@@ -12,7 +12,7 @@
 ##' @author Jean Monlong
 ##' @keywords internal
 z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
-  
+
   bin.w = round(stats::median(z.df$end - z.df$start + 1, na.rm = TRUE))
   cons.dist.f <- function(df) {
     if(nrow(df)==0){return(data.frame(nbc = NA, n = NA, p = NA))}
@@ -39,7 +39,7 @@ z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
     if (all(cmax.rle$values != 0)) {
       return(list(x = utils::tail(x, 1), y = utils::tail(y, 1)))
     }
-    rle.i = which(cmax.rle$values == 0)[which.max(cmax.rle$lengths[cmax.rle$values == 
+    rle.i = which(cmax.rle$values == 0)[which.max(cmax.rle$lengths[cmax.rle$values ==
                     0])]
     x.i = sum(cmax.rle$lengths[1:rle.i]) - cmax.rle$lengths[rle.i] + 1
     return(list(x = x[x.i], y = y[x.i]))
@@ -72,15 +72,16 @@ z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
       return(df.th)
     }))
     ## ggplot(subset(nbcc.df, nbc<3), aes(x=z.th, y=p)) + geom_line() + facet_grid(nbc~., scales='free')
-    z.th = c(min(localMax(nbcc.df$z.th[which(nbcc.df$nbc==1)], nbcc.df$p[which(nbcc.df$nbc==1)], loc.max=FALSE)$lM), sapply(2, function(nbc.i)min(localMax(nbcc.df$z.th[which(nbcc.df$nbc==nbc.i)], nbcc.df$p[which(nbcc.df$nbc==nbc.i)])$lM)))
+    z.th = suppressWarnings(c(min(localMax(nbcc.df$z.th[which(nbcc.df$nbc==1)], nbcc.df$p[which(nbcc.df$nbc==1)], loc.max=FALSE)$lM), sapply(2, function(nbc.i)min(localMax(nbcc.df$z.th[which(nbcc.df$nbc==nbc.i)], nbcc.df$p[which(nbcc.df$nbc==nbc.i)])$lM))))
     ## z.th = c(cumLocalMax(nbcc.df$z.th[which(nbcc.df$nbc == 1)], nbcc.df$p[which(nbcc.df$nbc == 1)], min = TRUE)$x, cumLocalMax(nbcc.df$z.th[which(nbcc.df$nbc == 2)], nbcc.df$p[which(nbcc.df$nbc == 2)])$x)
+    if(all(is.na(z.th))) return(max(abs(df$z)))
     mean(z.th, na.rm = TRUE)
   }
-  
+
   ## Split between duplication/deletion signal
   dup.df = z.df[which(z.df$z > 0), ]
   del.df = z.df[which(z.df$z < 0), ]
-  
+
   ## Find threshold; second run scan with more resolution.
   dup.th = find.th(dup.df, z.int = seq(2, stats::quantile(dup.df$z, probs = 0.999) * 2, 0.2))
   ## dup.th = find.th(dup.df, seq(dup.th-.5, dup.th+.5, .01))
@@ -88,7 +89,7 @@ z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
   del.th = find.th(del.df, z.int = seq(2, stats::quantile(abs(del.df$z), probs = 0.999) * 2, 0.2))
   ## del.th = find.th(del.df, seq(del.th-.5, del.th+.5, .01))
   ## del.th = find.th(del.df, seq(del.th-.1, del.th+.1, .005))
- 
+
   ## Annotate data.frames
   dup.df$abnormal = dup.df$z > dup.th
   del.df$abnormal = del.df$z < -del.th
@@ -100,21 +101,21 @@ z.thres.cons.bins <- function(z.df, plot = FALSE, pvalues = FALSE) {
     z.df$pv = fdr$pval
     z.df$qv = fdr$qval
   }
-  
+
   ## Some statistics on the calls
   nb.ab.bins = sum(z.df$abnormal)
   prop.ab.bins = mean(z.df$abnormal)
-  
+
   ## Z-score distribution with thresholds
   if (plot) {
     z = pv = qv = abnormal = NULL  ## Uglily appease R checks
-    print(ggplot2::ggplot(z.df, ggplot2::aes(x = z)) + ggplot2::geom_histogram() + 
+    print(ggplot2::ggplot(z.df, ggplot2::aes(x = z)) + ggplot2::geom_histogram() +
           ggplot2::xlim(-20, 20) + ggplot2::geom_vline(xintercept = c(-del.th, dup.th), linetype = 2) + ggplot2::theme_bw())
     if (pvalues) {
-      print(ggplot2::ggplot(z.df, ggplot2::aes(x = pv, fill=abnormal)) + ggplot2::geom_histogram() + 
+      print(ggplot2::ggplot(z.df, ggplot2::aes(x = pv, fill=abnormal)) + ggplot2::geom_histogram() +
              ggplot2::xlim(0, 1) + ggplot2::theme_bw())
     }
   }
-  
+
   return(list(dup.th = dup.th, del.th = del.th, nb.ab.bins = nb.ab.bins, prop.ab.bins = prop.ab.bins, z.df = z.df[which(z.df$abnormal), ]))
-} 
+}

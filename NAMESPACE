@@ -3,7 +3,6 @@
 export(aneuploidy.flag)
 export(bin.bam)
 export(bin.bam.disc)
-export(breakpoint.finder)
 export(breakpoint.finder.interactive)
 export(call.abnormal.cov)
 export(chrplot)
