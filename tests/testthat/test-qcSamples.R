@@ -71,8 +71,8 @@ test_that("Works with different columns",{
 test_that("Broad median normalization applied",{
   qc.o = qc.samples(files.df, bin.df, outfile.prefix="temp.tsv", plot=FALSE, appendIndex.outfile=FALSE, chunk.size = 20)
   bcm = read.table(qc.o$bc, header=TRUE, as.is=TRUE)
-  bcm.med = apply(bcm[,-(1:3)], 2, median, na.rm=TRUE)
-  expect_true(all(abs(bcm.med - median(bcm.med))<100))
+  bcm.med = apply(bcm[,-(1:3)], 2, stats::median, na.rm=TRUE)
+  expect_true(all(abs(bcm.med - stats::median(bcm.med))<200))
   expect_true(file.remove("temp.tsv"))
 })
 
