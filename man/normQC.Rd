@@ -4,12 +4,15 @@
 \alias{normQC}
 \title{Normalized bin count QC metrics for normalization benchmark}
 \usage{
-normQC(bc.df, n.subset = 10000, nb.cores = 1, plot = FALSE)
+normQC(bc.df, n.subset = 10000, win.size = 100, nb.cores = 1,
+  plot = FALSE)
 }
 \arguments{
 \item{bc.df}{matrix with bin counts (bins x samples).}
 
 \item{n.subset}{number of bins to use for the analysis. Default is 10 000. Bins are selected randomly.}
+
+\item{win.size}{the size of a window for the window-based analysis. Default is 100 (consecutive bins).}
 
 \item{nb.cores}{the number of cores to use. Default is 1.}
 

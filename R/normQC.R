@@ -30,12 +30,13 @@
 ##' \item{n.subset}{number of bins used for the analysis.}
 ##' @param bc.df matrix with bin counts (bins x samples).
 ##' @param n.subset number of bins to use for the analysis. Default is 10 000. Bins are selected randomly.
+##' @param win.size the size of a window for the window-based analysis. Default is 100 (consecutive bins).
 ##' @param nb.cores the number of cores to use. Default is 1.
 ##' @param plot Should some graphs be outputed ? Default is FALSE.
 ##' @author Jean Monlong
 ##' @export
 ##' @import magrittr
-normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
+normQC <- function(bc.df, n.subset = 10000, win.size=100, nb.cores = 1, plot=FALSE) {
     ## Order by genomic location.
     bc.df = dplyr::arrange(bc.df, chr, start)
     samples = setdiff(colnames(bc.df), c("chr", "start", "end"))
@@ -45,7 +46,7 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
     chrs.t = table(sample(bc.df$chr, n.subset))
 
     test.chr.f <- function(df, win.size = 100) {
-        sub.ii = sample.int(nrow(df) - win.size + 1, chrs.t[df$chr[1]])
+        sub.ii = sample.int(nrow(df) - win.size + 1, chrs.t[as.character(df$chr[1])])
         res.df = df[sub.ii, c("chr", "start", "end")]
         df = as.matrix(df[, samples])
         ## Bin count normality
@@ -66,7 +67,8 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
     }
 
     chr = . = NULL  ## Uglily appease R checks
-    res.df = bc.df %>% dplyr::group_by(chr) %>% dplyr::do(test.chr.f(.))
+    bc.df = bc.df[which(bc.df$chr %in% names(chrs.t)),]
+    res.df = bc.df %>% dplyr::group_by(chr) %>% dplyr::do(test.chr.f(., win.size=win.size))
 
     sub.ii = sample(which(apply(bc.df, 1, function(ee) all(!is.na(ee)))), n.subset)
     bc.mat = as.matrix(bc.df[sub.ii, samples])
@@ -103,10 +105,15 @@ normQC <- function(bc.df, n.subset = 10000, nb.cores = 1, plot=FALSE) {
       ## Best Z-scores
       zlim = stats::quantile(abs(as.numeric(z)), probs=.99, na.rm=TRUE) + 3
       zt = t(z[samples[order(non.norm.z)[1:6]],])
-      print(ggplot2::ggplot(reshape::melt(zt), ggplot2::aes(x=value)) + ggplot2::geom_density() + ggplot2::theme_bw() + ggplot2::xlim(-1*zlim,zlim) + ggplot2::facet_wrap(~X2, scales="free") + ggplot2::xlab("Z-score"))
+      meltZ <- function(mat){
+          df = data.frame(value=as.numeric(mat))
+          df$sample = rep(colnames(mat), each=nrow(mat))
+          df
+      }
+      print(ggplot2::ggplot(meltZ(zt), ggplot2::aes(x=value)) + ggplot2::geom_density() + ggplot2::theme_bw() + ggplot2::xlim(-1*zlim,zlim) + ggplot2::facet_wrap(~sample, scales="free") + ggplot2::xlab("Z-score"))
       ## Worst Z-scores
       zt = t(z[samples[order(-non.norm.z)[1:6]],])
-      print(ggplot2::ggplot(reshape::melt(zt), ggplot2::aes(x=value)) + ggplot2::geom_density() + ggplot2::theme_bw() + ggplot2::xlim(-zlim,zlim) + ggplot2::facet_wrap(~X2, scales="free") + ggplot2::xlab("Z-score"))
+      print(ggplot2::ggplot(meltZ(zt), ggplot2::aes(x=value)) + ggplot2::geom_density() + ggplot2::theme_bw() + ggplot2::xlim(-zlim,zlim) + ggplot2::facet_wrap(~sample, scales="free") + ggplot2::xlab("Z-score"))
     }
 
     ## Worst sample Z distribution density
