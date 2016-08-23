@@ -65,4 +65,3 @@ test_that("Stops if no reads found or not",{
   expect_error(bin.bam(bam.f, tail(bin.df), appendIndex.outfile=FALSE), "no reads found")
   expect_equal(length(bin.bam(bam.f, tail(bin.df), appendIndex.outfile=FALSE, no.checks=TRUE)), 2)
 })
-
