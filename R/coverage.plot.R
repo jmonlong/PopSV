@@ -44,7 +44,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
     med.mean = mean(med.v, na.rm=TRUE)
     bc.all$value = med.mean * bc.all$value / med.v[as.character(bc.all$bc.f)]
   }
-  
+
   if(is.null(ref.samples)){
     ref.samples = unique(bc.all$sample)
   }
@@ -93,15 +93,15 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
       bc.sv$pos = factor(round(bc.sv$pos))
     }
   }
-  
+
   ## Plot reference samples
   pos = m = value = ggpSck = sd = NULL ## Uglily appease R checks
   gp.o = ggplot2::ggplot(bc.ref) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::xlab("position")
   if(flanks>0){
     gp.o = gp.o + ggplot2::geom_rect(xmin=start, xmax=end, ymin=0, ymax=max.bc, fill="yellow2", ggplot2::aes(alpha=ggpSck), data=data.frame(ggpSck=0)) + ggplot2::guides(alpha=FALSE)
-  } 
+  }
   if(!is.null(norm.stats.f)) {
-    gp.o = gp.o + ggplot2::geom_errorbar(ggplot2::aes(x=pos, ymin=m-3*sd,ymax=m+3*sd)) + ggplot2::geom_point(ggplot2::aes(y=m))
+    gp.o = gp.o + ggplot2::geom_errorbar(ggplot2::aes(x=pos, ymin=m-3*sd,ymax=m+3*sd)) + ggplot2::geom_point(ggplot2::aes(x=pos, y=m))
   } else if(boxplot){
     gp.o = gp.o + ggplot2::geom_boxplot(ggplot2::aes(x=pos, y=value, group=pos), fill="lightgreen",alpha=.7)
   } else {
@@ -123,7 +123,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
       gp.o = ggplot2::ggplot(bc.ref) + ggplot2::theme_bw() + ggplot2::ylab("normalized coverage") + ggplot2::xlab("position")
       if(flanks>0){
         gp.o = gp.o + ggplot2::geom_rect(xmin=start, xmax=end, ymin=0, ymax=max.bc, fill="yellow2", ggplot2::aes(alpha=ggpSck), data=data.frame(ggpSck=0)) + ggplot2::guides(alpha=FALSE)
-      } 
+      }
       gp.o = gp.o + ggplot2::geom_violin(ggplot2::aes(x=pos, y=value, fill=set, group=paste(set,pos)), alpha=.7, scale="width") + ggplot2::scale_fill_brewer(name="", palette="Set1")
     } else {
       gp.o = gp.o + ggplot2::geom_line(ggplot2::aes(x=pos, y=value, colour=sample, group=sample),alpha=.7, size=2, data=bc.sv) + ggplot2::geom_point(ggplot2::aes(x=pos, y=value, colour=sample),size=4, data=bc.sv)
@@ -140,6 +140,6 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
   if(!absolute.position & length(bc.f)<3){
     gp.o = gp.o + ggplot2::theme(axis.text.x=ggplot2::element_text(angle=45,hjust=1))
   }
-  
+
   gp.o
 }
