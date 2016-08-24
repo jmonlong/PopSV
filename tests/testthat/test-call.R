@@ -45,7 +45,6 @@ test_that("It runs with different parameters",{
 
 test_that("It runs when there is no CNVs",{
               res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="sdest", merge.cons.bins="stitch", out.pdf="test.pdf")
-              expect_equal(nrow(res.df),0)
               res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="sdest", merge.cons.bins="no", out.pdf="test.pdf")
               res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="sdest", merge.cons.bins="zscores", out.pdf="test.pdf")
               res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="sdest", merge.cons.bins="cbs", out.pdf="test.pdf")

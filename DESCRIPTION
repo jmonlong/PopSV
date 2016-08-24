@@ -32,7 +32,6 @@ Imports:
     shiny,
     RColorBrewer,
     parallel,
-    grid,
     reshape,
     DNAcopy,
     Rcpp
