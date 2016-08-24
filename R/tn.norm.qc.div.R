@@ -4,11 +4,10 @@
 ##' @param out.pdf the name of the PDF file to create.
 ##' @param chunk.size the size of a chunk to read the file. Default is 1000.
 ##' @param nb.cores the number of cores to use. Default is 1.
-##' @param plot should graphs be displayed
 ##' @return a data.frame with the bins location and the computed metric.
 ##' @author Jean Monlong
 ##' @export
-tn.norm.qc.div <- function(norm.stats, out.pdf = "normStats-QC-supportDiversity.pdf", chunk.size=1e3, nb.cores=1, plot=TRUE){
+tn.norm.qc.div <- function(norm.stats, out.pdf = "normStats-QC-supportDiversity.pdf", chunk.size=1e3, nb.cores=1){
 
   read.chunk <- function(chunk.start=NULL, chunk.end=NULL){
     col.n = utils::read.table(norm.stats, nrows=1, sep="\t", header=FALSE, as.is=TRUE)
@@ -46,9 +45,12 @@ tn.norm.qc.div <- function(norm.stats, out.pdf = "normStats-QC-supportDiversity.
   div.df = do.call(rbind, div.df)
 
   ## Graph
-  if(plot){
+  if(!is.null(out.pdf)){
+      grDevices::pdf(out.pdf, 8, 6)
     chr = inter.chr = NULL ## Uglily appeases R checks
-    print(ggplot2::ggplot(div.df[which(!is.na(div.df$d.max) & div.df$d.max>=0),], ggplot2::aes(x=chr, y=inter.chr)) + ggplot2::geom_violin(scale="width") + ggplot2::theme_bw() + ggplot2::ylab("number of supporting bins in same chr as normalized bin"))
+      print(ggplot2::ggplot(div.df[which(!is.na(div.df$d.max) & div.df$d.max>=0),], ggplot2::aes(x=chr, y=inter.chr)) + ggplot2::geom_violin(scale="width") + ggplot2::theme_bw() + ggplot2::ylab("number of supporting bins in same chr as normalized bin"))
+        grDevices::dev.off()
+
   }
 
   return(div.df)

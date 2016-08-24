@@ -47,10 +47,10 @@ pca.norm <- function(bc.df, nb.pcs = 3, nb.cores = 1, norm.stats.comp = TRUE) {
     norm.stats$end = bc.df$end
     norm.stats[, 4:6] = matrix(as.numeric(unlist(parallel::mclapply(1:nrow(bc.norm),
                 function(rr) {
-                  msd = mean.sd.outlierR(as.numeric(bc.norm[rr, all.samples]))
-                  return(c(msd$m, msd$sd, msd$nb.remove))
+                  rrr = as.numeric(bc.norm[rr, all.samples])
+                  return(c(mean(rrr, na.rm=TRUE), sd(rrr, na.rm=TRUE), NA))
                 }, mc.cores = nb.cores))), nrow(bc.norm))
-    norm.stats[, -(1:6)] = pca.o
+    norm.stats[, -(1:6)] = pca.o$x[,1:nb.pcs]
   } else {
     norm.stats = NULL
   }

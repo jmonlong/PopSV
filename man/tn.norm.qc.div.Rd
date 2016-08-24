@@ -5,7 +5,7 @@
 \title{Targeted normalization QC: diversity of the supporting bins}
 \usage{
 tn.norm.qc.div(norm.stats, out.pdf = "normStats-QC-supportDiversity.pdf",
-  chunk.size = 1000, nb.cores = 1, plot = TRUE)
+  chunk.size = 1000, nb.cores = 1)
 }
 \arguments{
 \item{norm.stats}{the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.}
@@ -15,8 +15,6 @@ tn.norm.qc.div(norm.stats, out.pdf = "normStats-QC-supportDiversity.pdf",
 \item{chunk.size}{the size of a chunk to read the file. Default is 1000.}
 
 \item{nb.cores}{the number of cores to use. Default is 1.}
-
-\item{plot}{should graphs be displayed}
 }
 \value{
 a data.frame with the bins location and the computed metric.

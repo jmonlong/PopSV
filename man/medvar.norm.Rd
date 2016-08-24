@@ -17,7 +17,10 @@ medvar.norm(bc, ref.samples, bc.support = NULL, z.poisson = FALSE)
 Details). Default is FALSE.}
 }
 \value{
-a matrix with the normalized bin counts (bin x sample).
+a list with
+\item{norm.stats}{a data.frame witht some metrics about the normalization of each
+bin (row) : coverage average and standard deviation; number of outlier samples}
+\item{bc.norm}{a data.frame, similar to the input 'bc.df', with the normalized bin counts.}
 }
 \description{
 The median and deviation to the median is normalized across samples.

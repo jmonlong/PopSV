@@ -1,25 +1,28 @@
-##' The median and deviation to the median is normalized across samples. 
+##' The median and deviation to the median is normalized across samples.
 ##' @title Median-variance normalization of bin counts
 ##' @param bc a matrix or data.frame with the bin counts (bin x sample).
 ##' @param ref.samples a vector with the names of the samples to be used as reference.
 ##' @param bc.support TODO
 ##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
 ##' Details). Default is FALSE.
-##' @return a matrix with the normalized bin counts (bin x sample).
+##' @return a list with
+##' \item{norm.stats}{a data.frame witht some metrics about the normalization of each
+##' bin (row) : coverage average and standard deviation; number of outlier samples}
+##' \item{bc.norm}{a data.frame, similar to the input 'bc.df', with the normalized bin counts.}
 ##' @author Jean Monlong
 ##' @export
 medvar.norm <- function(bc, ref.samples, bc.support = NULL, z.poisson = FALSE) {
     all.samples = setdiff(colnames(bc), c("chr", "start", "end"))
     ref.samples.ii = which(all.samples %in% ref.samples)
     rownames(bc) = bins = paste(bc$chr, as.integer(bc$start), sep = "-")
-    norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 3)), 
+    norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 3)),
         length(bins))
     colnames(norm.stats) = c("chr", "start", "end", "m", "sd", "nb.remove")
-    bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))), 
+    bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))),
         length(bins))
-    z = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))), 
+    z = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))),
         length(bins))
-    fc = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))), 
+    fc = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))),
         length(bins))
     colnames(bc.norm) = colnames(z) = colnames(fc) = c("chr", "start", "end", all.samples)
     norm.stats$chr = bc.norm$chr = z$chr = fc$chr = bc[bins, "chr"]
@@ -38,7 +41,7 @@ medvar.norm <- function(bc, ref.samples, bc.support = NULL, z.poisson = FALSE) {
             (x - mean.c)/sd.c
         }
     }
-    
+
     if (is.null(bc.support)) {
         bc.support = bc[, all.samples]
     } else {
@@ -59,6 +62,6 @@ medvar.norm <- function(bc, ref.samples, bc.support = NULL, z.poisson = FALSE) {
     norm.stats[, 4:6] = cbind(msd[1, ], msd[2, ], msd[3, ])
     z[, -(1:3)] = apply(bc.norm[, -(1:3)], 2, z.comp, mean.c = norm.stats$m, sd.c = norm.stats$sd)
     fc[, -(1:3)] = bc.norm[, -(1:3)]/norm.stats$m
-    
+
     list(norm.stats = norm.stats, bc.norm = bc.norm, z = z, fc = fc, z.poisson = z.poisson)
-} 
+}
