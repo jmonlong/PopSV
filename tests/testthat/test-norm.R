@@ -33,7 +33,7 @@ test_that("Targeted normalization QC works", {
               expect_true(file.remove("temp.pdf"))
               graphs = tn.norm.qc.div(ns.f, out.pdf="temp.pdf", chunk.size=30)
               expect_true(file.remove("temp.pdf"))
-              expect_true(ns.f)
+              expect_true(file.remove(ns.f))
           })
 
 test_that("Other normalization works", {
