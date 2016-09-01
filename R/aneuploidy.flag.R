@@ -52,20 +52,18 @@ aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.s
   med.df$norm.fact = med.df$bc = NULL
 
   ## For each chr, fit null distribution on reference samples and estimate aneuploidy
-  fit2norm.sd <- function(z, p0=c(p=.5,s1=1,s2=1)){ ## Fit 2 gaussian centered in 0
+  fit2norm.sd <- function(z, p0=c(s1=1)){ ## Fit 1 gaussian centered in 0
       mix.obj<-function(p,x){
-          e<-p[1]*stats::dnorm(x/p[2])/p[2] + (1-p[1])*stats::dnorm(x/p[3])/p[3]
-          if (any(e<=0) | p[1]<0 | p[1]>1) Inf
+          e<-stats::dnorm(x/p[1])/p[1]
+          if (any(e<=0)) Inf
           else -sum(log(e))
       }
-      lmix2a<-stats::deriv(~ -log(p*stats::dnorm(x/s1)/s1 + (1-p)*stats::dnorm(x/s2)/s2), c("p","s1","s2"), function(x,p,s1,s2) NULL)
+      lmix2a<-stats::deriv(~ -log(dnorm(x/s1)/s1), c("s1"), function(x,s1) NULL)
       mix.gr<-function(pa,x){
-          p<-pa[1]
-          s1<-pa[2]
-          s2<-pa[3]
-          colSums(attr(lmix2a(x,p,s1,s2),"gradient"))}
-      results=stats::optim(p0,mix.obj,mix.gr,x=z)
-      data.frame(p=results$par[1], s1=results$par[2], s2=results$par[3])
+          s1<-pa[1]
+          colSums(attr(lmix2a(x,s1),"gradient"))}
+      results=stats::optim(p0, mix.obj, mix.gr, x=z)
+      data.frame(s1=results$par[1])
   }
   aneuChr <- function(df){ ## analyze one chromosome
       df$exp.bc = stats::median(df$bc.norm[which(df$sample %in% ref.samples)], na.rm=TRUE)
