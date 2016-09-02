@@ -6,7 +6,8 @@
 \usage{
 qc.samples(files.df, bin.df, outfile.prefix, ref.samples = NULL,
   nb.ref.samples = NULL, plot = TRUE, appendIndex.outfile = TRUE,
-  chunk.size = 1e+05, col.bc = "bc.gc.gz", nb.cores = 1)
+  chunk.size = 1e+05, col.bc = "bc.gc.gz", nb.cores = 1,
+  median.norm = TRUE)
 }
 \arguments{
 \item{files.df}{a data.frame with the information about the files to
@@ -38,6 +39,8 @@ Default is 100 000. Reduce this number if memory problems arise.}
 
 \item{nb.cores}{number of cores to use. If higher than 1, \code{parallel}
 package is used to parallelize the counting.}
+
+\item{median.norm}{Should the merged bin counts be median-normalized. Default is TRUE.}
 }
 \value{
 a list with

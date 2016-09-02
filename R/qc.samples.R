@@ -21,6 +21,7 @@
 ##' @param col.bc the column from 'files.df' defining the bin count file names.
 ##' @param nb.cores number of cores to use. If higher than 1, \code{parallel}
 ##' package is used to parallelize the counting.
+##' @param median.norm Should the merged bin counts be median-normalized. Default is TRUE.
 ##' @return a list with
 ##' \item{bc}{the name of the file with the joined bin counts OR a data.frame with
 ##' these bin counts.}
@@ -30,7 +31,7 @@
 ##' \item{pc.ref.df}{a data.frame with the first 3 principal components for the final reference samples.}
 ##' @author Jean Monlong
 ##' @export
-qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.ref.samples = NULL, plot = TRUE, appendIndex.outfile = TRUE, chunk.size = 1e+05, col.bc = "bc.gc.gz", nb.cores = 1) {
+qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.ref.samples = NULL, plot = TRUE, appendIndex.outfile = TRUE, chunk.size = 1e+05, col.bc = "bc.gc.gz", nb.cores = 1, median.norm=TRUE) {
 
   ## Checks and arguments completion
   if(!all(c("chr","start","end") %in% colnames(bin.df))){
@@ -123,6 +124,11 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     bc.rand = bc.rand[, c("chr", "start", "end", ref.samples)]
   }
 
+  if(!median.norm){
+      med.med = 1
+      med.samp = rep(list(1), nrow(files.df))
+  }
+
   files.df = files.df[which(files.df$sample %in% ref.samples), ]
   bin.df = bin.df[order(as.character(bin.df$chr), bin.df$start, bin.df$end),]
   if (nrow(bin.df) < 1.3 * chunk.size) {
@@ -141,9 +147,11 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
     if (is.null(bc.rand)) {
       bc.rand = read.bc.samples(bin.df[sample.int(nrow(bin.df), min(c(nrow(bin.df)/2,1000))), ], files.df, med.med = 1, med.samp = rep(list(1), nrow(files.df)))
     }
-    med.samp = lapply(as.character(files.df$sample), function(samp.i) stats::median(bc.rand[,
-      samp.i], na.rm = TRUE))  ## Normalization of the median coverage
-    med.med = stats::median(unlist(med.samp), na.rm = TRUE)
+    if(median.norm){
+        med.samp = lapply(as.character(files.df$sample), function(samp.i) stats::median(bc.rand[,
+        samp.i], na.rm = TRUE))  ## Normalization of the median coverage
+        med.med = stats::median(unlist(med.samp), na.rm = TRUE)
+    }
     bc.res = lapply(unique(bin.df$chunk), function(chunk.i) {
       analyze.chunk(bin.df[which(bin.df$chunk == chunk.i), ])
     })
