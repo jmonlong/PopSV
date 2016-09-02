@@ -14,7 +14,7 @@
 ##' @keywords internal
 norm.tm.opt <- function(df, ref.col, lm.min.prop = 0.1, bc.mean.norm = NULL, chrs = NULL) {
     trimmed.mean.TN.best <- function(a, b, lm.min.prop = 0.1, bc.mean.norm = NULL) {
-        if (sum(a != 0 & b != 0) > 10) {
+        if (sum(a != 0 & b != 0) > 10 & any(a!=b)) {
             r = log(a/b)[a != 0 & b != 0]
             if (!is.null(bc.mean.norm) & !is.null(chrs)) {
                 chrs = chrs[a != 0 & b != 0]
