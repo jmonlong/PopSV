@@ -172,11 +172,11 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
   if(any(redo==3)) unlink(paste0(stepName, "-files"), recursive=TRUE)
   reg <- makeRegistry(id=stepName, seed=123)
   if(length(findJobs(reg))==0){
-    zRef.f <- function(bc.f, files.df, lib.loc, nb.cores){
+    zRef.f <- function(bc.f, files.df, ns.f, lib.loc, nb.cores){
       library(PopSV, lib.loc=lib.loc)
-      z.comp(bc.f=bc.f, files.df=files.df, nb.cores=nb.cores, z.poisson=TRUE, chunk.size=1e3)
+      z.comp(bc.f=bc.f, norm.stats.f=ns.f, files.df=files.df, nb.cores=nb.cores, z.poisson=TRUE, chunk.size=1e4)
     }
-    batchMap(reg, zRef.f,out.files[1], more.args=list(files.df=files.df, lib.loc=lib.loc, nb.cores=step.cores[3]))
+    batchMap(reg, zRef.f,out.files[1], more.args=list(files.df=files.df, ns.f=out.files[2], lib.loc=lib.loc, nb.cores=step.cores[3]))
     submitJobs(reg, 1, resources=c(list(walltime=step.walltime[3], nodes="1", cores=step.cores[3]), other.resources))
     waitForJobs(reg, sleep=sleep)
   }
