@@ -172,7 +172,8 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     if(any(redo==3)) unlink(paste0(stepName, "-files"), recursive=TRUE)
     reg <- makeRegistry(id=stepName, seed=123)
     if(length(findJobs(reg))==0){
-        files.l = tapply(1:nrow(files.df), rep(1:nrow(files.df)/5,each=5)[1:nrow(files.df)], function(ii)files.df[ii,])
+        files.ref = subset(files.df, sample %in% samp.qc.o$ref.samples)
+        files.l = tapply(1:nrow(files.ref), rep(1:nrow(files.ref)/5,each=5)[1:nrow(files.ref)], function(ii)files.ref[ii,])
         zRef.f <- function(files.ii, bc.f, files.l, ns.f, lib.loc, nb.cores){
             library(PopSV, lib.loc=lib.loc)
             z.comp(bc.f=bc.f, norm.stats.f=ns.f, files.df=files.l[[files.ii]], nb.cores=nb.cores, z.poisson=TRUE, chunk.size=2e4)
