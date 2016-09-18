@@ -25,7 +25,7 @@ Details). Default is FALSE.}
 }
 \value{
 a list with
-\item{ref.samples}{a vector with the reference samples used.}
+\item{samples}{a vector with the names of the samples analyzed.}
 \item{z.poisson}{was Normal-Poisson hybrid Z-score score computed.}
 }
 \description{

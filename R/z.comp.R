@@ -7,7 +7,7 @@
 ##' absolute value is kept. This hybrid Z-score is to be used when some regions have low
 ##' coverage where it is more robust to use Poisson assumptions.
 ##' @title Z-score computation
-##' @param bc.f the path to the normalized bin count file. 
+##' @param bc.f the path to the normalized bin count file.
 ##' @param norm.stats.f the name of the file with the statistic of the targeted normalization run.
 ##' @param files.df a data.frame with the file paths.
 ##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
@@ -16,7 +16,7 @@
 ##' @param chunk.size the chunk size. Default is 1e4. If NULL, no chunks are used.
 ##' @param append should the Z-scores be appended to existing files. Default is FALSE.
 ##' @return a list with
-##' \item{ref.samples}{a vector with the reference samples used.}
+##' \item{samples}{a vector with the names of the samples analyzed.}
 ##' \item{z.poisson}{was Normal-Poisson hybrid Z-score score computed.}
 ##' @author Jean Monlong
 ##' @export
@@ -40,19 +40,21 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
     }
   }
 
-  read.chunk <- function(chunk.start=NULL, chunk.end=NULL){
-    col.n = utils::read.table(bc.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE)
-    bc.dt = suppressWarnings(data.table::fread(bc.f,nrows=chunk.end-chunk.start+1, skip=chunk.start, header=FALSE, sep="\t"))
-    data.table::setnames(bc.dt, as.character(col.n))
-    col.n = utils::read.table(norm.stats.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE)
-    ns.dt = suppressWarnings(data.table::fread(norm.stats.f,nrows=chunk.end-chunk.start+1, skip=chunk.start, header=FALSE, sep="\t", select=1:5))
-    data.table::setnames(ns.dt, as.character(col.n)[1:5])
-    list(bc=bc.dt, ns=ns.dt)
+  read.chunk <- function(chunk.start=NULL, chunk.end=NULL, samples){
+      col.n = utils::read.table(bc.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE)
+      col.ii = which(as.character(col.n) %in% c("chr","start","end",samples))
+      col.n = col.n[,col.ii]
+      bc.dt = suppressWarnings(data.table::fread(bc.f,nrows=chunk.end-chunk.start+1, skip=chunk.start, header=FALSE, sep="\t", select=col.ii))
+      data.table::setnames(bc.dt, as.character(col.n))
+      col.n = utils::read.table(norm.stats.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE)
+      ns.dt = suppressWarnings(data.table::fread(norm.stats.f,nrows=chunk.end-chunk.start+1, skip=chunk.start, header=FALSE, sep="\t", select=1:5))
+      data.table::setnames(ns.dt, as.character(col.n)[1:5])
+      list(bc=bc.dt, ns=ns.dt)
   }
-  headers = as.character(utils::read.table(bc.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE))
-  
+
   ## Sample names and row number
-  ref.samples = setdiff(headers, c("chr","start","end"))
+  headers = as.character(utils::read.table(bc.f, nrows=1, sep="\t", header=FALSE, as.is=TRUE))
+  samples = intersect(setdiff(headers, c("chr","start","end")), files.df$sample)
   bc.1 = data.table::fread(bc.f, header = TRUE, select=1)
   nrows = nrow(bc.1)
   rm(bc.1)
@@ -68,10 +70,10 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
   for(ch.ii in 1:length(chunks)){
 
     ## Read chunk
-    chunk.o = read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]))
+    chunk.o = read.chunk(min(chunks[[ch.ii]]),max(chunks[[ch.ii]]), samples)
     bc.l = chunk.o$bc
     bc.1 = bc.l[, 1:3, with = FALSE]
-    bc.l = as.matrix(bc.l[, ref.samples, with = FALSE])
+    bc.l = as.matrix(bc.l[, samples, with = FALSE])
 
     ## Get or compute mean/sd in reference
     msd = as.data.frame(chunk.o$ns)
@@ -79,16 +81,16 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
     z = parallel::mclapply(1:ncol(bc.l), function(cc) z.comp.f(bc.l[,cc], mean.c = msd$m, sd.c = msd$sd), mc.cores=nb.cores)
     z = matrix(unlist(z), ncol=length(z))
     fc = bc.l/msd$m
-    colnames(z) = colnames(fc) = ref.samples
+    colnames(z) = colnames(fc) = samples
     z = data.frame(bc.1[, 1:3, with = FALSE], z)
     fc = data.frame(bc.1[, 1:3, with = FALSE], fc)
 
     ## Write output files
-    write.split.samples(list(z=z, fc=fc), files.df, ref.samples, files.col=c("z","fc"), compress.index=FALSE, append=append | ch.ii>1)
+    write.split.samples(list(z=z, fc=fc), files.df, samples, files.col=c("z","fc"), compress.index=FALSE, append=append | ch.ii>1)
   }
 
-  files.df = files.df[which(files.df$sample %in% ref.samples),]
+  files.df = files.df[which(files.df$sample %in% samples),]
   comp.index.files(c(files.df$z, files.df$fc), rm.input=TRUE, reorder=TRUE)
 
-  return(list(ref.samples=ref.samples, z.poisson = z.poisson))
+  return(list(samples=samples, z.poisson = z.poisson))
 }
