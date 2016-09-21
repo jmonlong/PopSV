@@ -31,13 +31,9 @@ qc.samples.cluster <- function(bc.df, nb.rand.bins=NULL){
               shiny::selectInput("cl.meth", "Clustering method", c("complete","average","ward")),
               shiny::numericInput("cl.sel", "Cluster selected",1, 1, 10, 1),
               shiny::hr(),
-              shiny::actionButton("exp","Export selected cluster to 'ref-samples.RData'"),
+              shiny::actionButton("exp","Done"),
               shiny::hr(),
-              shiny::textOutput("export"),
-              shiny::hr(),
-              shiny::actionButton("expAll","Export all clusters to 'samples-clusters.RData'"),
-              shiny::hr(),
-              shiny::textOutput("exportAll")
+              shiny::textOutput("export")
               ),
           shiny::mainPanel(shiny::plotOutput("pca", height=800))
           ),
@@ -47,7 +43,7 @@ qc.samples.cluster <- function(bc.df, nb.rand.bins=NULL){
             d.pca = stats::dist(pc.df[, c("PC1","PC2")])
             hc.o = stats::hclust(d.pca, method=input$cl.meth)
             samp.cl = stats::cutree(hc.o, input$nb.clust)
-            data.frame(sample=pc.df$sample,
+            data.frame(pc.df,
                        cluster=samp.cl,
                        selected = samp.cl == input$cl.sel)
           })
@@ -62,18 +58,11 @@ qc.samples.cluster <- function(bc.df, nb.rand.bins=NULL){
                     ggplot2::scale_size_manual(values=2:3)
           })
         output$export = shiny::renderText({
-            input$exp
             samp.df = shiny::isolate(samples.ref())
-            ref.samples = as.character(samp.df$sample[which(samp.df$selected)])
-            save(ref.samples, file="ref-samples.RData")
-            return(paste(length(ref.samples)," samples saved in 'ref-samples.RData'."))
-          })
-        output$exportAll = shiny::renderText({
-            input$expAll
-            samp.df = shiny::isolate(samples.ref())
-            samp.df$selected = NULL
-            save(samp.df, file="samples-clusters.RData")
-            return(paste(length(unique(samp.df$cluster))," clusters saved in 'samples-clusters.RData'."))
+            if(input$exp){
+              shiny::stopApp(samp.df)
+            }
+            return(paste(sum(samp.df$selected),"samples selected."))
           })
       }))
 
