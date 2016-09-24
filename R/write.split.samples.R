@@ -21,6 +21,9 @@ write.split.samples <- function(res, files.df, samples=NULL, files.col = c("z","
       header.l = lapply(con.l, function(con){
                             unlist(strsplit(readLines(con, n = 1), "\t"))
                         })
+      if(is.null(samples)){
+          samples = setdiff(header.l[[1]], c("chr","start","end"))
+      }
 
       read.chunk <- function(){
           res.l = lapply(1:length(con.l), function(con.ii){
@@ -29,11 +32,7 @@ write.split.samples <- function(res, files.df, samples=NULL, files.col = c("z","
                                  return(NULL)
                              }
                              colnames(res) = header.l[[con.ii]]
-                             if(is.null(samples)){
-                                 col.ii = 1:ncol(res)
-                             } else {
-                                 col.ii = which(colnames(res) %in% c("chr","start","end",samples))
-                             }
+                             col.ii = which(colnames(res) %in% c("chr","start","end",samples))
                              res[,col.ii]
                          })
           if(is.null(res.l[[1]])){
@@ -48,6 +47,7 @@ write.split.samples <- function(res, files.df, samples=NULL, files.col = c("z","
           firstChunk = FALSE
       }
 
+      close.con = lapply(con.l, close)
   } else {
       if(is.null(samples)){
           samples = setdiff(colnames(res[[1]]), c("chr","start","end"))
