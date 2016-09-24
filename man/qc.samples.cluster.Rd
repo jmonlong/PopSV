@@ -4,15 +4,17 @@
 \alias{qc.samples.cluster}
 \title{QC sample : clustering}
 \usage{
-qc.samples.cluster(bc.df, nb.rand.bins = NULL)
+qc.samples.cluster(bc.df, nb.rand.bins = NULL, shiny.app = TRUE)
 }
 \arguments{
 \item{bc.df}{a data.frame with the bin counts.}
 
 \item{nb.rand.bins}{if non-NULL, the number of bins to randomly choose. Default is NULL.}
+
+\item{shiny.app}{If TRUE (default), a shiny app is launched in a web browser. If FALSE, the function simply returns the PCA results.}
 }
 \value{
-a shiny app in the web browser
+a shiny app in the web browser, or a data.frame with the results of the PCA (if shiny.app=FALSE).
 }
 \description{
 Interactive representation of the bin counts with potential clustering of the samples. This app can be used to check if the reference samples are homogeneous, and define outliers or batches.
