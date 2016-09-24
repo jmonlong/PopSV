@@ -16,58 +16,56 @@ write.split.samples <- function(res, files.df, samples=NULL, files.col = c("z","
     stop("'res' and 'files.col' have different length.")
   }
   if(length(res[[1]])==1 & is.character(res[[1]])){
-    
-    read.chunk <- function(fn, chunk.start=NULL, chunk.end=NULL, samples=NULL){
-      col.n = utils::read.table(fn, nrows=1, sep="\t", header=FALSE, as.is=TRUE)
-      if(is.null(samples)){
-        col.ii = 1:length(col.n)
-      } else {
-        col.ii = which(as.character(col.n) %in% c("chr","start","end",samples))
+
+      con.l = lapply(res, file, "r")
+      header.l = lapply(con.l, function(con){
+                            unlist(strsplit(readLines(con, n = 1), "\t"))
+                        })
+
+      read.chunk <- function(){
+          res.l = lapply(1:length(con.l), function(con.ii){
+                             res = tryCatch(read.table(con.l[[con.ii]], as.is=TRUE, nrows=chunk.size), error=function(e)return(NULL))
+                             if(is.null(res)){
+                                 return(NULL)
+                             }
+                             colnames(res) = header.l[[con.ii]]
+                             if(is.null(samples)){
+                                 col.ii = 1:ncol(res)
+                             } else {
+                                 col.ii = which(colnames(res) %in% c("chr","start","end",samples))
+                             }
+                             res[,col.ii]
+                         })
+          if(is.null(res.l[[1]])){
+              return(NULL)
+          }
+          return(res.l)
       }
-      col.n = col.n[,col.ii]
-      dt = suppressWarnings(data.table::fread(fn,nrows=chunk.end-chunk.start+1, skip=chunk.start, header=FALSE, sep="\t", select=col.ii))
-      data.table::setnames(dt, as.character(col.n))
-      as.data.frame(dt)
-    }
-    
-    ## row number
-    bc.1 = data.table::fread(res[[1]], header = TRUE, select=1)
-    nrows = nrow(bc.1)
-    rm(bc.1)
 
-    ## Compute chunk index
-    chunk.size = 1e4
-    if(!is.null(chunk.size) && chunk.size<nrows){
-      chunks = tapply(1:nrows, rep(1:ceiling(nrows/chunk.size), each=chunk.size)[1:nrows], identity)
-    } else {
-      chunks = list(1:nrows)
-    }
+      firstChunk = TRUE
+      while(!is.null((chunk.o = read.chunk()))){
+          write.split.samples(chunk.o, files.df, samples=samples, files.col=files.col, compress.index=FALSE, append=append | !firstChunk)
+          firstChunk = FALSE
+      }
 
-    tmp = lapply(1:length(chunks), function(ch.ii){
-      chunk.l = lapply(1:length(files.col), function(f.ii){
-        read.chunk(res[[f.ii]], min(chunks[[ch.ii]]),max(chunks[[ch.ii]]), samples)
-      })
-      write.split.samples(chunk.l, files.df, samples=samples, files.col=files.col, compress.index=FALSE, append=append | ch.ii>1)
-    })
-    
   } else {
-    if(is.null(samples)){
-      samples = setdiff(colnames(res[[1]]), c("chr","start","end"))
-    }
-    tmp = parallel::mclapply(samples, function(samp) {
-      for (ii in 1:length(files.col)) {
-        res.f = res[[ii]][, c("chr", "start", "end", samp)]
-        colnames(res.f)[4] = files.col[ii]
-        res.f = with(res.f, dplyr::arrange(res.f, chr, start))
-        utils::write.table(res.f, file = files.df[which(files.df$sample == samp), files.col[ii]], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
+      if(is.null(samples)){
+          samples = setdiff(colnames(res[[1]]), c("chr","start","end"))
       }
-    }, mc.cores=nb.cores)
+      tmp = parallel::mclapply(samples, function(samp) {
+                                   for (ii in 1:length(files.col)) {
+                                       res.f = res[[ii]][, c("chr", "start", "end", samp)]
+                                       colnames(res.f)[4] = files.col[ii]
+                                       res.f = with(res.f, dplyr::arrange(res.f, chr, start))
+                                       utils::write.table(res.f, file = files.df[which(files.df$sample == samp), files.col[ii]], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
+                                   }
+                               }, mc.cores=nb.cores)
   }
 
   if (compress.index) {
-    files.tc = as.character(unlist(files.df[which(files.df$sample %in% samples), files.col]))
-    comp.index.files(files.tc, reorder=reorder)
+      files.tc = as.character(unlist(files.df[which(files.df$sample %in% samples), files.col]))
+      comp.index.files(files.tc, reorder=reorder)
   }
-  
+
   return("Done")
 }
