@@ -178,8 +178,8 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
             library(PopSV, lib.loc=lib.loc)
             z.comp(bc.f=bc.f, norm.stats.f=ns.f, files.df=files.l[[files.ii]], nb.cores=nb.cores, z.poisson=TRUE, chunk.size=2e4)
         }
-        batchMap(reg, zRef.f,1:length(files.l), more.args=list(bc.f=out.files[1], files.=files.l, ns.f=out.files[2], lib.loc=lib.loc, nb.cores=step.cores[3]))
-        submitJobs(reg, 1, resources=c(list(walltime=step.walltime[3], nodes="1", cores=step.cores[3]), other.resources))
+        batchMap(reg, zRef.f,1:length(files.l), more.args=list(bc.f=out.files[1], files.l=files.l, ns.f=out.files[2], lib.loc=lib.loc, nb.cores=step.cores[3]))
+        submitJobs(reg, findJobs(reg), resources=c(list(walltime=step.walltime[3], nodes="1", cores=step.cores[3]), other.resources))
         waitForJobs(reg, sleep=sleep)
     }
     if(length(findJobs(reg))!=length(findDone(reg))){

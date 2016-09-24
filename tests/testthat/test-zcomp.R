@@ -18,8 +18,8 @@ bc.df = cbind(bc.df, bc.mat)
 ns.df = bc.df[,1:3]
 ns.df$m = rnorm(nrow(bc.df), 100, 10)
 ns.df$sd = abs(rnorm(nrow(bc.df), 10, 10))
-write.table(bc.df, file=bc.f, sep="\t", row.names=FALSE, col.names=TRUE)
-write.table(ns.df, file=ns.f, sep="\t", row.names=FALSE, col.names=TRUE)
+write.table(bc.df, file=bc.f, sep="\t", row.names=FALSE, col.names=TRUE, quote=FALSE)
+write.table(ns.df, file=ns.f, sep="\t", row.names=FALSE, col.names=TRUE, quote=FALSE)
 
 test_that("It runs with different parameters",{
               z.df = z.comp(bc.f, ns.f, files.df)
