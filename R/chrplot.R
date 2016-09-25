@@ -5,15 +5,20 @@
 ##' @param bin.size the bin size. Default is 1e6.
 ##' @param chr.df a data.frame with the chromosome boundaries.
 ##' @param showSampleNames should the sample names be displayed. Default is FALSE (it quickly becomes unreadable).
+##' @param chr.prefix Is there a 'chr' prefix in the chromosome names. Default is FALSE
 ##' @return a ggplot graph object
 ##' @author Jean Monlong
 ##' @export
-chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NULL, showSampleNames=FALSE){
+chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NULL, showSampleNames=FALSE, chr.prefix=FALSE){
   ## Uglily appeases R checks
   cnv = seg = . = chr = NULL
 
-  bins.df = fragment.genome.hg19(bin.size, XY.chr=TRUE, quiet=TRUE)
-  bins.df$chr = factor(bins.df$chr, levels=c(1:22,"X","Y"))
+  bins.df = fragment.genome.hg19(bin.size, XY.chr=TRUE, quiet=TRUE, chr.prefix=chr.prefix)
+  if(chr.prefix){
+      bins.df$chr = factor(bins.df$chr, levels=paste0("chr",c(1:22,"X","Y")))
+  } else {
+      bins.df$chr = factor(bins.df$chr, levels=c(1:22,"X","Y"))
+  }
 
   if(is.null(chr.df)){
     chr.df = lapply(unique(cnv.df$chr), function(chr.a){
@@ -21,7 +26,11 @@ chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NU
                  end=max(bins.df$end[which(bins.df$chr==chr.a)]))
     })
     chr.df = do.call(rbind, chr.df)
-    chr.df$chr = factor(chr.df$chr, levels=c(1:22,"X","Y"))
+    if(chr.prefix){
+        chr.df$chr = factor(chr.df$chr, levels=paste0("chr",c(1:22,"X","Y")))
+    } else {
+        chr.df$chr = factor(chr.df$chr, levels=c(1:22,"X","Y"))
+    }
   }
 
   olProp <- function(qgr, sgr){
