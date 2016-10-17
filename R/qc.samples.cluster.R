@@ -14,13 +14,13 @@ qc.samples.cluster <- function(bc.df, nb.rand.bins=NULL, shiny.app=TRUE){
   }
   samples = setdiff(colnames(bc.df), c("chr","start","end"))
 
-  cat("Computing Principal Components...\n")
+  if(shiny.app) message("Computing Principal Components...\n")
   bc.mv = medvar.norm.internal(bc.df[, samples])
   ## PCA
   pc = stats::prcomp(t(stats::na.exclude(bc.mv)))
   pc.df = data.frame(pc$x[, 1:3])
   pc.df$sample = samples
-  cat("Done.\n")
+  if(shiny.app) message("Done.\n")
 
   if(shiny.app){
       PC1 = PC2 = x= y = xend = yend = sample = NULL ## Uglily appease R checks
