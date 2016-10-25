@@ -12,9 +12,14 @@ for(ii in 1:10){
 z.df$fc = runif(nrow(z.df),0,5)
 z.df$mean.cov = rnorm(nrow(z.df),3000,500)
 ## P-values
-fdr = fdrtool.quantile(z.df$z,quant.int=seq(.6,.99,.01), plot = FALSE)
-z.df$pv = fdr$pval
-z.df$qv = fdr$qval
+fdr = fdrtool.quantile(z.df$z,quant.int=seq(.6,.99,.01))
+z.df$qv = z.df$pv = NA
+z.df$pv[which(z.df$z > 0)] = 2 * stats::pnorm(-abs(z.df$z[which(z.df$z > 0)]), 0, fdr$sigma.est.dup)
+z.df$pv[which(z.df$z < 0)] = 2 * stats::pnorm(-abs(z.df$z[which(z.df$z < 0)]), 0, fdr$sigma.est.del)
+if (any(z.df$pv == 0, na.rm = TRUE)){
+  z.df$pv[which(z.df$pv == 0)] = .Machine$double.xmin
+}
+z.df$qv = stats::p.adjust(z.df$pv, method = "fdr")
 
 
 test_that("CBS output looks good", {
@@ -50,9 +55,14 @@ test_that("Fragmented calls recovered", {
   cnv.w2 = round(runif(1,1,10))
   z.df$z[cnv.s:(cnv.s+cnv.w1-1)] = runif(cnv.w1, 10,100)
   z.df$z[(cnv.s+cnv.w1+1):(cnv.s+cnv.w1+cnv.w2)] = runif(cnv.w2, 10,100)
-  fdr = fdrtool.quantile(z.df$z,quant.int=seq(.6,.99,.01), plot = FALSE)
-  z.df$pv = fdr$pval
-  z.df$qv = fdr$qval
+  fdr = fdrtool.quantile(z.df$z,quant.int=seq(.6,.99,.01))
+  z.df$qv = z.df$pv = NA
+  z.df$pv[which(z.df$z > 0)] = 2 * stats::pnorm(-abs(z.df$z[which(z.df$z > 0)]), 0, fdr$sigma.est.dup)
+  z.df$pv[which(z.df$z < 0)] = 2 * stats::pnorm(-abs(z.df$z[which(z.df$z < 0)]), 0, fdr$sigma.est.del)
+  if (any(z.df$pv == 0, na.rm = TRUE)){
+    z.df$pv[which(z.df$pv == 0)] = .Machine$double.xmin
+  }
+  z.df$qv = stats::p.adjust(z.df$pv, method = "fdr")
   z.m = mergeConsBin.reduce(subset(z.df, qv<.01))
   expect_true(sum(z.m$chr==z.df$chr[cnv.s] & z.m$start>z.df$start[cnv.s-2] & z.m$start<z.df$start[cnv.s+cnv.w1+cnv.w2+1])>1)
   z.m = mergeConsBin.reduce(subset(z.df, qv<.01), stitch.dist = 1e6)
