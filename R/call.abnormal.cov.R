@@ -20,6 +20,7 @@
 ##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.9. For cancers with many large aberrations, this number can be lowered. Maximum value accepted is 0.98 .
 ##' @param aneu.chrs the names of the chromosomes to remove because flagged as aneuploid. If NULL (default) all chromosomes are analyzed.
 ##' @param gc.df a data.frame with the GC content in each bin, for the Z-score normalization. Columns required: chr, start, end, GCcontent. If NULL (default), no normalization is performed.
+##' @param sub.z if non-NULL the number of bins in a sub-segment for Z-score null distribution estimation. Default is NULL. If highly rearranged genomes (cancer), try '1e4'.
 ##' @return a data.frame with columns
 ##' \item{chr, start, end}{the genomic region definition.}
 ##' \item{z}{the Z-score.}
@@ -29,7 +30,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference.}
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL, z.th = c("sdest", "consbins", "sdest2N"), norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, gc.df=NULL) {
+call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL, z.th = c("sdest", "consbins", "sdest2N"), norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, gc.df=NULL, sub.z=NULL) {
 
   z.f = files.df$z[which(files.df$sample==samp)]
   if(!file.exists(z.f)) z.f = paste0(z.f, ".bgz")
@@ -80,36 +81,52 @@ call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, mer
     if (min.normal.prop > 0.98) {
       stop("Maximum value accepted for 'min.normal.prop' is 0.98.")
     }
-    fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 0.01), plot = !is.null(out.pdf))
-    res.df$pv = fdr$pval
-    res.df$qv = fdr$qval
-
-    ## Remove large aberrations
-    ## aber.large = mergeConsBin.reduce(res.df[which(res.df$qv < 0.05), ], stitch.dist = 10 * bin.width)
-    ## aber.large = subset(aber.large, end - start > 1e+07)
-    ## if (nrow(aber.large) > 0) {
-    ##   aber.gr = with(aber.large, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
-    ##   res.gr = with(res.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
-    ##   res.aber.large = res.df[which(GenomicRanges::overlapsAny(res.gr, aber.gr)), ]
-    ##   res.df = res.df[which(!GenomicRanges::overlapsAny(res.gr, aber.gr)), ]
-    ##   fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 0.01), plot =  !is.null(out.pdf))
-    ##   res.df$pv = fdr$pval
-    ##   res.df$qv = fdr$qval
-    ##   if (nrow(aber.large) > 0) {
-    ##     res.df = rbind(res.df, res.aber.large)
-    ##   }
-    ## }
-
+    if(is.null(sub.z)){
+      fdr = fdrtool.quantile(res.df$z, quant.int = seq(min.normal.prop, 0.99, 0.01))
+    } else {
+      ## Get 100 sub-segments of 'sub.z' consecutive bins and use the 20 with median closest to 0 (to focus on "normal" genome and avoid large aberrations)
+      res.df = res.df[order(res.df$chr, res.df$start),]
+      subz.l = lapply(round(runif(100,1,nrow(res.df)-sub.z-1)), function(ss) res.df[ss:(ss+sub.z),])
+      subz.med = unlist(lapply(subz.l, function(df) median(df$z, na.rm=TRUE)))
+      subz.z = unlist(lapply(subz.l[order(abs(subz.med))[1:20]], function(df)df$z))
+      fdr = fdrtool.quantile(subz.z, quant.int = seq(min.normal.prop, 0.99, 0.01))
+    }
   } else if (z.th[1] == "consbins") {
-    res.df = z.thres.cons.bins(res.df, plot = !is.null(out.pdf), pvalues = TRUE)$z.df
+    fdr = z.thres.cons.bins(res.df)
   } else if (z.th[1] == "sdest2N") {
-    fdr = fdrtool.quantile.2N(res.df$z, plot = !is.null(out.pdf))
-    res.df$pv = fdr$pval
-    res.df$qv = fdr$qval
+    fdr = fdrtool.quantile.2N(res.df$z)
   } else {
     stop("'z.th=': available thresholding approaches are : 'stitch', 'zscores'.")
   }
 
+  res.df$qv = res.df$pv = NA
+  res.df$pv[which(res.df$z > 0)] = 2 * stats::pnorm(-abs(res.df$z[which(res.df$z > 0)]), 0, fdr$sigma.est.dup)
+  res.df$pv[which(res.df$z < 0)] = 2 * stats::pnorm(-abs(res.df$z[which(res.df$z < 0)]), 0, fdr$sigma.est.del)
+  if (any(res.df$pv == 0, na.rm = TRUE)){
+    res.df$pv[which(res.df$pv == 0)] = .Machine$double.xmin
+  }
+  res.df$qv = stats::p.adjust(res.df$pv, method = "fdr")
+
+  if (!is.null(out.pdf) & any(!is.na(res.df$pv))) {
+    pv = qv = ..density.. = y = z = NULL  ## Uglily appease R checks
+
+    z.lim = c(-fdr$sigma.est.del, fdr$sigma.est.dup)*ifelse(mean(res.df$pv<.01)>.1,8,5)
+    null.df = data.frame(y=c(stats::dnorm(seq(z.lim[1],0,.05),0,fdr$sigma.est.del),stats::dnorm(seq(0,z.lim[2],.05),0,fdr$sigma.est.dup)), z=c(seq(z.lim[1],0,.05),seq(0,z.lim[2],.05)))
+    null.df$y = null.df$y * mean(res.df$z> -4*fdr$sigma.est.del & res.df$z<4*fdr$sigma.est.dup)
+
+    print(ggplot2::ggplot(res.df, ggplot2::aes(x = z)) +
+          ggplot2::geom_histogram(ggplot2::aes(y=..density..), bins=30, na.rm=TRUE) +
+          ggplot2::xlab("Z-score") + ggplot2::ylab("number of bins") + ggplot2::theme_bw() +
+          ggplot2::geom_line(ggplot2::aes(y=y), data=null.df, linetype=2, colour="red") +
+          ggplot2::xlim(z.lim))
+
+    print(ggplot2::ggplot(res.df, ggplot2::aes(x = pv, fill=cut(qv, breaks = c(-Inf, 0.001, 0.01, 0.5, 0.1,1)))) + ggplot2::geom_histogram(bins=30, na.rm=TRUE) +
+          ggplot2::xlab("P-value") + ggplot2::xlim(-0.2, 1) + ggplot2::ylab("number of bins") +
+          ggplot2::scale_fill_hue(name="Q-value") +
+          ggplot2::theme_bw() + ggplot2::theme(legend.position="bottom"))
+  }
+
+  
   if (merge.cons.bins[1] != "no") {
     if(is.null(stitch.dist)) {
       stitch.dist = bin.width + 1
@@ -129,11 +146,11 @@ call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, mer
     if (nrow(res.df) > 0 & !is.null(out.pdf)) {
       nb.bin.cons = NULL  ## Uglily appease R checks
       print(ggplot2::ggplot(res.df, ggplot2::aes(x = factor(nb.bin.cons))) +
-              ggplot2::geom_bar() + ggplot2::ylab("number of bins") + ggplot2::xlab("number of consecutive abnormal bins") +
+              ggplot2::geom_bar(na.rm=TRUE) + ggplot2::ylab("number of bins") + ggplot2::xlab("number of consecutive abnormal bins") +
                 ggplot2::theme_bw())
 
       if (any(colnames(res.df) == "fc") & sum(res.df$nb.bin.cons > 2 & res.df$fc < 2.5) > 3) {
-        print(ggplot2::ggplot(subset(res.df, nb.bin.cons > 2), ggplot2::aes(x = 2 * fc)) + ggplot2::geom_histogram() + ggplot2::theme_bw() + ggplot2::ylab("number of bins") + ggplot2::xlab("copy number estimate") + ggplot2::ggtitle("At least 3 consecutive abnormal bins") + ggplot2::xlim(0, 5))
+        print(ggplot2::ggplot(subset(res.df, nb.bin.cons > 2), ggplot2::aes(x = 2 * fc)) + ggplot2::geom_histogram(bins=30, na.rm=TRUE) + ggplot2::theme_bw() + ggplot2::ylab("number of bins") + ggplot2::xlab("copy number estimate") + ggplot2::ggtitle("At least 3 consecutive abnormal bins") + ggplot2::xlim(0, 5))
       }
     }
   }

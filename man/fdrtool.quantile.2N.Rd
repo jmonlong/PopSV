@@ -4,22 +4,18 @@
 \alias{fdrtool.quantile.2N}
 \title{P-values estimation from mixture of 2 centered normal}
 \usage{
-fdrtool.quantile.2N(z, plot = TRUE)
+fdrtool.quantile.2N(z)
 }
 \arguments{
 \item{z}{a vector with the Z-scores}
-
-\item{plot}{should some graphs be displayed. Default if FALSE.}
 }
 \value{
 a list with
-\item{pval}{the vector of P-values}
-\item{qval}{the vector of Q-values / FDR estimates}
 \item{sigma.est.dup}{the estimated null distribution variance for positive Z-scores}
 \item{sigma.est.del}{the estimated null distribution variance for negative Z-scores}
 }
 \description{
-Compute P-values and Q-values from the Z-score distribution. Here the null distribution is modeled as two Normal distrution centered in 0. The variance are fitted to the empirical distribution. P-values and Q-values are derived from the Z-score and this fitted null distribution.
+Compute the null variances. Here the null distribution is modeled as two Normal distrution centered in 0. The variance are fitted to the empirical distribution. P-values and Q-values are derived from the Z-score and this fitted null distribution.
 }
 \author{
 Jean Monlong

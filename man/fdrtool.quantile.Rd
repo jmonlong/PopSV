@@ -4,8 +4,7 @@
 \alias{fdrtool.quantile}
 \title{P-values estimation}
 \usage{
-fdrtool.quantile(z, quant.int = seq(0.4, 1, 0.02), plot = TRUE,
-  z.th = NULL)
+fdrtool.quantile(z, quant.int = seq(0.4, 1, 0.02), z.th = NULL)
 }
 \arguments{
 \item{z}{a vector with the Z-scores}
@@ -13,19 +12,15 @@ fdrtool.quantile(z, quant.int = seq(0.4, 1, 0.02), plot = TRUE,
 \item{quant.int}{a vector with the quantiles to test for the estimation of the
 null normal variance.}
 
-\item{plot}{should some graphs be displayed. Default if FALSE.}
-
 \item{z.th}{the Z-score threshold to use to estimate the null normal variance, if 'quant.int=NULL'. If one value the same threshold is used for both duplication and deletion; if a vector, the threshold for duplication / deletions.}
 }
 \value{
 a list with
-\item{pval}{the vector of P-values}
-\item{qval}{the vector of Q-values / FDR estimates}
 \item{sigma.est.dup}{the estimated null distribution variance for positive Z-scores}
 \item{sigma.est.del}{the estimated null distribution variance for negative Z-scores}
 }
 \description{
-Compute P-values and Q-values from the Z-score distribution. Here the Z-score distribution is modeled as a Normal centered in 0. The variance is fitted at different level of tail-trimming.
+Compute the null variances. The Z-score distribution is modeled as a Normal centered in 0. The variance is fitted at different level of tail-trimming.
 }
 \author{
 Jean Monlong

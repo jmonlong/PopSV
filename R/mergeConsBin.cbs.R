@@ -25,12 +25,12 @@ mergeConsBin.cbs <- function(df, pv.th=.01) {
 
   cna.l = lapply(unique(df$chr), function(chr.i){
     chr.ii = which(df$chr==chr.i)
-    cna.o = DNAcopy::CNA(log10(df$pv[chr.ii]), df$chr[chr.ii], df$start[chr.ii])
-    cna.s = DNAcopy::segment(cna.o, alpha=pv.th, undo.splits="prune", verbose=0)
+    cna.o = DNAcopy::CNA(log10(df$qv[chr.ii]), df$chr[chr.ii], df$start[chr.ii])
+    cna.s = DNAcopy::segment(cna.o, alpha=pv.th, verbose=0)
     cna.s$output
   })
   cna.s = do.call(rbind, cna.l)
-  cna.s = cna.s[which(cna.s$seg.mean< -1),]
+  cna.s = cna.s[which(cna.s$seg.mean< -log10(pv.th)),]
   
   ## Merge segments
   gr.f = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
