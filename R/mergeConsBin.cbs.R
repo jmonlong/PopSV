@@ -30,7 +30,7 @@ mergeConsBin.cbs <- function(df, pv.th=.01) {
     cna.s$output
   })
   cna.s = do.call(rbind, cna.l)
-  cna.s = cna.s[which(cna.s$seg.mean< -log10(pv.th)),]
+  cna.s = cna.s[which(cna.s$seg.mean< log10(pv.th)),]
   
   ## Merge segments
   gr.f = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
