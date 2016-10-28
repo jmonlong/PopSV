@@ -35,9 +35,16 @@ test_that("It runs with different parameters",{
   res.df = call.abnormal.cov(files.df, samp.cnv, z.th="sdest", merge.cons.bins="stitch", out.pdf="test.pdf")
   res.df = call.abnormal.cov(files.df, samp.cnv, z.th="sdest", merge.cons.bins="stitch", out.pdf="test.pdf", stitch.dist=30)
   res.df = call.abnormal.cov(files.df, samp.cnv, z.th="sdest", merge.cons.bins="no", out.pdf="test.pdf")
+  file.remove("test.pdf")
+})
+
+test_that("It runs with more different parameters",{
   res.df = call.abnormal.cov(files.df, samp.cnv, z.th="sdest", merge.cons.bins="zscores", out.pdf="test.pdf")
   res.df = call.abnormal.cov(files.df, samp.cnv, z.th="sdest", merge.cons.bins="cbs", out.pdf="test.pdf")
-  res.df = call.abnormal.cov(files.df, samp.cnv, stitch.dist=1e3, out.pdf="test.pdf")
+  file.remove("test.pdf")
+})
+
+test_that("It runs with even more different parameters",{
   res.df = call.abnormal.cov(files.df, samp.cnv, z.th="consbins", out.pdf="test.pdf")
   res.df = call.abnormal.cov(files.df, samp.cnv, z.th="sdest2N", out.pdf="test.pdf")
   file.remove("test.pdf")
@@ -46,9 +53,16 @@ test_that("It runs with different parameters",{
 test_that("It runs when there is no CNVs",{
   res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="sdest", merge.cons.bins="stitch", out.pdf="test.pdf")
   res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="sdest", merge.cons.bins="no", out.pdf="test.pdf")
+  expect_true(file.remove("test.pdf"))
+})
+
+test_that("It still runs when there is no CNVs",{
   res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="sdest", merge.cons.bins="zscores", out.pdf="test.pdf")
   res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="sdest", merge.cons.bins="cbs", out.pdf="test.pdf")
-  res.df = call.abnormal.cov(files.df, samp.nocnv, stitch.dist=1e3, out.pdf="test.pdf")
+  expect_true(file.remove("test.pdf"))
+})
+
+test_that("It still still runs when there is no CNVs",{
   res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="consbins", out.pdf="test.pdf")
   res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="sdest2N", out.pdf="test.pdf")
   expect_true(file.remove("test.pdf"))

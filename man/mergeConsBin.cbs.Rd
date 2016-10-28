@@ -4,12 +4,14 @@
 \alias{mergeConsBin.cbs}
 \title{Segmentation using CBS (NOT READY)}
 \usage{
-mergeConsBin.cbs(df, pv.th = 0.01)
+mergeConsBin.cbs(df, pv.th = 0.01, stitch.dist = 10000)
 }
 \arguments{
 \item{df}{a data.frame with at least 'chr', 'start' and 'end' columns.}
 
 \item{pv.th}{the P-value threshold used for the segmentation and the segment filtering. Default is 0.01.}
+
+\item{stitch.dist}{the stitching distance, i.e. the maximum distance at which two bins will be merged.}
 }
 \value{
 a data.frame, similar to the input but with merged rows.
