@@ -126,7 +126,7 @@ call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, mer
           ggplot2::theme_bw() + ggplot2::theme(legend.position="bottom"))
   }
 
-  
+
   if (merge.cons.bins[1] != "no") {
     if(is.null(stitch.dist)) {
       stitch.dist = bin.width + 1
@@ -160,13 +160,17 @@ call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, mer
   }
 
   ## Deviation from copy number 2
-  res.df$cn2.dev = 2*abs(res.df$fc - 1)
+  res.df$cn2.dev = round(2*abs(res.df$fc - 1), 4)
   res.df$cn = round(2*res.df$fc)
   if(nrow(res.df)>0){
-    res.df$prop.single.bin = mean(res.df$nb.bin.cons==1)
+    res.df$prop.single.bin = round(mean(res.df$nb.bin.cons==1), 3)
   } else {
     res.df$prop.single.bin = numeric(0)
   }
+  res.df$pv = signif(res.df$pv, 4)
+  res.df$qv = signif(res.df$qv, 4)
+  res.df$z = round(res.df$z, 2)
+  res.df$fc = round(res.df$fc, 5)
 
   if (nrow(res.df) > 0 & merge.cons.bins[1] != "no") {
     return(data.frame(sample = samp, res.df, stringsAsFactors = FALSE))
