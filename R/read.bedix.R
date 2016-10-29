@@ -43,7 +43,10 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
   subset.reg = subset.reg[order(as.character(GenomicRanges::seqnames(subset.reg)), GenomicRanges::start(subset.reg))]
 
   read.chunk <- function(gr){
-    bed = tryCatch(unlist(Rsamtools::scanTabix(file, param = GenomicRanges::reduce(gr))), error = function(e) c())
+    bed = tryCatch(unlist(Rsamtools::scanTabix(file, param = GenomicRanges::reduce(gr))), error = function(e){
+      warning(e)
+      c()
+    })
     if (length(bed) == 0) {
       return(NULL)
     }

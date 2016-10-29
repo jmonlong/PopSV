@@ -37,14 +37,26 @@ mergeConsBin.cbs <- function(df, pv.th=.01, stitch.dist = 10000) {
   gr.f = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
   df$red.i = NA
   ## Duplications
-  gr.seg = with(cna.s[which(cna.s$seg.mean<0),], GenomicRanges::GRanges(chrom, IRanges::IRanges(loc.start, loc.end)))
-  gr.seg = with(df[which(df$qv <= pv.th & df$z>0),], c(gr.seg, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end))))
+  if(any(cna.s$seg.mean<0)){
+    gr.seg = with(cna.s[which(cna.s$seg.mean<0),], GenomicRanges::GRanges(chrom, IRanges::IRanges(loc.start, loc.end)))
+  } else {
+    gr.seg = GenomicRanges::GRanges()
+  }
+  if(any(df$qv <= pv.th & df$z>0)){
+    gr.seg = with(df[which(df$qv <= pv.th & df$z>0),], c(gr.seg, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end))))
+  }
   gr.seg = GenomicRanges::reduce(gr.seg, min.gapwidth = stitch.dist)
   ol.o = GenomicRanges::findOverlaps(gr.f, gr.seg)
   df$red.i[S4Vectors::queryHits(ol.o)] = paste0("dup", S4Vectors::subjectHits(ol.o))
   ## Deletions
-  gr.seg = with(cna.s[which(cna.s$seg.mean>0),], GenomicRanges::GRanges(chrom, IRanges::IRanges(loc.start, loc.end)))
-  gr.seg = with(df[which(df$qv <= pv.th & df$z<0),], c(gr.seg, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end))))
+  if(any(cna.s$seg.mean>0)){
+    gr.seg = with(cna.s[which(cna.s$seg.mean>0),], GenomicRanges::GRanges(chrom, IRanges::IRanges(loc.start, loc.end)))
+  } else {
+    gr.seg = GenomicRanges::GRanges()
+  }
+  if(any(df$qv <= pv.th & df$z<0)){
+    gr.seg = with(df[which(df$qv <= pv.th & df$z<0),], c(gr.seg, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end))))
+  }
   gr.seg = GenomicRanges::reduce(gr.seg, min.gapwidth = stitch.dist)
   ol.o = GenomicRanges::findOverlaps(gr.f, gr.seg)
   df$red.i[S4Vectors::queryHits(ol.o)] = paste0("del", S4Vectors::subjectHits(ol.o))
