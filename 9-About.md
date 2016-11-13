@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-This software is being developed in [Guillaume Bourque's lab](https://genomequebec.mcgill.ca/gbourque/) as part of Jean Monlong's PhD project.
+This software is being developed in [Guillaume Bourque's lab](http://www.computationalgenomics.ca/BourqueLab/) as part of Jean Monlong's PhD project.
 
 Please [contact me](mailto:jean.monlong@mail.mcgill.ca) if you have any questions, comments or suggestions. You can also [create an issue on the GitHub repository](https://github.com/jmonlong/PopSV/issues) (so that other users can see the exchange).
 
