@@ -57,7 +57,8 @@ test_that("It runs when there is no CNVs",{
 })
 
 test_that("It still runs when there is no CNVs",{
-  res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="sdest", merge.cons.bins="zscores", out.pdf="test.pdf")
+              res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="sdest", merge.cons.bins="zscores", out.pdf="test.pdf")
+              expect_true(file.remove("test.pdf"))
   res.df = call.abnormal.cov(files.df, samp.nocnv, z.th="sdest", merge.cons.bins="cbs", out.pdf="test.pdf")
   expect_true(file.remove("test.pdf"))
 })
@@ -73,6 +74,13 @@ test_that("GC normalization runs",{
   res.df = call.abnormal.cov(files.df, samp.cnv, gc.df=bins.df)
 })
 
+test_that("Pvalues can be written",{
+              res.df = call.abnormal.cov(files.df, samp.cnv, outfile.pv="temppv.tsv")
+              pv.df = read.table("temppv.tsv.bgz", as.is=TRUE, header=TRUE)
+              expect_true(nrow(pv.df)>0)
+              expect_true(file.remove("test.pdf"))
+})
+
 test_that("Normalization stats are merged",{
   res.df = call.abnormal.cov(files.df, samp.cnv, norm.stats = ns.f)
   expect_true(any(colnames(res.df)=="mean.cov"))
@@ -84,4 +92,4 @@ test_that("Chrs can be excluded",{
 })
 
 ## Remove files
-dump = file.remove(files.df$z, files.df$fc, ns.f)
+dump = file.remove(files.df$z, files.df$fc, ns.f, "temppv.tsv.bgz", "temppv.tsv.bgz.tbi")

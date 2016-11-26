@@ -7,7 +7,8 @@
 call.abnormal.cov(files.df, samp, out.pdf = NULL, FDR.th = 0.05,
   merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist = NULL,
   z.th = c("sdest", "consbins", "sdest2N"), norm.stats = NULL,
-  min.normal.prop = 0.9, aneu.chrs = NULL, gc.df = NULL, sub.z = NULL)
+  min.normal.prop = 0.9, aneu.chrs = NULL, gc.df = NULL, sub.z = NULL,
+  outfile.pv = NULL)
 }
 \arguments{
 \item{files.df}{a data.frame with the paths to different sample files (bin count, Z-scores, ..). Here columns 'z' and 'fc' are used to retrieve Z-scores and fold changes.}
@@ -33,6 +34,8 @@ call.abnormal.cov(files.df, samp, out.pdf = NULL, FDR.th = 0.05,
 \item{gc.df}{a data.frame with the GC content in each bin, for the Z-score normalization. Columns required: chr, start, end, GCcontent. If NULL (default), no normalization is performed.}
 
 \item{sub.z}{if non-NULL the number of bins in a sub-segment for Z-score null distribution estimation. Default is NULL. If highly rearranged genomes (cancer), try '1e4'.}
+
+\item{outfile.pv}{if non-NULL, the name of the file to write all the Pvalues (for all bins). Used in some analysis (e.g. annotate.with.parents).}
 }
 \value{
 a data.frame with columns

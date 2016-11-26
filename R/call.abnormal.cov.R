@@ -21,6 +21,7 @@
 ##' @param aneu.chrs the names of the chromosomes to remove because flagged as aneuploid. If NULL (default) all chromosomes are analyzed.
 ##' @param gc.df a data.frame with the GC content in each bin, for the Z-score normalization. Columns required: chr, start, end, GCcontent. If NULL (default), no normalization is performed.
 ##' @param sub.z if non-NULL the number of bins in a sub-segment for Z-score null distribution estimation. Default is NULL. If highly rearranged genomes (cancer), try '1e4'.
+##' @param outfile.pv if non-NULL, the name of the file to write all the Pvalues (for all bins). Used in some analysis (e.g. annotate.with.parents).
 ##' @return a data.frame with columns
 ##' \item{chr, start, end}{the genomic region definition.}
 ##' \item{z}{the Z-score.}
@@ -30,7 +31,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference.}
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL, z.th = c("sdest", "consbins", "sdest2N"), norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, gc.df=NULL, sub.z=NULL) {
+call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL, z.th = c("sdest", "consbins", "sdest2N"), norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, gc.df=NULL, sub.z=NULL, outfile.pv=NULL) {
 
   z.f = files.df$z[which(files.df$sample==samp)]
   if(!file.exists(z.f)) z.f = paste0(z.f, ".bgz")
@@ -107,6 +108,14 @@ call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, mer
   }
   res.df$qv = stats::p.adjust(res.df$pv, method = "fdr")
 
+  if(!is.null(outfile.pv)){
+      pv.df = res.df[,c("chr","start","end","pv","qv")]
+      pv.df = pv.df[order(pv.df$chr, pv.df$start),]
+      utils::write.table(pv.df, outfile.pv, quote=FALSE, row.names=FALSE, sep="\t")
+      comp.index.files(outfile.pv)
+      rm(pv.df)
+  }
+
   if (!is.null(out.pdf) & any(!is.na(res.df$pv))) {
     pv = qv = ..density.. = y = z = NULL  ## Uglily appease R checks
 
@@ -164,13 +173,13 @@ call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, mer
   res.df$cn = round(2*res.df$fc)
   if(nrow(res.df)>0){
     res.df$prop.single.bin = round(mean(res.df$nb.bin.cons==1), 3)
+    res.df$pv = signif(res.df$pv, 4)
+    res.df$qv = signif(res.df$qv, 4)
+    res.df$z = round(res.df$z, 2)
+    res.df$fc = round(res.df$fc, 5)
   } else {
-    res.df$prop.single.bin = numeric(0)
+    res.df$prop.single.bin = res.df$pv = res.df$qv = res.df$z = res.df$fc = numeric(0)
   }
-  res.df$pv = signif(res.df$pv, 4)
-  res.df$qv = signif(res.df$qv, 4)
-  res.df$z = round(res.df$z, 2)
-  res.df$fc = round(res.df$fc, 5)
 
   if (nrow(res.df) > 0 & merge.cons.bins[1] != "no") {
     return(data.frame(sample = samp, res.df, stringsAsFactors = FALSE))
