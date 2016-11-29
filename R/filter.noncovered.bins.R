@@ -46,7 +46,7 @@ filter.noncovered.bins <- function(bins.df, files.df, nb.samples=10, bc.med.min=
     stop("Different bin order in the bin count files. This won't work...")
   }
   
-  covered.bins = bins[which(bc.s$med >= bc.med.min)]
+  covered.bins = bins[which(bc.s$bc.med >= bc.med.min)]
   covered.bins = which(paste0(bins.df$chr, "-", bins.df$start) %in% covered.bins)
   bins.df[covered.bins,]
 }

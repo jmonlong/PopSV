@@ -72,7 +72,13 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
       ## Read chunk
       bc.l = chunk.o$bc
       bc.1 = bc.l[, 1:3]
-      bc.l = as.matrix(bc.l[, -(1:3)])
+    bc.l = as.matrix(bc.l[, -(1:3)])
+
+    
+    ## msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,])), mc.cores=nb.cores)
+    ## msd = matrix(unlist(msd), nrow=3)
+    ## rownames(msd) = c("m","sd","nb.remove")
+    
       msd = chunk.o$ns
 
       z = parallel::mclapply(1:ncol(bc.l), function(cc) z.comp.f(bc.l[,cc], mean.c = msd$m, sd.c = msd$sd), mc.cores=nb.cores)
