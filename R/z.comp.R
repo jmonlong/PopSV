@@ -15,12 +15,13 @@
 ##' @param nb.cores the number of cores to use.
 ##' @param chunk.size the chunk size. Default is 1e4. If NULL, no chunks are used.
 ##' @param append should the Z-scores be appended to existing files. Default is FALSE.
+##' @param recomp.msd Should the mean/SD be recomputed and written to 'norm.stats.f' ? Default is FALSE. Most of the times you don't want that but it's useful when combining discordant mapping.
 ##' @return a list with
 ##' \item{samples}{a vector with the names of the samples analyzed.}
 ##' \item{z.poisson}{was Normal-Poisson hybrid Z-score score computed.}
 ##' @author Jean Monlong
 ##' @export
-z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1, chunk.size=1e4, append=FALSE) {
+z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1, chunk.size=1e4, append=FALSE, recomp.msd=FALSE) {
 
   if(!file.exists(bc.f)){
     stop("Bin count file not found.")
@@ -57,11 +58,15 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
           return(NULL)
       }
       colnames(bc.res) = bc.header
-      ns.res = tryCatch(read.table(con.ns, colClasses=ns.colClasses, nrows=chunk.size), error=function(e)return(NULL))
-      if(is.null(ns.res)){
+      if(!recomp.msd){
+        ns.res = tryCatch(read.table(con.ns, colClasses=ns.colClasses, nrows=chunk.size), error=function(e)return(NULL))
+        if(is.null(ns.res)){
           stop("Different number of rows between ", bc.f," and ", norm.stats.f, " !?")
+        }
+        colnames(ns.res) = ns.header
+      } else {
+        ns.res = NULL
       }
-      colnames(ns.res) = ns.header
       list(bc=bc.res, ns=ns.res)
   }
 
@@ -74,12 +79,13 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
       bc.1 = bc.l[, 1:3]
     bc.l = as.matrix(bc.l[, -(1:3)])
 
-    
-    ## msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,])), mc.cores=nb.cores)
-    ## msd = matrix(unlist(msd), nrow=3)
-    ## rownames(msd) = c("m","sd","nb.remove")
-    
+    if(recomp.msd){
+      msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,])), mc.cores=nb.cores)
+      msd = matrix(unlist(msd), nrow=3)
+      rownames(msd) = c("m","sd","nb.remove")
+    } else {
       msd = chunk.o$ns
+    }
 
       z = parallel::mclapply(1:ncol(bc.l), function(cc) z.comp.f(bc.l[,cc], mean.c = msd$m, sd.c = msd$sd), mc.cores=nb.cores)
       z = matrix(unlist(z), ncol=length(z))
