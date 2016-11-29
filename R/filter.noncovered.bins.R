@@ -34,8 +34,9 @@ filter.noncovered.bins <- function(bins.df, files.df, nb.samples=10, bc.med.min=
       x
     }
     ## Uglily appeases R checks
-    bc.max = NULL
-    print(ggplot2::ggplot(bc.s[which(bc.s$bc.med==0),], ggplot2::aes(x=winsor(bc.max,2*bc.med.min))) + ggplot2::geom_histogram(binwidth=1) + ggplot2::theme_bw() + ggplot2::xlab("maximum bin count") + ggplot2::ggtitle("Bins with 0 median bin count") + ggplot2::ylab("bin") + ggplot2::geom_vline(xintercept=bc.med.min, linetype=2))
+    bc.max.w = NULL
+    bc.s$bc.max.w = winsor(bc.s$bc.max,2*bc.med.min)
+    print(ggplot2::ggplot(bc.s[which(bc.s$bc.med==0),], ggplot2::aes(x=bc.max.w)) + ggplot2::geom_histogram(binwidth=1) + ggplot2::theme_bw() + ggplot2::xlab("maximum bin count") + ggplot2::ggtitle("Bins with 0 median bin count") + ggplot2::ylab("bin") + ggplot2::geom_vline(xintercept=bc.med.min, linetype=2))
   }
   
   bins = paste0(bc.l[[1]]$chr, "-", bc.l[[1]]$start)
