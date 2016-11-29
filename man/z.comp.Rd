@@ -5,7 +5,7 @@
 \title{Z-score computation}
 \usage{
 z.comp(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1,
-  chunk.size = 10000, append = FALSE)
+  chunk.size = 10000, append = FALSE, recomp.msd = FALSE)
 }
 \arguments{
 \item{bc.f}{the path to the normalized bin count file.}
@@ -22,6 +22,8 @@ Details). Default is FALSE.}
 \item{chunk.size}{the chunk size. Default is 1e4. If NULL, no chunks are used.}
 
 \item{append}{should the Z-scores be appended to existing files. Default is FALSE.}
+
+\item{recomp.msd}{Should the mean/SD be recomputed and written to 'norm.stats.f' ? Default is FALSE. Most of the times you don't want that but it's useful when combining discordant mapping.}
 }
 \value{
 a list with

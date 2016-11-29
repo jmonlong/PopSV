@@ -47,10 +47,12 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
   bc.colClasses = c("character", rep("numeric",2), ifelse(bc.header[-(1:3)] %in% files.df$sample, "numeric", "NULL"))
   bc.header = bc.header[which(bc.colClasses != "NULL")]
   files.df = files.df[which(files.df$sample %in% bc.header),]
-  con.ns = file(norm.stats.f, "r")
-  ns.header = unlist(strsplit(readLines(con.ns, n = 1), "\t"))
-  ns.colClasses = c("character", rep("numeric",2), ifelse(ns.header[-(1:3)] %in% c("m","sd"), "numeric", "NULL"))
-  ns.header = ns.header[1:5]
+  if(!recomp.msd){
+    con.ns = file(norm.stats.f, "r")
+    ns.header = unlist(strsplit(readLines(con.ns, n = 1), "\t"))
+    ns.colClasses = c("character", rep("numeric",2), ifelse(ns.header[-(1:3)] %in% c("m","sd"), "numeric", "NULL"))
+    ns.header = ns.header[1:5]
+  }
 
   read.chunk <- function(){
       bc.res = tryCatch(read.table(con.bc, colClasses=bc.colClasses, nrows=chunk.size), error=function(e)return(NULL))
@@ -83,6 +85,8 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
       msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,])), mc.cores=nb.cores)
       msd = matrix(unlist(msd), nrow=3)
       rownames(msd) = c("m","sd","nb.remove")
+      msd = cbind(bc.1, msd)
+      write.table(msd, file=norm.stats.f, row.names=FALSE, sep="\t", col.names=firstChunk, append=!firstChunk)
     } else {
       msd = chunk.o$ns
     }
@@ -100,7 +104,9 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
   }
 
   close(con.bc)
-  close(con.ns)
+  if(!recomp.msd){
+    close(con.ns)
+  }
 
   comp.index.files(c(files.df$z, files.df$fc), rm.input=TRUE, reorder=TRUE)
 
