@@ -1,5 +1,7 @@
 language: r
+
 pandoc: false
+
 r:
   - oldrel
   - release
