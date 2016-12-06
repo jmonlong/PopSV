@@ -10,6 +10,7 @@
 ##' @export
 ##' @import magrittr
 freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE){
+    . = V1 = chr = nb = prop = gen.kb = NULL ## Uglily silence R checks
   if(!all(c("chr","start","end") %in% colnames(range.df))){
     stop("Missing column in 'range.df'. 'chr', 'start' and 'end' are required.")
   }
@@ -26,16 +27,15 @@ freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE){
       cnv.o = GenomicRanges::as.data.frame(gr.d)[,1:3]
       colnames(cnv.o)[1] = "chr"
     }
-    ol = GenomicRanges::findOverlaps(gr.d, gr)
-    thits = tapply(gr$sample[S4Vectors::subjectHits(ol)], S4Vectors::queryHits(ol), function(samp) length(unique(samp)))
+    ol = data.table::data.table(as.data.frame(GenomicRanges::findOverlaps(gr.d, gr)))
+    ol = ol[,.(length(unique(gr$sample[subjectHits]))), by=.(queryHits)]
     cnv.o$nb = 0
-    cnv.o$nb[as.numeric(names(thits))] = as.numeric(thits)
+    cnv.o$nb[ol[,queryHits]] = ol[,V1]
     cnv.o$prop = cnv.o$nb / nb.samp
     cnv.o
   }
   fr.df = freq.chr.gr(range.df)
   if(plot){
-    chr = nb = prop = gen.kb = NULL ## Uglily silence R checks
     f.df = fr.df %>% dplyr::group_by(chr, start, end) %>% dplyr::summarize(nb=sum(nb), prop=sum(prop), gen.kb=utils::head((end-start)/1e3, 1)) %>% dplyr::arrange(chr)
     print(suppressWarnings(ggplot2::ggplot(f.df, ggplot2::aes(x=signif(prop,3), y=gen.kb, fill=chr)) + ggplot2::xlab("proportion of samples") +
           ggplot2::geom_bar(stat="identity") + ggplot2::theme_bw() +
