@@ -63,6 +63,7 @@ bin.bam.2d <- function(bam.file, bins.df, outfile.prefix = NULL, appendIndex.out
     bam.df = cbind(bins.i[bam.df$bin.i,], bam.df)
     bam.df = bam.df[which(as.numeric(bam.df$mrnmF)>as.numeric(bam.df$chrF) |
                           (as.numeric(bam.df$mrnmF)>=as.numeric(bam.df$chrF) & bam.df$mpos>bam.df$end)),]
+    if(nrow(bam.df)==0) return(NULL)
     bins.2.df = bins.df[which(bins.df$chunk>=ch.i),]
     bins.2 = GenomicRanges::makeGRangesFromDataFrame(bins.2.df)
     bam.2 = GenomicRanges::GRanges(bam.df$mrnm, IRanges::IRanges(bam.df$mpos, width=1))
