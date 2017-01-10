@@ -73,7 +73,14 @@ bin.bam.2d <- function(bam.file, bins.df, outfile.prefix = NULL, appendIndex.out
     bam.df$start2[queryHits(ol2)] = bins.2.df$start[subjectHits(ol2)]
     bam.df = bam.df[,c("chr","start","end","chr2","start2")]
     bam.df$read = 1
-    aggregate(read~chr+start+end+chr2+start2, data=bam.df, sum)
+    bam.df = aggregate(read~chr+start+end+chr2+start2, data=bam.df, sum)
+    if (!is.null(outfile.prefix)) {
+      utils::write.table(bam.df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
+                         sep = "\t", append = ch.i > 1, col.names = ch.i == 1)
+      return(data.frame(chunk = ch.i, nb.reads = sum(as.numeric(bam.df$read), na.rm = TRUE)))
+    } else {
+      return(bam.df)
+    }    
   }
   
   if (check.chr.name) {
