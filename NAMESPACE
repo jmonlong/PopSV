@@ -2,6 +2,7 @@
 
 export(aneuploidy.flag)
 export(bin.bam)
+export(bin.bam.2d)
 export(bin.bam.disc)
 export(breakpoint.finder.interactive)
 export(call.abnormal.cov)
