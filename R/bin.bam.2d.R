@@ -74,6 +74,7 @@ bin.bam.2d <- function(bam.file, bins.df, outfile.prefix = NULL, appendIndex.out
     bam.df = bam.df[,c("chr","start","end","chr2","start2")]
     bam.df$read = 1
     bam.df = aggregate(read~chr+start+end+chr2+start2, data=bam.df, sum)
+    bam.df = bam.df[order(as.character(bam.df$chr), bam.df$start),]    
     if (!is.null(outfile.prefix)) {
       utils::write.table(bam.df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
                          sep = "\t", append = ch.i > 1, col.names = ch.i == 1)
