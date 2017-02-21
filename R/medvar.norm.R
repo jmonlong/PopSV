@@ -6,7 +6,7 @@
 ##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
 ##' Details). Default is FALSE.
 ##' @return a list with
-##' \item{norm.stats}{a data.frame witht some metrics about the normalization of each
+##' \item{norm.stats}{a data.frame with some metrics about the normalization of each
 ##' bin (row) : coverage average and standard deviation; number of outlier samples}
 ##' \item{bc.norm}{a data.frame, similar to the input 'bc.df', with the normalized bin counts.}
 ##' @author Jean Monlong
@@ -14,20 +14,19 @@
 medvar.norm <- function(bc, ref.samples, bc.support = NULL, z.poisson = FALSE) {
     all.samples = setdiff(colnames(bc), c("chr", "start", "end"))
     ref.samples.ii = which(all.samples %in% ref.samples)
-    rownames(bc) = bins = paste(bc$chr, as.integer(bc$start), sep = "-")
     norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 3)),
-        length(bins))
+        nrow(bc))
     colnames(norm.stats) = c("chr", "start", "end", "m", "sd", "nb.remove")
     bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))),
-        length(bins))
+        nrow(bc))
     z = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))),
-        length(bins))
+        nrow(bc))
     fc = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))),
-        length(bins))
+        nrow(bc))
     colnames(bc.norm) = colnames(z) = colnames(fc) = c("chr", "start", "end", all.samples)
-    norm.stats$chr = bc.norm$chr = z$chr = fc$chr = bc[bins, "chr"]
-    norm.stats$start = bc.norm$start = z$start = fc$start = bc[bins, "start"]
-    norm.stats$end = bc.norm$end = z$end = fc$end = bc[bins, "end"]
+    norm.stats$chr = bc.norm$chr = z$chr = fc$chr = bc[, "chr"]
+    norm.stats$start = bc.norm$start = z$start = fc$start = bc[, "start"]
+    norm.stats$end = bc.norm$end = z$end = fc$end = bc[, "end"]
     if (z.poisson) {
         z.comp <- function(x, mean.c, sd.c) {
             z.n = (x - mean.c)/sd.c
