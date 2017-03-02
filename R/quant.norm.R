@@ -11,9 +11,7 @@
 ##' @export
 quant.norm <- function(bc.df, nb.cores = 1, norm.stats.comp = TRUE) {
   all.samples = setdiff(colnames(bc.df), c("chr", "start", "end"))
-  rownames(bc.df) = bins = paste(bc.df$chr, as.integer(bc.df$start), as.integer(bc.df$end), sep = "-")
-
-  bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))), length(bins))
+  bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))), nrow(bc.df))
   colnames(bc.norm) = c("chr", "start", "end", all.samples)
   bc.norm$chr = bc.df$chr
   bc.norm$start = bc.df$start
@@ -28,7 +26,7 @@ quant.norm <- function(bc.df, nb.cores = 1, norm.stats.comp = TRUE) {
            function(cc) med[rank(bc.mat[, cc])], mc.cores = nb.cores))), nrow(bc.mat))
 
   if (norm.stats.comp) {
-    norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 3)), length(bins))
+    norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 3)), nrow(bc.df))
     colnames(norm.stats) = c("chr", "start", "end", "m", "sd", "nb.remove")
     norm.stats$chr = bc.df$chr
     norm.stats$start = bc.df$start
