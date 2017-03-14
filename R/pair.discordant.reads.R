@@ -40,7 +40,7 @@ pair.discordant.reads <- function(chr, start.pos, end.pos, files.df, samp, contr
     return(pairs.df)
   }
 
-  pairs.df = do.call(rbind, parallel::mclapply(c(samp, controls), pairBins.f, mc.cores=nb.cores))
+  pairs.df = as.data.frame(data.table::rbindlist(parallel::mclapply(c(samp, controls), pairBins.f, mc.cores=nb.cores)))
 
   ## Remove non-covered bins
   covered.bins = unique(pairs.df$bin[which(pairs.df$read>0)])

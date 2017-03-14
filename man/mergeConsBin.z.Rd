@@ -35,4 +35,3 @@ of the simulated Normal is given as a parameter of the function.
 Jean Monlong
 }
 \keyword{internal}
-

@@ -58,4 +58,3 @@ defining the set of reference samples.
 \author{
 Jean Monlong
 }
-

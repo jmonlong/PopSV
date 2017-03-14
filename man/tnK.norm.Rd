@@ -31,4 +31,3 @@ Bin count targeted normalization using K-mean clustering to group bins with simi
 \author{
 Jean Monlong
 }
-

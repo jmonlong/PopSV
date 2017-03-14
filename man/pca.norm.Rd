@@ -29,4 +29,3 @@ using \code{prcomp} function and regressed out using linear regression.
 \author{
 Jean Monlong
 }
-

@@ -34,7 +34,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
     bc.all$bc.f = bc.name
     bc.all
   })
-  bc.all = do.call(rbind, bc.l)
+  bc.all = as.data.frame(data.table::rbindlist(bc.l))
   start = min(bc.all$start[which(bc.all$end>start)])
   end = max(bc.all$end[which(bc.all$start<end)])
 
@@ -79,7 +79,7 @@ coverage.plot <- function(chr, start, end, bc.f, norm.stats.f=NULL, sv.df=NULL, 
           bc$pos = as.numeric(with(bc, (start+end)/2))
           bc[,c("chr","start","end","sample","value","pos")]
         }, mc.cores=nb.cores)
-        bc.sv = rbind(bc.sv, do.call(rbind, bc.sv.l))
+        bc.sv = rbind(bc.sv, as.data.frame(data.table::rbindlist(bc.sv.l)))
       }
     }
   }

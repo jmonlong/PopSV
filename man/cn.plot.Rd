@@ -38,4 +38,3 @@ Plot the copy number estimates in a genomic regions across samples.
 \author{
 Jean Monlong
 }
-

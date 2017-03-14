@@ -35,4 +35,3 @@ Plot the raw read coverage in a genomic regions across samples.
 \author{
 Jean Monlong
 }
-

@@ -58,7 +58,7 @@ bin.bam.2d <- function(bam.file, bins.df, outfile.prefix = NULL, appendIndex.out
     bam = Rsamtools::scanBam(bam.file,param=param)
     non.na.bin = which(unlist(lapply(bam, function(l)length(l[[1]])>0)))
     bam.df = lapply(non.na.bin, function(ii)data.frame(bin.i=ii, as.data.frame(bam[[ii]])))
-    bam.df = do.call(rbind, bam.df)
+    bam.df = as.data.frame(data.table::rbindlist(bam.df))
     bam.df$mrnmF = factor(as.character(bam.df$mrnm), levels=levels(bins.df$chrF))
     bam.df = cbind(bins.i[bam.df$bin.i,], bam.df)
     bam.df = bam.df[which(as.numeric(bam.df$mrnmF)>as.numeric(bam.df$chrF) |
@@ -69,11 +69,11 @@ bin.bam.2d <- function(bam.file, bins.df, outfile.prefix = NULL, appendIndex.out
     bam.2 = GenomicRanges::GRanges(bam.df$mrnm, IRanges::IRanges(bam.df$mpos, width=1))
     ol2 = GenomicRanges::findOverlaps(bam.2, bins.2)
     bam.df$start2 = bam.df$chr2 = NA
-    bam.df$chr2[queryHits(ol2)] = bins.2.df$chr[subjectHits(ol2)]
-    bam.df$start2[queryHits(ol2)] = bins.2.df$start[subjectHits(ol2)]
+    bam.df$chr2[S4Vectors::queryHits(ol2)] = bins.2.df$chr[S4Vectors::subjectHits(ol2)]
+    bam.df$start2[S4Vectors::queryHits(ol2)] = bins.2.df$start[S4Vectors::subjectHits(ol2)]
     bam.df = bam.df[,c("chr","start","end","chr2","start2")]
     bam.df$read = 1
-    bam.df = aggregate(read~chr+start+end+chr2+start2, data=bam.df, sum)
+    bam.df = stats::aggregate(read~chr+start+end+chr2+start2, data=bam.df, sum)
     bam.df = bam.df[order(as.character(bam.df$chr), bam.df$start),]    
     if (!is.null(outfile.prefix)) {
       utils::write.table(bam.df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
@@ -101,9 +101,8 @@ bin.bam.2d <- function(bam.file, bins.df, outfile.prefix = NULL, appendIndex.out
     } 
   }
 
-  bc.df = lapply(1:2, count2D, bins.df=bins.df, bam.file=bam.file)
   bc.df = lapply(unique(bins.df$chunk), count2D, bins.df=bins.df, bam.file=bam.file)
-  bc.df = do.call(rbind, bc.df)
+  bc.df = as.data.frame(data.table::rbindlist(bc.df))
 
   final.file = outfile.prefix
   if (appendIndex.outfile) {

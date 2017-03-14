@@ -35,4 +35,3 @@ Compare the pair mapping between regions of the genome. The goal is to assess/de
 \author{
 Jean Monlong
 }
-

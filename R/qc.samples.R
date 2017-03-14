@@ -50,28 +50,28 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
   ## Flexible function to read bin counts on specific bins, several files, ...
   read.bc.samples <- function(df, files.df, nb.cores = 1, med.med = NULL, med.samp = NULL,
                               file = NULL, append.f = FALSE, sub.bc = NULL) {
-    bc.df = createEmptyDF(c("character", rep("integer", 2), rep("numeric", nrow(files.df))),
-      nrow(df))
-    colnames(bc.df) = c("chr", "start", "end", as.character(files.df$sample))
-    bc.df$chr = df$chr
-    bc.df$start = df$start
-    bc.df$end = df$end
     if (nb.cores > 1) {
       bc.l = parallel::mclapply(as.character(files.df[, col.bc]), function(fi) {
-        read.bedix(fi, df,exact.match=TRUE)[, 4]
+        res = read.bedix(fi, df,exact.match=TRUE)
       }, mc.cores = nb.cores)
     } else {
       bc.l = lapply(as.character(files.df[, col.bc]), function(fi) {
-        read.bedix(fi, df,exact.match=TRUE)[, 4]
+        res = read.bedix(fi, df,exact.match=TRUE)
       })
     }
     if (is.null(med.med) & is.null(med.samp)) {
-      med.samp = lapply(bc.l, stats::median, na.rm = TRUE)  ## Normalization of the median coverage
+      med.samp = lapply(bc.l, function(df) stats::median(df[,ncol(df)], na.rm = TRUE))  ## Normalization of the median coverage
       med.med = stats::median(unlist(med.samp), na.rm = TRUE)
     }
-    for (samp.i in 1:nrow(files.df)) {
-      bc.df[, as.character(files.df$sample[samp.i])] = round(bc.l[[samp.i]] * med.med/med.samp[[samp.i]], 2)
-    }
+    bc.l = lapply(1:nrow(files.df), function(samp.i) {
+      df = bc.l[[samp.i]]
+      df[,ncol(df)] = round(df[,ncol(df)] * med.med/med.samp[[samp.i]], 2)
+      colnames(df)[ncol(df)] = "bc"
+      df$sample = as.character(files.df$sample[samp.i])
+      df
+    })
+    bc.df = as.data.frame(data.table::rbindlist(bc.l))
+    bc.df = tidyr::spread(bc.df, "sample", "bc", fill=0)
     bc.df = bc.df[order(as.character(bc.df$chr), bc.df$start, bc.df$end),]
     if (!is.null(file)) {
       utils::write.table(bc.df, file = file, quote = FALSE, row.names = FALSE, sep = "\t",
@@ -127,12 +127,14 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
   if(!median.norm){
       med.med = 1
       med.samp = rep(list(1), nrow(files.df))
+  } else {
+    med.med = med.samp = NULL
   }
 
   files.df = files.df[which(files.df$sample %in% ref.samples), ]
   bin.df = bin.df[order(as.character(bin.df$chr), bin.df$start, bin.df$end),]
   if (nrow(bin.df) < 1.3 * chunk.size) {
-    bc.df = read.bc.samples(bin.df, files.df, nb.cores)
+    bc.df = read.bc.samples(bin.df, files.df, nb.cores, med.med, med.samp)
     utils::write.table(bc.df, file = outfile.prefix, quote = FALSE, row.names = FALSE,
                 sep = "\t")
   } else {

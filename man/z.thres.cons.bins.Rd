@@ -23,4 +23,3 @@ Find a threshold on the Z-scores associated with how many consecutive bins are f
 Jean Monlong
 }
 \keyword{internal}
-

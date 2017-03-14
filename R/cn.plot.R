@@ -42,7 +42,7 @@ cn.plot <- function(files.df, gr=NULL, chr=NULL, start=NULL, end=NULL, samples=N
     cn$pos = as.numeric(with(cn, (start+end)/2))
     cn[,c("chr","sample","value","pos")]
   }, mc.cores=nb.cores)
-  cn.df = do.call(rbind, cn.l)
+  cn.df = as.data.frame(data.table::rbindlist(cn.l))
 
   max.cn = ceiling(max(2*cn.df$value, na.rm=TRUE))
   pos = value = ggpSck = NULL ## Uglily appease R checks

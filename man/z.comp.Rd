@@ -44,4 +44,3 @@ coverage where it is more robust to use Poisson assumptions.
 \author{
 Jean Monlong
 }
-

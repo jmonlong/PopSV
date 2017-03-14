@@ -62,4 +62,3 @@ For cancer samples, 'min.normal.prop' can be reduced, e.g. to 0.6. Aneuploid can
 \author{
 Jean Monlong
 }
-

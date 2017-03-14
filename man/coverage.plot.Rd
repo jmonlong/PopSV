@@ -49,4 +49,3 @@ Plot the bin coverage in a genomic regions across samples. The files ('bc.f', 'n
 \author{
 Jean Monlong
 }
-

@@ -30,7 +30,7 @@ mergeConsBin.cbs <- function(df, pv.th=.01, stitch.dist = 10000) {
     cna.s = DNAcopy::segment(cna.o, alpha=pv.th, verbose=0)
     cna.s$output
   })
-  cna.s = do.call(rbind, cna.l)
+  cna.s = as.data.frame(data.table::rbindlist(cna.l))
   cna.s = cna.s[which(abs(cna.s$seg.mean) > abs(log10(pv.th))),]
   
   ## Merge segments

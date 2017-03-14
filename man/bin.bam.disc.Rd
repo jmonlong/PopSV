@@ -53,4 +53,3 @@ By default, the function tries to check that the bin definition and the BAM file
 \author{
 Jean Monlong
 }
-

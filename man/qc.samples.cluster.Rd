@@ -25,4 +25,3 @@ There is no need to use all the bin count, a few thousand bins is enough to dete
 \author{
 Jean Monlong
 }
-

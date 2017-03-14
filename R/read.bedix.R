@@ -60,9 +60,9 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
 
   if (length(subset.reg) > 10000) {
     chunks = cut(1:length(subset.reg), ceiling(length(subset.reg)/10000))
-    bed.df = do.call(rbind, lapply(levels(chunks), function(ch.id){
+    bed.df = as.data.frame(data.table::rbindlist(lapply(levels(chunks), function(ch.id){
       read.chunk(subset.reg[which(chunks == ch.id)])
-    }))
+    })))
   } else {
     bed.df = read.chunk(subset.reg)
   }
@@ -73,13 +73,12 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
 
   bed.df = bed.df[order(as.character(bed.df$chr), bed.df$start),]
 
-  bed.bins.names = with(bed.df, paste(chr,start,end,sep="-"))
-  if(any(dup <- duplicated(bed.bins.names))){
+  if(any(dup <- duplicated(bed.df))){
     bed.df = bed.df[which(!dup),]
-    bed.bins.names = bed.bins.names[which(!dup)]
   }
 
   if(exact.match){
+    bed.bins.names = with(bed.df, paste(chr,start,end,sep="-"))
     bins.names = paste(as.character(GenomicRanges::seqnames(subset.reg)), GenomicRanges::start(subset.reg),GenomicRanges::end(subset.reg),sep="-")
     bed.df = bed.df[which(bed.bins.names %in% bins.names),]
   }

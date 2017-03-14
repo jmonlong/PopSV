@@ -18,7 +18,7 @@ Details). Default is FALSE.}
 }
 \value{
 a list with
-\item{norm.stats}{a data.frame witht some metrics about the normalization of each
+\item{norm.stats}{a data.frame with some metrics about the normalization of each
 bin (row) : coverage average and standard deviation; number of outlier samples}
 \item{bc.norm}{a data.frame, similar to the input 'bc.df', with the normalized bin counts.}
 }
@@ -28,4 +28,3 @@ The median and deviation to the median is normalized across samples.
 \author{
 Jean Monlong
 }
-

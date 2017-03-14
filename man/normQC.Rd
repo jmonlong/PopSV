@@ -55,4 +55,3 @@ that is unique to the Z-score curve.
 \author{
 Jean Monlong
 }
-

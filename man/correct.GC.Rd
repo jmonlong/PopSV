@@ -34,4 +34,3 @@ and global average bin count.
 \author{
 Jean Monlong
 }
-

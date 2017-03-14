@@ -25,4 +25,3 @@ Computes the diversity of the supporting bins used during normalization. For now
 \author{
 Jean Monlong
 }
-

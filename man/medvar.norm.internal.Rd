@@ -19,4 +19,3 @@ The median and deviation to the median is normalized across samples.
 Jean Monlong
 }
 \keyword{internal}
-

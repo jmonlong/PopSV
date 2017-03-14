@@ -24,4 +24,3 @@ Compute weight that represent how similar samples are to the reference samples, 
 \author{
 Jean Monlong
 }
-

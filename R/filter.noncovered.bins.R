@@ -12,7 +12,7 @@
 ##' @export
 filter.noncovered.bins <- function(bins.df, files.df, nb.samples=10, bc.med.min=NULL, plot=TRUE){
   bc.l = lapply(sample.int(nrow(files.df),nb.samples), function(ii){
-    bc = read.table(files.df$bc.gz[ii], as.is=TRUE, header=TRUE)
+    bc = utils::read.table(files.df$bc.gz[ii], as.is=TRUE, header=TRUE)
     bc$sample = files.df$sample[ii]
     bc
   })
@@ -20,11 +20,11 @@ filter.noncovered.bins <- function(bins.df, files.df, nb.samples=10, bc.med.min=
   bc.mat = matrix(unlist(lapply(bc.l, function(df)df$bc)), nrow(bc.l[[1]]))
   colnames(bc.mat) = unlist(lapply(bc.l, function(df)df$sample[1]))
   
-  bc.s = data.frame(bc.med = apply(bc.mat, 1, median), bc.max = apply(bc.mat, 1, max))
+  bc.s = data.frame(bc.med = apply(bc.mat, 1, stats::median), bc.max = apply(bc.mat, 1, max))
   
   if(is.null(bc.med.min)){
-    bc.med.min = median(bc.s$bc.max[which(bc.s$bc.med==0 & bc.s$bc.max!=0)])
-    bc.med.min.sd = mad(bc.s$bc.max[which(bc.s$bc.med==0 & bc.s$bc.max!=0)])
+    bc.med.min = stats::median(bc.s$bc.max[which(bc.s$bc.med==0 & bc.s$bc.max!=0)])
+    bc.med.min.sd = stats::mad(bc.s$bc.max[which(bc.s$bc.med==0 & bc.s$bc.max!=0)])
     bc.med.min = bc.med.min + 3*bc.med.min.sd
   }
   

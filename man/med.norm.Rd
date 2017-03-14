@@ -25,4 +25,3 @@ Global median normalization of bin counts. After such normalization, each sample
 \author{
 Jean Monlong
 }
-

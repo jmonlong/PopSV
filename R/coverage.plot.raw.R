@@ -25,7 +25,7 @@ coverage.plot.raw <- function(chr, start, end, files.df, samples, proper=TRUE, m
     param = Rsamtools::ScanBamParam(which = gr, what = c("rname", "pos", "qwidth", "mapq"), flag = Rsamtools::scanBamFlag(isProperPair = proper, isDuplicate = FALSE, isNotPassingQualityControls = FALSE, isUnmappedQuery = FALSE))
     bam = Rsamtools::scanBam(bam.file, index = bai.file, param = param)
     bam = bam[which(unlist(lapply(bam, function(ee)length(ee[[1]])>0)))]
-    bam.df = do.call(rbind, lapply(names(bam),function(bin) data.frame(bin=bin, as.data.frame(bam[[bin]]))))
+    bam.df = as.data.frame(data.table::rbindlist(lapply(names(bam),function(bin) data.frame(bin=bin, as.data.frame(bam[[bin]])))))
     bam.df = bam.df[which(bam.df$mapq >= map.quality),]
     if(is.null(bam.df)) return(GenomicRanges::GRanges())
     return(with(bam.df, GenomicRanges::GRanges(rname, IRanges::IRanges(pos, width = qwidth), bin = bin)))

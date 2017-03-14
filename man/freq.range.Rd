@@ -25,4 +25,3 @@ If 'annotate.only=TRUE' however, the frequency of an input range is computed as 
 \author{
 Jean Monlong
 }
-

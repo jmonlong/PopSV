@@ -65,7 +65,7 @@ mergeConsBin.z <- function(res.df, fdr.th = 0.05, sd.null = 1, nb.sim = 1e+06, s
     data.frame(start=df$start[-nrow(df)],end=df$end[-1],pv.dup = compute.pv(z.link[1, ], z.null = z.null[1, ]), pv.del = compute.pv(z.link[2,], z.null = z.null[2, ], alt.greater = FALSE))
   }
   link.df = lapply(unique(res.df$chr), function(chr.i)data.frame(chr=chr.i, pvLink.f(res.df[which(res.df$chr==chr.i),])))
-  link.df = do.call(rbind, link.df)
+  link.df = as.data.frame(data.table::rbindlist(link.df))
   ## Multiple test correction
   link.df$qv.dup = fdrtool::fdrtool(link.df$pv.dup, statistic = "pvalue", plot = FALSE, verbose = FALSE)$qval
   link.df$qv.del = fdrtool::fdrtool(link.df$pv.del, statistic = "pvalue", plot = FALSE, verbose = FALSE)$qval

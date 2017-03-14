@@ -41,5 +41,5 @@ fragment.genome.hg19 <- function(bin.size = 1000, slid.window=bin.size, chr.pref
     data.frame(chr = chrs[chr.i], start = starts, end = ends, stringsAsFactors=FALSE)
   }
 
-  do.call(rbind, lapply(1:length(chrs), fragment.chr))
+  as.data.frame(data.table::rbindlist(lapply(1:length(chrs), fragment.chr)))
 }

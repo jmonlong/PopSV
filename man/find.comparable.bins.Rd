@@ -25,4 +25,3 @@ If 'plot=TRUE' (Default), a graph is displayed. It compares the average coverage
 \author{
 Jean Monlong
 }
-

@@ -21,4 +21,3 @@ Compute the null variances. Here the null distribution is modeled as two Normal 
 Jean Monlong
 }
 \keyword{internal}
-

@@ -55,13 +55,13 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
   }
 
   read.chunk <- function(){
-      bc.res = tryCatch(read.table(con.bc, colClasses=bc.colClasses, nrows=chunk.size), error=function(e)return(NULL))
+      bc.res = tryCatch(utils::read.table(con.bc, colClasses=bc.colClasses, nrows=chunk.size), error=function(e)return(NULL))
       if(is.null(bc.res)){
           return(NULL)
       }
       colnames(bc.res) = bc.header
       if(!recomp.msd){
-        ns.res = tryCatch(read.table(con.ns, colClasses=ns.colClasses, nrows=chunk.size), error=function(e)return(NULL))
+        ns.res = tryCatch(utils::read.table(con.ns, colClasses=ns.colClasses, nrows=chunk.size), error=function(e)return(NULL))
         if(is.null(ns.res)){
           stop("Different number of rows between ", bc.f," and ", norm.stats.f, " !?")
         }
@@ -86,7 +86,7 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
       msd = matrix(unlist(msd), nrow=3)
       rownames(msd) = c("m","sd","nb.remove")
       msd = cbind(bc.1, msd)
-      write.table(msd, file=norm.stats.f, row.names=FALSE, sep="\t", col.names=firstChunk, append=!firstChunk)
+      utils::write.table(msd, file=norm.stats.f, row.names=FALSE, sep="\t", col.names=firstChunk, append=!firstChunk)
     } else {
       msd = chunk.o$ns
     }

@@ -40,7 +40,7 @@ aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.s
                       data.frame(sample=files.df$sample[file.ii],
                                  stats::aggregate(bc~chr,bc.df, stats::median, na.rm=TRUE))
                   }, mc.cores=nb.cores)
-  med.df = do.call(rbind, med.df)
+  med.df = as.data.frame(data.table::rbindlist(rbind, med.df))
 
   ## Adjust the median median counts
   if(verbose) message("Adjusting coverage...")
@@ -77,7 +77,7 @@ aneuploidy.flag <- function(files.df, col.file = "bc.gc.gz", verbose=TRUE, ref.s
   }
   if(verbose) message("Testing for aneuploidy...")
   med.fit = parallel::mclapply(unique(med.df$chr), function(chr.in)aneuChr(med.df[which(med.df$chr == chr.in),]), mc.cores=nb.cores)
-  med.fit = do.call(rbind, med.fit)
+  med.fit = as.data.frame(data.table::rbindlist(rbind, med.fit))
 
   return(med.fit)
 }

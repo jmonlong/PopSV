@@ -36,4 +36,3 @@ Chromosomes with clear aneuploidy are detected using a simple threshold-based ap
 \author{
 Jean Monlong
 }
-

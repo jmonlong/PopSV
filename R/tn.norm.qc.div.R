@@ -42,7 +42,7 @@ tn.norm.qc.div <- function(norm.stats, out.pdf = "normStats-QC-supportDiversity.
     res.df$nb.chr = apply(res.df[, sup.ii], 1, function(x)length(unique(x)))
     res.df[,c("chr","start","end","inter.chr","nb.chr","d.max", "m")]
   }, mc.cores=nb.cores)
-  div.df = do.call(rbind, div.df)
+  div.df = as.data.frame(data.table::rbindlist(div.df))
 
   ## Graph
   if(!is.null(out.pdf)){

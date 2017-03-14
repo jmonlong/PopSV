@@ -25,4 +25,3 @@ Quantile normalization of the bin counts. After such normalization, each sample 
 \author{
 Jean Monlong
 }
-

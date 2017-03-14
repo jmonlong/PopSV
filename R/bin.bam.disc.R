@@ -154,7 +154,7 @@ bin.bam.disc <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.ou
   bc.df = lapply(unique(bin.df$chunk), function(chunk.i){
     binBam.chunk(bin.df[which(bin.df$chunk==chunk.i),], is.med, is.q)
   })
-  bc.df = do.call(rbind, bc.df)
+  bc.df = as.data.frame(data.table::rbindlist(bc.df))
 
   final.file = outfile.prefix
   if (appendIndex.outfile) {

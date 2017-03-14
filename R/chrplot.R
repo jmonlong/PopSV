@@ -25,7 +25,7 @@ chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NU
       data.frame(chr=chr.a, start=min(bins.df$start[which(bins.df$chr==chr.a)]),
                  end=max(bins.df$end[which(bins.df$chr==chr.a)]))
     })
-    chr.df = do.call(rbind, chr.df)
+    chr.df = as.data.frame(data.table::rbindlist(chr.df))
     if(chr.prefix){
         chr.df$chr = factor(chr.df$chr, levels=paste0("chr",c(1:22,"X","Y")))
     } else {

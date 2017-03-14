@@ -87,8 +87,8 @@ call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, mer
     } else {
       ## Get 100 sub-segments of 'sub.z' consecutive bins and use the 20 with median closest to 0 (to focus on "normal" genome and avoid large aberrations)
       res.df = res.df[order(res.df$chr, res.df$start),]
-      subz.l = lapply(round(runif(100,1,nrow(res.df)-sub.z-1)), function(ss) res.df[ss:(ss+sub.z),])
-      subz.med = unlist(lapply(subz.l, function(df) median(df$z, na.rm=TRUE)))
+      subz.l = lapply(round(stats::runif(100,1,nrow(res.df)-sub.z-1)), function(ss) res.df[ss:(ss+sub.z),])
+      subz.med = unlist(lapply(subz.l, function(df) stats::median(df$z, na.rm=TRUE)))
       subz.z = unlist(lapply(subz.l[order(abs(subz.med))[1:20]], function(df)df$z))
       fdr = fdrtool.quantile(subz.z, quant.int = seq(min.normal.prop, 0.99, 0.01))
     }

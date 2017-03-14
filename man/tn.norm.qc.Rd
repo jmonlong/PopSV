@@ -22,4 +22,3 @@ Following targeted normalization, some Quality Control graphs are produced to se
 \author{
 Jean Monlong
 }
-

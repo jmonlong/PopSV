@@ -26,4 +26,3 @@ Merge files for different samples.
 \author{
 Jean Monlong
 }
-

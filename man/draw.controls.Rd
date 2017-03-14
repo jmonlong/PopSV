@@ -36,4 +36,3 @@ Find random genomic regions with the same properties as a set of input regions. 
 \author{
 Jean Monlong
 }
-
