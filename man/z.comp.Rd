@@ -27,7 +27,9 @@ Details). Default is FALSE.}
 }
 \value{
 a list with
-\item{samples}{a vector with the names of the samples analyzed.}
+\item{z}{a data.frame with the Z-scores if 'bc.f' was a data.frame. NULL otherwise.}
+\item{fc}{a data.frame with the fold-changes if 'bc.f' was a data.frame. NULL otherwise.}
+\item{msd}{a data.frame with the mean-sd information if 'bc.f' was a data.frame. NULL otherwise.}
 \item{z.poisson}{was Normal-Poisson hybrid Z-score score computed.}
 }
 \description{
