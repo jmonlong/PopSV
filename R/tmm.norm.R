@@ -39,7 +39,7 @@ tmm.norm <- function(bc.df, cont.sample, trim.level=.3, nb.cores = 1, norm.stats
           function(rr) {
               msd = mean.sd.outlierR(as.numeric(bc.norm[rr, all.samples]))
               return(c(msd$m, msd$sd, msd$nb.remove))
-          }, mc.cores = nb.cores))), nrow(bc.norm))
+          }, mc.cores = nb.cores))), nrow(bc.norm), byrow=TRUE)
       norm.stats = as.data.frame(norm.stats)
       colnames(norm.stats) = c("m", "sd", "nb.remove")
       norm.stats = cbind(bc.df[,cols], norm.stats)
