@@ -3,42 +3,33 @@
 ##' @param cnv.df a data.frame with the abnormal regions for each sample. Columns 'chr', 'start', 'end' and 'sample' are required.
 ##' @param cl.method the linkage criterion for hierarchical clustering. Default is 'complete'.
 ##' @param nb.cores the number of processors to use. Default is 1.
-##' @param geom.approx should the geometric approximation be used (faster). Default is FALSE.
 ##' @return a list
 ##' \item{d}{a distance matrix with the distance between each pair of sample.}
 ##' \item{hc}{a 'hclust' object with the clustered samples.}
 ##' \item{cnv.geom}{if the geometric approximation was used, the geometric representation of each samples as a matrix.}
 ##' @author Jean Monlong
 ##' @export
-cluster.regions <- function(cnv.df,cl.method="complete", nb.cores=3, geom.approx=FALSE){
-  cnv.gr = with(cnv.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end), sample=sample))
-  sample.names = unique(cnv.df$sample)
-  if(geom.approx){
+cluster.regions <- function(cnv.df,cl.method="complete", nb.cores=3){
+    cnv.gr = with(cnv.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end), sample=sample))
+    sample.names = unique(cnv.df$sample)
     dj.gr = GenomicRanges::disjoin(cnv.gr)
     cnv.geom = parallel::mclapply(sample.names, function(samp){
-      dj.ol = IRanges::overlapsAny(dj.gr, cnv.gr[which(cnv.gr$sample==samp)])
-      ifelse(dj.ol, GenomicRanges::width(dj.gr), 0)
-    }, mc.cores=nb.cores)
+                                      dj.ol = IRanges::overlapsAny(dj.gr, cnv.gr[which(cnv.gr$sample==samp)])
+                                      ifelse(dj.ol, GenomicRanges::width(dj.gr), 0)
+                                  }, mc.cores=nb.cores)
     cnv.geom = matrix(unlist(cnv.geom), length(cnv.geom[[1]]))
     colnames(cnv.geom) = sample.names
-    cnv.geom = apply(cnv.geom, 2, function(x)x/sum(x))
-    d.mat = as.matrix(stats::dist(t(cnv.geom), method="man"))
-  } else {
-    dist.cnv <- function(samp1,samp2){
-      cnv1.gr = cnv.gr[which(cnv.gr$sample==samp1)]
-      cnv2.gr = cnv.gr[which(cnv.gr$sample==samp2)]
-      ol = GenomicRanges::findOverlaps(cnv1.gr, cnv2.gr)
-      w.ol = sum(GenomicRanges::width(GenomicRanges::pintersect(cnv1.gr[S4Vectors::queryHits(ol)], cnv2.gr[S4Vectors::subjectHits(ol)]))/1e3)
-      1-(2 * w.ol / sum(GenomicRanges::width(c(cnv1.gr, cnv2.gr))/1e3))
-    }
+    cnv.geom = cnv.geom / 1e3
+    cnv.geom.sqrt = sqrt(cnv.geom)
+    d = t(cnv.geom.sqrt) %*% cnv.geom.sqrt
+    w.mean = apply(cnv.geom, 2, sum)
     sc = utils::combn(sample.names, 2)
-    d.l = parallel::mclapply(1:ncol(sc), function(ii) dist.cnv(sc[1,ii],sc[2,ii]), mc.cores=nb.cores)
-    d.mat = matrix(NA,length(sample.names),length(sample.names))
-    rownames(d.mat) = colnames(d.mat) = sample.names
-    for(ii in 1:ncol(sc))
-      d.mat[sc[1,ii],sc[2,ii]] = d.mat[sc[2,ii],sc[1,ii]] = d.l[[ii]]
-    cnv.geom = NULL
-  }
-  hc = stats::hclust(stats::as.dist(d.mat),method=cl.method)
-  return(list(d=d.mat,hc=hc, cnv.geom=cnv.geom))
+    w.mean.mat = matrix(NA, length(w.mean), length(w.mean))
+    w.mean.mat[lower.tri(w.mean.mat)] = w.mean[sc[1,]]+w.mean[sc[2,]]
+    w.mean.mat[upper.tri(w.mean.mat)] = t(w.mean.mat)[upper.tri(w.mean.mat)]
+    w.mean.mat = w.mean.mat / 2
+    d.mat = 1 - d / w.mean.mat
+    diag(d.mat) = 0
+    hc = stats::hclust(stats::as.dist(d.mat),method=cl.method)
+    return(list(d=d.mat,hc=hc, cnv.geom=cnv.geom))
 }

@@ -4,8 +4,7 @@
 \alias{cluster.regions}
 \title{Cluster samples using their abnormal regions}
 \usage{
-cluster.regions(cnv.df, cl.method = "complete", nb.cores = 3,
-  geom.approx = FALSE)
+cluster.regions(cnv.df, cl.method = "complete", nb.cores = 3)
 }
 \arguments{
 \item{cnv.df}{a data.frame with the abnormal regions for each sample. Columns 'chr', 'start', 'end' and 'sample' are required.}
@@ -13,8 +12,6 @@ cluster.regions(cnv.df, cl.method = "complete", nb.cores = 3,
 \item{cl.method}{the linkage criterion for hierarchical clustering. Default is 'complete'.}
 
 \item{nb.cores}{the number of processors to use. Default is 1.}
-
-\item{geom.approx}{should the geometric approximation be used (faster). Default is FALSE.}
 }
 \value{
 a list
