@@ -28,7 +28,7 @@ write.split.samples <- function(res, files.df, samples=NULL, files.col = c("z","
 
         read.chunk <- function(){
             res.l = lapply(1:length(con.l), function(con.ii){
-                               res = tryCatch(read.table(con.l[[con.ii]], as.is=TRUE, nrows=chunk.size), error=function(e)return(NULL))
+                               res = tryCatch(utils::read.table(con.l[[con.ii]], as.is=TRUE, nrows=chunk.size), error=function(e)return(NULL))
                                if(is.null(res)){
                                    return(NULL)
                                }

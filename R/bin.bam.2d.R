@@ -69,11 +69,11 @@ bin.bam.2d <- function(bam.file, bins.df, outfile.prefix = NULL, appendIndex.out
     bam.2 = GenomicRanges::GRanges(bam.df$mrnm, IRanges::IRanges(bam.df$mpos, width=1))
     ol2 = GenomicRanges::findOverlaps(bam.2, bins.2)
     bam.df$start2 = bam.df$chr2 = NA
-    bam.df$chr2[queryHits(ol2)] = bins.2.df$chr[subjectHits(ol2)]
-    bam.df$start2[queryHits(ol2)] = bins.2.df$start[subjectHits(ol2)]
+    bam.df$chr2[S4Vectors::queryHits(ol2)] = bins.2.df$chr[S4Vectors::subjectHits(ol2)]
+    bam.df$start2[S4Vectors::queryHits(ol2)] = bins.2.df$start[S4Vectors::subjectHits(ol2)]
     bam.df = bam.df[,c("chr","start","end","chr2","start2")]
     bam.df$read = 1
-    bam.df = aggregate(read~chr+start+end+chr2+start2, data=bam.df, sum)
+    bam.df = stats::aggregate(read~chr+start+end+chr2+start2, data=bam.df, sum)
     bam.df = bam.df[order(as.character(bam.df$chr), bam.df$start),]    
     if (!is.null(outfile.prefix)) {
       utils::write.table(bam.df, file = outfile.prefix, quote = FALSE, row.names = FALSE,

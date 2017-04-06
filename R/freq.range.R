@@ -11,7 +11,7 @@
 ##' @export
 ##' @import magrittr
 freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE, chunk.size=1e4){
-    . = V1 = chr = nb = prop = gen.kb = NULL ## Uglily silence R checks
+    . = V1 = chr = nb = prop = gen.kb = subjectHits = queryHits = chunk = NULL ## Uglily silence R checks
   if(!all(c("chr","start","end") %in% colnames(range.df))){
     stop("Missing column in 'range.df'. 'chr', 'start' and 'end' are required.")
   }
