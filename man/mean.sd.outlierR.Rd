@@ -23,4 +23,3 @@ Computes the mean and standard deviation after removing outlier groups.
 Jean Monlong
 }
 \keyword{internal}
-

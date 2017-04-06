@@ -5,11 +5,12 @@
 ##' @param range.df a data.frame with columns 'chr', 'start' and 'end'.
 ##' @param plot should a graph with the frequency distribution be displayed. Default is FALSE.
 ##' @param annotate.only If TRUE, the input ranges are annotated with the number of other overlapping ranges. If FALSE (Default), the input ranges are fragmented and the frequency computed for each sub-range.
+##' @param chunk.size the size of the chunk to analyze. Useful when many ranges and/or when 'annotate.only=TRUE'. Default is 10000.
 ##' @return a data.frame with the frequency of each sub-range
 ##' @author Jean Monlong
 ##' @export
 ##' @import magrittr
-freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE){
+freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE, chunk.size=1e4){
     . = V1 = chr = nb = prop = gen.kb = NULL ## Uglily silence R checks
   if(!all(c("chr","start","end") %in% colnames(range.df))){
     stop("Missing column in 'range.df'. 'chr', 'start' and 'end' are required.")
@@ -18,23 +19,24 @@ freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE){
     range.df$sample = 1:nrow(range.df)
   }
   nb.samp = length(unique(range.df$sample))
-  freq.chr.gr <- function(cnv.o){
-    gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end), sample=sample))
-    if(annotate.only) {
-      gr.d = gr
-    } else {
-      gr.d = GenomicRanges::disjoin(gr)
-      cnv.o = GenomicRanges::as.data.frame(gr.d)[,1:3]
-      colnames(cnv.o)[1] = "chr"
-    }
-    ol = data.table::data.table(as.data.frame(GenomicRanges::findOverlaps(gr.d, gr)))
-    ol = ol[,.(length(unique(gr$sample[subjectHits]))), by=.(queryHits)]
-    cnv.o$nb = 0
-    cnv.o$nb[ol[,queryHits]] = ol[,V1]
-    cnv.o$prop = cnv.o$nb / nb.samp
-    cnv.o
+  range.gr =  with(range.df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
+  if(annotate.only) {
+    res.df = range.df
+  } else {
+    res.df = GenomicRanges::as.data.frame(GenomicRanges::disjoin(range.gr))[,1:3]
+    colnames(res.df)[1] = "chr"
   }
-  fr.df = freq.chr.gr(range.df)
+  res.df$chunk = rep(1:ceiling(nrow(res.df)/chunk.size), each=chunk.size)[1:nrow(res.df)]
+  freq.chunk <- function(df){
+    gr =  with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
+    ol = data.table::data.table(as.data.frame(GenomicRanges::findOverlaps(gr, range.gr)))
+    ol = ol[,.(length(unique(range.df$sample[subjectHits]))), by=.(queryHits)]
+    df$nb = 0
+    df$nb[ol[,queryHits]] = ol[,V1]
+    df$prop = df$nb / nb.samp
+    df
+  }
+  fr.df = dplyr::do(dplyr::group_by(res.df, chunk), freq.chunk(.))
   if(plot){
     f.df = fr.df %>% dplyr::group_by(chr, start, end) %>% dplyr::summarize(nb=sum(nb), prop=sum(prop), gen.kb=utils::head((end-start)/1e3, 1)) %>% dplyr::arrange(chr)
     print(suppressWarnings(ggplot2::ggplot(f.df, ggplot2::aes(x=signif(prop,3), y=gen.kb, fill=chr)) + ggplot2::xlab("proportion of samples") +

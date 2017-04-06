@@ -33,4 +33,3 @@ Split join results into one file per sample per feature. For example to split an
 \author{
 Jean Monlong
 }
-

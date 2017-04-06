@@ -28,4 +28,3 @@ require package \code{BSgenome.Hsapiens.UCSC.hg19} to be installed.
 \author{
 Jean Monlong
 }
-

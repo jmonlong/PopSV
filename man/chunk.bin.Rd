@@ -31,4 +31,3 @@ to fit the cluster, the big chunk size will impact on the efficiency of the norm
 \author{
 Jean Monlong
 }
-

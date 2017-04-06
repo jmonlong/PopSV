@@ -30,4 +30,3 @@ Compute QC metrics for each sample informing how much it fits the reference samp
 \author{
 Jean Monlong
 }
-

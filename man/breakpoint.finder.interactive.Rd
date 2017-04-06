@@ -45,4 +45,3 @@ Access to the BAM files is necessary, but also to a web-browser (for the applica
 \author{
 Jean Monlong
 }
-

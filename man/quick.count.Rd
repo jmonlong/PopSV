@@ -39,4 +39,3 @@ If `col.files="bc.gc.gz"`, for example, the bin counts will be merged from the p
 \author{
 Jean Monlong
 }
-

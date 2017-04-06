@@ -41,4 +41,3 @@ name of the files with the bin counts and compressed bin counts are created. Nor
 \author{
 Jean Monlong
 }
-

@@ -24,4 +24,3 @@ Merge consecutive bins (end1+1->start2).
 Jean Monlong
 }
 \keyword{internal}
-

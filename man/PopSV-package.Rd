@@ -16,10 +16,9 @@ Date: \tab 2015-12-09\cr
 License: \tab GPL-2\cr
 }
 }
-\author{
-Jean Monlong \email{jean.monlong@mail.mcgill.ca}
-}
 \seealso{
 \url{http://jmonlong.github.io/PopSV/}
 }
-
+\author{
+Jean Monlong \email{jean.monlong@mail.mcgill.ca}
+}

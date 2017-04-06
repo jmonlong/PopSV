@@ -29,4 +29,3 @@ Display a chromosome view of the CNVs across samples
 \author{
 Jean Monlong
 }
-

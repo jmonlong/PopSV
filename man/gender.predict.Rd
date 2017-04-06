@@ -18,4 +18,3 @@ Predict the gender of a sample or a group of samples
 \author{
 Jean Monlong
 }
-

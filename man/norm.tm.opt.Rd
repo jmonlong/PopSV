@@ -32,4 +32,3 @@ Optimized version of the trimmed-mean normalization for bin counts.
 Jean Monlong
 }
 \keyword{internal}
-

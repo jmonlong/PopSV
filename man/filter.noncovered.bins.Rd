@@ -30,4 +30,3 @@ If 'bc.med.min' is NULL, the function will quickly model the coverage due to off
 \author{
 Jean Monlong
 }
-

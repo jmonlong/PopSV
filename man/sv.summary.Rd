@@ -27,4 +27,3 @@ A list is returned. Its first element is a list of ggplot object with the differ
 \author{
 Jean Monlong
 }
-

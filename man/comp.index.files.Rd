@@ -30,4 +30,3 @@ The files should be ordered by genomic position. If not 'reorder=TRUE' will forc
 \author{
 Jean Monlong
 }
-

@@ -22,4 +22,3 @@ Checks that the Z-scores of unaffected samples are centered in 0. When controls 
 \author{
 Jean Monlong
 }
-

@@ -21,4 +21,3 @@ Create an empty data.frame with NA and specified column types. Probably not the 
 Jean Monlong
 }
 \keyword{internal}
-

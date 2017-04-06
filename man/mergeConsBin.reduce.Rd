@@ -21,4 +21,3 @@ Merge nearby bins using a user-defined 'stitching' distance. Duplication and del
 Jean Monlong
 }
 \keyword{internal}
-

@@ -23,4 +23,3 @@ Winsorising a vector: any value higher(lower) than 'u'('l') are changed to 'u'('
 Jean Monlong
 }
 \keyword{internal}
-

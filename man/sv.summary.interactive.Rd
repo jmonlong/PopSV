@@ -29,4 +29,3 @@ A number of simple metrics are displayed, to get an idea of the quality of the c
 \author{
 Jean Monlong
 }
-

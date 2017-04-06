@@ -23,4 +23,3 @@ Circular Binary Segmentation of the Z-scores. (NOT TESTED WELL YET)
 Jean Monlong
 }
 \keyword{internal}
-

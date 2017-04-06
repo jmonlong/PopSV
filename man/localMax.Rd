@@ -21,4 +21,3 @@ Finds the local maximum.
 Jean Monlong
 }
 \keyword{internal}
-

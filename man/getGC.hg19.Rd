@@ -21,4 +21,3 @@ be displayed.
 \author{
 Jean Monlong
 }
-
