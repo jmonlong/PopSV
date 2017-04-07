@@ -14,6 +14,7 @@
 ##' @export
 tmm.norm <- function(bc.df, cont.sample, trim.level=.3, nb.cores = 1, norm.stats.comp = TRUE) {
     all.samples = setdiff(colnames(bc.df), c("chr", "start", "end", "chr2", "start2"))
+    bc.df = as.data.frame(bc.df)
 
     if(all(all.samples != cont.sample)){
         stop("'cont.sample' sample is not in 'bc.df'")
