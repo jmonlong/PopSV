@@ -6,10 +6,11 @@
 ##' @param chr.df a data.frame with the chromosome boundaries.
 ##' @param showSampleNames should the sample names be displayed. Default is FALSE (it quickly becomes unreadable).
 ##' @param chr.prefix Is there a 'chr' prefix in the chromosome names. Default is FALSE
+##' @param chr.position How should the chromosome be arranged. Default is 'vertical', other option is 'packed'.
 ##' @return a ggplot graph object
 ##' @author Jean Monlong
 ##' @export
-chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NULL, showSampleNames=FALSE, chr.prefix=FALSE){
+chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NULL, showSampleNames=FALSE, chr.prefix=FALSE, chr.position=c("vertical","packed")){
   ## Uglily appeases R checks
   cnv = seg = . = chr = NULL
 
@@ -79,7 +80,14 @@ chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NU
   sampChr = unique(cnv.b[, c("sample","chr")])
   chr.df = merge(chr.df, sampChr)
 
-  ggp = ggplot2::ggplot(cnv.b, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=as.numeric(sample)-.5, ymax=as.numeric(sample)+.5)) + ggplot2::geom_rect(data=chr.df, alpha=.1, fill="black") + ggplot2::geom_rect(ggplot2::aes(fill=cnv)) + ggplot2::scale_y_continuous(breaks=1:nlevels(cnv.b$sample), labels=levels(cnv.b$sample)) + ggplot2::theme_bw() + ggplot2::xlab("position (Mb)") + ggplot2::facet_grid(chr~., scales="free") + ggplot2::scale_fill_gradient(name=paste(bin.size,"bp bin\noverlap"), high="red",low="blue", limits=0:1)
+  ggp = ggplot2::ggplot(cnv.b, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=as.numeric(sample)-.5, ymax=as.numeric(sample)+.5)) + ggplot2::geom_rect(data=chr.df, alpha=.1, fill="black") + ggplot2::geom_rect(ggplot2::aes(fill=cnv)) + ggplot2::scale_y_continuous(breaks=1:nlevels(cnv.b$sample), labels=levels(cnv.b$sample)) + ggplot2::theme_bw() + ggplot2::xlab("position (Mb)") + ggplot2::scale_fill_gradient(name=paste(bin.size,"bp bin\noverlap"), high="red",low="blue", limits=0:1)
+
+  if(chr.position == "vertical"){
+    ggp = ggp + ggplot2::facet_grid(chr~., scales="free")
+  }
+  if(chr.position == "packed"){
+    ggp = ggp + ggplot2::facet_wrap(~chr)
+  }
 
   if(!showSampleNames){
     ggp = ggp + ggplot2::theme(axis.text.y=ggplot2::element_blank())
