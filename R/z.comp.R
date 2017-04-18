@@ -94,7 +94,7 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
             msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,])), mc.cores=nb.cores)
             msd = matrix(unlist(msd), nrow=3)
             rownames(msd) = c("m","sd","nb.remove")
-            msd = cbind(bc.1, msd)
+            msd = cbind(bc.1, t(msd))
             if(!is.data.frame(bc.f)){
                 utils::write.table(msd, file=norm.stats.f, row.names=FALSE, sep="\t", col.names=firstChunk, append=!firstChunk)
             }
