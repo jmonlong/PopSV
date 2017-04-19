@@ -6,10 +6,11 @@
 ##' @param chr.df a data.frame with the chromosome boundaries.
 ##' @param showSampleNames should the sample names be displayed. Default is FALSE (it quickly becomes unreadable).
 ##' @param chr.prefix Is there a 'chr' prefix in the chromosome names. Default is FALSE
+##' @param show.all.chr Should all the chromosomes be displayed (even if no CNVs) ? Default is FALSE, i.e. only chr with CNVs are displayed.
 ##' @return a ggplot graph object
 ##' @author Jean Monlong
 ##' @export
-chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NULL, showSampleNames=FALSE, chr.prefix=FALSE){
+chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NULL, showSampleNames=FALSE, chr.prefix=FALSE, show.all.chr=FALSE){
   ## Uglily appeases R checks
   cnv = seg = . = chr = NULL
 
@@ -21,7 +22,12 @@ chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NU
   }
 
   if(is.null(chr.df)){
-    chr.df = lapply(unique(cnv.df$chr), function(chr.a){
+    if(show.all.chr){
+      chrs = unique(bins.df$chr)
+    } else {
+      chrs = unique(cnv.df$chr)
+    }
+    chr.df = lapply(chrs, function(chr.a){
       data.frame(chr=chr.a, start=min(bins.df$start[which(bins.df$chr==chr.a)]),
                  end=max(bins.df$end[which(bins.df$chr==chr.a)]))
     })
@@ -76,7 +82,10 @@ chrplot <- function(cnv.df, type=c("sample", "stacked"), bin.size=5e5, chr.df=NU
   cnv.b$sample = factor(cnv.b$sample, levels=unique(cnv.b$sample))
   cnv.b = cnv.b[which(cnv.b$cnv>0),]
 
-  sampChr = unique(cnv.b[, c("sample","chr")])
+  ## sampChr = unique(cnv.b[, c("sample","chr")])
+  sampChr = data.frame(sample=rep(unique(cnv.b$sample),each=length(chrs)),
+                       chr=rep(chrs, length(unique(cnv.b$sample))),
+                       stringsAsFactors=FALSE)
   chr.df = merge(chr.df, sampChr)
 
   ggp = ggplot2::ggplot(cnv.b, ggplot2::aes(xmin=start/1e6, xmax=end/1e6, ymin=as.numeric(sample)-.5, ymax=as.numeric(sample)+.5)) + ggplot2::geom_rect(data=chr.df, alpha=.1, fill="black") + ggplot2::geom_rect(ggplot2::aes(fill=cnv)) + ggplot2::scale_y_continuous(breaks=1:nlevels(cnv.b$sample), labels=levels(cnv.b$sample)) + ggplot2::theme_bw() + ggplot2::xlab("position (Mb)") + ggplot2::facet_grid(chr~., scales="free") + ggplot2::scale_fill_gradient(name=paste(bin.size,"bp bin\noverlap"), high="red",low="blue", limits=0:1)
