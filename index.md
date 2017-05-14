@@ -3,6 +3,9 @@ layout: default
 title: PopSV
 ---
 
+[![Build Status](https://travis-ci.org/jmonlong/PopSV.svg?branch=master)](https://travis-ci.org/jmonlong/PopSV)
+[![codecov](https://codecov.io/gh/jmonlong/PopSV/branch/master/graph/badge.svg)](https://codecov.io/gh/jmonlong/PopSV)
+
 # What is PopSV ?
 
 PopSV is a Copy-Number Variation (CNV) detection method from high-throughput sequencing. Abnormal Read-Depth signal is detected by using a population of samples as reference. Thanks to this population view the whole genome can be robustly interrogated, including regions of low mappability. Moreover, any divergence from the reference samples are detected, even if the signal is incomplete, e.g. tumoral aberrations or SV involving repeats.
@@ -13,13 +16,7 @@ The manuscript presenting the methods and application to hundreds of human genom
 
 ## Installation
 
-To install the latest development version:
-
-```r
-devtools::install_github("jmonlong/PopSV")
-```
-
-This command requires [*devtools* package](https://github.com/hadley/devtools) which can be easily installed with :
+This install command requires [*devtools* package](https://github.com/hadley/devtools) which can be easily installed with :
 
 ```r
 install.packages("devtools")
@@ -32,7 +29,20 @@ source("http://bioconductor.org/biocLite.R")
 biocLite("BSgenome.Hsapiens.UCSC.hg19", "Rsamtools", "DNAcopy")
 ```
 
+Then, run the following to install the latest development version:
+
+```r
+devtools::install_github("jmonlong/PopSV")
+```
+
+If you get an error, you can try the following instead:
+
+```r
+devtools::install_git("git://github.com/jmonlong/PopSV.git")
+```
+
 **R 3.1 or higher** is required.
+
 
 ## Usage
 
@@ -61,7 +71,7 @@ bins.df = fragment.genome.hp19(bin.size)
 save(bins.df, file="bins.RData")
 ## Run PopSV
 res.GCcounts = autoGCcounts("files.RData", "bins.RData")
-res.df = autoNormTest("files.RData", "bins.RData")
+cnvs.df = autoNormTest("files.RData", "bins.RData")
 ```
 
 
