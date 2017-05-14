@@ -36,7 +36,7 @@ Eventually if you have a lot of samples (good!) and you suspect the presence of 
 bc.rand = quick.count(files.df, bins.df, nb.cores=3, nb.rand.bins=1e3)
 ```
 
-Here, we didn't specify to use the GC corrected bin counts (`col.files="bc.gc.gz"` parameter before), so it will actually go to the BAM files and count the reads in 1000 random bins. Depending on your sample size, it might take some time, it might be good to use a cluster job (with [BatchJobs](2-ClusterManagement.md)).
+Here, we didn't specify to use the GC corrected bin counts (`col.files="bc.gc.gz"` parameter before), so it will actually go to the BAM files and count the reads in 1000 random bins. Depending on your sample size, it might take some time and might be a good idea to use a cluster job (with [BatchJobs](2-ClusterManagement.md)).
 
 
 ## Summary of the calls
@@ -78,7 +78,7 @@ We can play with the minimum number of consecutive bins. Keep in mind, we expect
 
 ![SV summary - Affected genome](public/svSummaryFreq.png)
 
-The frequency distribution can be good to check to. Here, it's a twin study, so the peak at 3-sample frequency is actually good (variant in twins + one parent). 
+The frequency distribution can be good to check too. Here, it's a twin study, so the peak at 3-sample frequency is actually good (variant in twins + one parent). 
 
 ![SV summary - Affected genome](public/svSummaryExport.png)
 
@@ -100,7 +100,9 @@ For now the available functions are:
 
 ## Interactive breakpoint fine-tuning
 
-PopSV calls are defined at the bin resolution, hence hundreds to thousands of bp. In order to fine-tune the breakpoints location we implemented an interactive app. `breakpoint.finder.interactive` takes as **input a genomic region, some samples and the path to the bam files**. It then opens an application in the web-browser where you can slide the breakpoints where desired. The interface looks like this:
+PopSV calls are defined at the bin resolution, hence hundreds to thousands of bp. In order to fine-tune the breakpoints location we implemented an interactive app. 
+
+`breakpoint.finder.interactive` takes as **input a genomic region, some samples and the path to the bam files**. It then opens an application in the web-browser where you can slide the breakpoints where desired. The interface looks like this:
 
 ![Interactive breakpoint fine-tuning](public/bkptInteractive.jpg)
 
