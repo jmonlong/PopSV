@@ -17,18 +17,18 @@ comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrit
     stop(files[which(!file.exists(files))], ": file not found")
   }
   sapply(1:length(files), function(file.ii) {
-    if(reorder){
-      dt = data.table::fread(files[file.ii])
-      dt[, chr:= as.character(chr)]
-      data.table::setkey(dt, chr, start)
-      utils::write.table(dt, file=files[file.ii], quote=FALSE, row.names=FALSE, sep="\t")
-    }
-    final.file = paste(outprefix[file.ii], ".bgz", sep = "")
-    Rsamtools::bgzip(files[file.ii], dest = final.file, overwrite = TRUE)
-    if (rm.input)
-      file.remove(files[file.ii])
-    Rsamtools::indexTabix(final.file, format = "bed")
-    ##message(paste(final.file, "created and indexed."))
-    return(final.file)
-  })
+           if(reorder){
+             dt = data.table::fread(files[file.ii])
+             dt[, chr:= as.character(chr)]
+             data.table::setkey(dt, chr, start)
+             utils::write.table(dt, file=files[file.ii], quote=FALSE, row.names=FALSE, sep="\t")
+           }
+           final.file = paste(outprefix[file.ii], ".bgz", sep = "")
+           Rsamtools::bgzip(files[file.ii], dest = final.file, overwrite = TRUE)
+           if (rm.input)
+             file.remove(files[file.ii])
+           Rsamtools::indexTabix(final.file, format = "bed")
+           ##message(paste(final.file, "created and indexed."))
+           return(final.file)
+         })
 }
