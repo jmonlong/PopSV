@@ -74,8 +74,9 @@ res.GCcounts = autoGCcounts("files.RData", "bins.RData")
 cnvs.df = autoNormTest("files.RData", "bins.RData")
 ```
 
-In this example `bams.tsv` if a tab-delimited file with a column *sample* (with the sample names) and a column *bam* (with the path to each BAM file). The BAM files must be sorted and indexed.
+In this example `bams.tsv` is a tab-delimited file with a column *sample* (with the sample names) and a column *bam* (with the path to each BAM file). The BAM files must be sorted and indexed.
 
+In practice I run these commands in the login node of our HPC cluster (it sends jobs to the cluster). I also have this in a [*screen*](https://www.gnu.org/software/screen/manual/screen.html) so I can disconnect from the server and let it run on the background.
 
 # Workflow
 
