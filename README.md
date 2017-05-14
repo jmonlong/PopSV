@@ -74,6 +74,7 @@ res.GCcounts = autoGCcounts("files.RData", "bins.RData")
 cnvs.df = autoNormTest("files.RData", "bins.RData")
 ```
 
+In this example `bams.tsv` if a tab-delimited file with a column *sample* (with the sample names) and a column *bam* (with the path to each BAM file). The BAM files must be sorted and indexed.
 
 
 # Workflow
@@ -87,7 +88,7 @@ A quick description of the different analysis steps and their corresponding func
 
 # Running PopSV on computing clusters
 
-PopSV workflow heavily uses [*BatchJobs* package](https://github.com/tudo-r/BatchJobs) to send computations to a cluster. It needs some configuration but then it saves a lot of time and the pipeline can be run easily. For more information on how to configure it and how the pipelines are using it go to [this page](2-ClusterManagement.md).
+PopSV workflow uses [*BatchJobs* package](https://github.com/tudo-r/BatchJobs) to send computations to a cluster. It needs some configuration but then it saves a lot of time and the pipeline can be run easily. For more information on how to configure it and how the pipelines are using it go to [this page](2-ClusterManagement.md).
 
 
 # FAQ
