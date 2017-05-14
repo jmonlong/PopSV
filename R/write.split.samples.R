@@ -22,8 +22,9 @@ write.split.samples <- function(res, files.df, samples=NULL, files.col = c("z","
     header.l = lapply(con.l, function(con){
                         unlist(strsplit(readLines(con, n = 1), "\t"))
                       })
+    coord.cols = intersect(header.l[[1]], c("chr","start","end", "start2", "chr2"))
     if(is.null(samples)){
-      samples = setdiff(header.l[[1]], c("chr","start","end", "start2", "chr2"))
+      samples = setdiff(header.l[[1]], coord.cols)
     }
 
     read.chunk <- function(){
@@ -33,7 +34,7 @@ write.split.samples <- function(res, files.df, samples=NULL, files.col = c("z","
                          return(NULL)
                        }
                        colnames(res) = header.l[[con.ii]]
-                       col.ii = which(colnames(res) %in% c("chr","start","end","chr2","start2",samples))
+                       col.ii = which(colnames(res) %in% c(coord.cols, samples))
                        res[,col.ii]
                      })
       if(is.null(res.l[[1]])){
@@ -50,13 +51,14 @@ write.split.samples <- function(res, files.df, samples=NULL, files.col = c("z","
 
     close.con = lapply(con.l, close)
   } else {
+    coord.cols = intersect(colnames(res[[1]]), c("chr","start","end", "start2", "chr2"))
     if(is.null(samples)){
-      samples = setdiff(colnames(res[[1]]), c("chr","start","end"))
+      samples = setdiff(colnames(res[[1]]), coord.cols)
     }
     tmp = parallel::mclapply(samples, function(samp) {
                                for (ii in 1:length(files.col)) {
-                                 res.f = res[[ii]][, c("chr", "start", "end", samp)]
-                                 colnames(res.f)[4] = files.col[ii]
+                                 res.f = res[[ii]][, c(coord.cols, samp)]
+                                 colnames(res.f)[ncol(res.f)] = files.col[ii]
                                  res.f = with(res.f, dplyr::arrange(res.f, chr, start))
                                  utils::write.table(res.f, file = files.df[which(files.df$sample == samp), files.col[ii]], row.names = FALSE, quote = FALSE, sep = "\t", append=append, col.names=!append)
                                }
