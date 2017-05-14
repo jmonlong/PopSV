@@ -27,6 +27,7 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
 
   if (z.poisson) {
     z.comp.f <- function(x, mean.c, sd.c) {
+      if(any(mean.c==0)) mean.c = ifelse(mean.c==0, 1, mean.c)
       z.n = ifelse(sd.c<2, Inf, (x - mean.c)/sd.c)
       pv.p = stats::ppois(x, mean.c)
       z.p = stats::qnorm(ifelse(pv.p<.95, runif(length(x),0,.99), pv.p))
@@ -69,7 +70,8 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
       con.ns = file(norm.stats.f, "r")
       ns.header = unlist(strsplit(readLines(con.ns, n = 1), "\t"))
       ns.colClasses = ifelse(ns.header %in% c("chr","chr2"), "character", "NULL")
-      ns.colClasses = ifelse(ns.header %in% c("start","start2", "end", "m", "sd"), "integer", ns.colClasses)
+      ns.colClasses = ifelse(ns.header %in% c("start","start2", "end"), "integer", ns.colClasses)
+      ns.colClasses = ifelse(ns.header %in% c("m","sd"), "numeric", ns.colClasses)
       ns.header = ns.header[which(ns.colClasses != "NULL")]
     }
 
