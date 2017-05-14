@@ -6,10 +6,11 @@ permalink: /2-ClusterManagement.md/
 
 ## *BatchJobs* package
 
-[*BatchJobs*](https://github.com/tudo-r/BatchJobs) is a potent package to communicate with a cluster, i.e. send jobs, check their status, eventually rerun, retrieve the results.
-PopSV has been designed into separate steps to be ran more easily on a computing cluster using *BatchJobs*.
+[*BatchJobs*](https://github.com/tudo-r/BatchJobs) is a useful package to communicate with a computing cluster: send jobs, check their status, eventually rerun them, retrieve the results.
+PopSV has been designed into separate steps to be ran more easily on a computing cluster using *BatchJobs*. 
+Thanks to the multi-step workflow, the computation is parallelized sometimes by sample, other times by genomic regions.
 
-A two-commands version is also available (see *Automated run* below. It's basically a wrapper for the basic analysis steps with some useful functions (running custom steps, stop/restart). However it's less flexible.
+Instead of running each step manually, we recommend using the two-commands wrappers (see *Automated run* below). It's basically a wrapper for the basic analysis steps with some useful functions (running custom steps, stop/restart). It should be sufficient for most analysis but it's less flexible and if you want to change some specific parameters you might have to tweak it.
 
 ## Installation and configuration
 
@@ -33,7 +34,7 @@ I would recommend to put these 3 files **in the root of your personal space**, i
 
 A cluster template is a template form of the bash script that you would send through `qsub`/`msub`. There you define the placeholder for the resources or parameters of the job. This file will be parsed by *BatchJobs*.
 
-For our cluster [Guillimin](http://www.hpc.mcgill.ca/), we create a `guillimin.tmpl` file like this :
+For our cluster [Guillimin](http://www.hpc.mcgill.ca/), I created a `guillimin.tmpl` file like this :
 
 ```sh
 #PBS -N <%= job.name %>
@@ -57,7 +58,7 @@ In order to easily use the pipelines provided with PopSV package, I would recomm
 
 Parser functions are saved in a R script, called for example `makeClusterFunctionsAdaptive.R`. This will parse the template and create the actual commands to send, cancel and check jobs.
 
-Likely you just need to check/replace `qsub`/`qdel`/`qstat` calls with the correct bash commands (sometimes `msub`/`canceljob`/`showq`).
+Most likely, you just need to check/replace `qsub`/`qdel`/`qstat` calls with the correct bash commands (sometimes `msub`/`canceljob`/`showq`).
 
 From [our file](https://github.com/jmonlong/PopSV/blob/master/scripts/makeClusterFunctionsAdaptive.R), these are the lines you might need to change :
 
@@ -147,13 +148,13 @@ Still, a few parameters can be passed to the two functions for the user convenie
 + `rewrite=TRUE` will force the normalized bin counts and normalization stats to be rewritten.
 + `file.suffix=` to add a suffix to the temporary files. This is useful when the pipeline is run several times on the same folder, for example when splitting the samples in batches (e.g. presence of batch effects, male/female split for XY chrs).
 
-We provide a [script](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-batchjobs-automatedPipeline.R) to PopSV using these wrappers. In addition, when we want to analyze X and Y chromosomes, the samples have to be split and these wrappers come handy to run easily three analysis (see this [example](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-XY-batchjobs-automatedPipeline.R)).
+As an example [this script](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-batchjobs-automatedPipeline.R) shows how PopSV is run using these wrappers. In addition, when we want to analyze X and Y chromosomes, the samples have to be split and these wrappers come handy to run easily three analysis (see this [example](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-XY-batchjobs-automatedPipeline.R)).
 
 ### Step-by-step manual run
 
 The general idea is to have one script per analysis (e.g. bin size, project). Each such analysis should be in its own folder to avoid possible confusion between temporary files. Examples of pipeline scripts can be found in the [`scripts` folder of the GitHub repository](https://github.com/jmonlong/PopSV/tree/master/scripts).
 
-Because it manipulates large data (BAM files, genome-wide coverage) and large sample sizes, PopSV was designed to create and work with intermediate files. The management of these files are mostly handle automatically. In practice all the important path and folder structure is saved in the `files.df` data.frame, originally created by  `init.filenames` function. For this reason, the results of each analysis steps are saved as the local files so that the next steps can be run later without the need for you to think about what to save etc.
+Because it manipulates large data (BAM files, genome-wide coverage) and large sample sizes, PopSV was designed to create and work with intermediate files. The management of these files are mostly handled automatically. In practice all the important path and folder structure is saved in the `files.df` data.frame, originally created by  `init.filenames` function. For this reason, the results of each analysis steps are saved as the local files so that the next steps can be run later without the need for you to think about what to save etc.
 
 So the script doesn't need to be ran each time from the start but rather ran step by step. In practice you often have to wait a couple of hours for some step to compute. Think about R as a new shell: you would open R, check the status of the jobs in the clusters, rerun them if necessary, or start the next step, etc. You can run R on this master script in a login node because nothing will be directly computed there, the real computation are sent as actual jobs.
 
