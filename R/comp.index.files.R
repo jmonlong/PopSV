@@ -20,7 +20,11 @@ comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrit
            if(reorder){
              dt = data.table::fread(files[file.ii])
              dt[, chr:= as.character(chr)]
-             data.table::setkey(dt, chr, start)
+             if(all(c("chr2", "start2") %in% colnames(dt))){
+               data.table::setkey(dt, chr, start, chr2, start2)
+             } else {
+               data.table::setkey(dt, chr, start)
+             }
              utils::write.table(dt, file=files[file.ii], quote=FALSE, row.names=FALSE, sep="\t")
            }
            final.file = paste(outprefix[file.ii], ".bgz", sep = "")
