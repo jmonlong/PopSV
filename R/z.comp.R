@@ -60,14 +60,17 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
     ## Open file connection and prepare which columns to read
     con.bc = file(bc.f, "r")
     bc.header = unlist(strsplit(readLines(con.bc, n = 1), "\t"))
-    bc.colClasses = c("character", rep("numeric",2), ifelse(bc.header[-(1:3)] %in% files.df$sample, "numeric", "NULL"))
+    bc.colClasses = ifelse(bc.header %in% c("chr","chr2"), "character", "NULL")
+    bc.colClasses = ifelse(bc.header %in% c("start","start2", "end"), "integer", bc.colClasses)
+    bc.colClasses = ifelse(bc.header %in% files.df$sample, "numeric", bc.colClasses)
     bc.header = bc.header[which(bc.colClasses != "NULL")]
     files.df = files.df[which(files.df$sample %in% bc.header),]
     if(!recomp.msd){
       con.ns = file(norm.stats.f, "r")
       ns.header = unlist(strsplit(readLines(con.ns, n = 1), "\t"))
-      ns.colClasses = c("character", rep("numeric",2), ifelse(ns.header[-(1:3)] %in% c("m","sd"), "numeric", "NULL"))
-      ns.header = ns.header[1:5]
+      ns.colClasses = ifelse(ns.header %in% c("chr","chr2"), "character", "NULL")
+      ns.colClasses = ifelse(ns.header %in% c("start","start2", "end", "m", "sd"), "integer", ns.colClasses)
+      ns.header = ns.header[which(ns.colClasses != "NULL")]
     }
 
     read.chunk <- function(){
@@ -95,8 +98,9 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
 
     ## Read chunk
     bc.l = chunk.o$bc
-    bc.1 = bc.l[, 1:3]
-    bc.l = as.matrix(bc.l[, -(1:3)])
+    coord.cols = which(colnames(bc.l) %in% c("chr","chr2","start","start2","end"))
+    bc.1 = bc.l[, coord.cols]
+    bc.l = as.matrix(bc.l[, -coord.cols])
 
     if(recomp.msd){
       msd = parallel::mclapply(1:nrow(bc.l), function(rr) unlist(mean.sd.outlierR(bc.l[rr,])), mc.cores=nb.cores)
