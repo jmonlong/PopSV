@@ -30,7 +30,7 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
       if(any(mean.c==0)) mean.c = ifelse(mean.c==0, 1, mean.c)
       z.n = ifelse(sd.c<2, Inf, (x - mean.c)/sd.c)
       pv.p = stats::ppois(x, mean.c)
-      z.p = stats::qnorm(ifelse(pv.p<.95, runif(length(x),0,.99), pv.p))
+      z.p = stats::qnorm(ifelse(pv.p<.95, stats::runif(length(x),0,.99), pv.p))
       n.ii = abs(z.n) < abs(z.p)
       z.p[which(n.ii)] = z.n[which(n.ii)]
       z.p

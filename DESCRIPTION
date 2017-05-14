@@ -1,7 +1,7 @@
 Package: PopSV
 Type: Package
 Title: Population-based detection of structural variants from Read-Depth signal
-Version: 1.0
+Version: 1.1
 Date: 2015-12-09
 Author: Jean Monlong
 Maintainer: Jean Monlong <jean.monlong@mail.mcgill.ca>
@@ -34,10 +34,8 @@ Imports:
     parallel,
     reshape,
     DNAcopy,
-    Rcpp,
     tidyr
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     testthat
 RoxygenNote: 6.0.1
-LinkingTo: Rcpp

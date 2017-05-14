@@ -46,12 +46,6 @@ test_that("Counts concordant reads",{
   expect_equal(all(tail(bb$bc$bc)==0), TRUE)
 })
 
-test_that("Counts discordant reads",{
-  bb = bin.bam.disc(bam.f, bin.df, appendIndex.outfile=FALSE)
-  expect_equal(any(bb$bc$bc!=0), TRUE)
-  expect_equal(all(tail(bb$bc$bc)==0), TRUE)
-})
-
 test_that("Writes files",{
   bb = bin.bam(bam.f, bin.df, outfile.prefix = "test.tsv", appendIndex.outfile=FALSE)
   expect_equal(file.exists("test.tsv"), TRUE)

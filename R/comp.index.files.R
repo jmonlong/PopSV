@@ -12,7 +12,7 @@
 ##' @import data.table
 ##' @export
 comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrite.out = TRUE, reorder=FALSE) {
-  chr = start = NULL ## Uglily appeases R checks
+  chr = start = chr2 = start2 = NULL ## Uglily appeases R checks
   if(any(!file.exists(files))){
     stop(files[which(!file.exists(files))], ": file not found")
   }
