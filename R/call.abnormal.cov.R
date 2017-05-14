@@ -35,11 +35,12 @@ call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, mer
 
   if(!is.data.frame(files.df) & is.data.frame(files.df$z)){
     res.df = files.df$z
+    coord.cols = intersect(colnames(res.df), c("chr","start","end", "start2", "chr2"))
     if(all(samp != colnames(res.df))){
       stop(samp, " is not in the z-score data.frame.")
     }
-    res.df = res.df[,c(colnames(res.df)[1:3], samp)]
-    colnames(res.df)[4] = "z"
+    res.df = res.df[,c(coord.cols, samp)]
+    colnames(res.df)[ncol(res.df)] = "z"
     if(is.data.frame(files.df$fc) & samp %in% colnames(files.df$fc)){
       res.df$fc = files.df$fc[,samp]
     }
@@ -47,6 +48,7 @@ call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, mer
     z.f = files.df$z[which(files.df$sample==samp)]
     if(!file.exists(z.f)) z.f = paste0(z.f, ".bgz")
     res.df = utils::read.table(z.f, header=TRUE, as.is=TRUE)
+    coord.cols = intersect(colnames(res.df), c("chr","start","end", "start2", "chr2"))
     fc.f = files.df$fc[which(files.df$sample==samp)]
     if(!file.exists(fc.f)) fc.f = paste0(fc.f, ".bgz")
     fc = utils::read.table(fc.f, header=TRUE, as.is=TRUE)
@@ -65,11 +67,12 @@ call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, mer
   if (!is.null(norm.stats)) {
     if (is.character(norm.stats) & length(norm.stats) == 1) {
       headers = utils::read.table(norm.stats, nrows = 1, as.is = TRUE)
-      colC = rep("NULL", length(headers))
-      colC[1:4] = c("character","integer","integer","numeric")
+      colC = ifelse(headers %in% c("chr","chr2"), "character", "NULL")
+      colC = ifelse(headers %in% c("start","start2", "end"), "integer", colC)
+      colC = ifelse(headers == "m", "numeric", colC)
       norm.stats = utils::read.table(norm.stats, header = TRUE, colClasses = colC)
     }
-    colnames(norm.stats)[4] = "mean.cov"
+    colnames(norm.stats)[which(colnames(norm.stats)=="m")] = "mean.cov"
     res.df = merge(res.df, norm.stats, all.x=TRUE)
   }
   if(!is.null(gc.df)){
@@ -121,8 +124,12 @@ call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, mer
   res.df$qv = stats::p.adjust(res.df$pv, method = "fdr")
 
   if(!is.null(outfile.pv)){
-    pv.df = res.df[,c("chr","start","end","pv","qv")]
-    pv.df = pv.df[order(pv.df$chr, pv.df$start),]
+    pv.df = res.df[,c(coord.cols,"pv","qv")]
+    if(all(c("chr2","start2") %in% colnames(pv.df))){
+      pv.df = pv.df[order(pv.df$chr, pv.df$start, pv.df$chr2, pv.df$start2),]
+    } else {
+      pv.df = pv.df[order(pv.df$chr, pv.df$start),]
+    }
     utils::write.table(pv.df, outfile.pv, quote=FALSE, row.names=FALSE, sep="\t")
     comp.index.files(outfile.pv)
     rm(pv.df)
