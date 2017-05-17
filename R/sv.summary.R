@@ -5,38 +5,48 @@
 ##' @param res.df the data.frame with the results.
 ##' @param out.pdf the name for the output PDF file to create. If NULL (default), the graphs are either displayed directly or returned as a list.
 ##' @param print Should the graphs be displayed ? If 'out.pdf' though, this parameter is not used as no graph will be displayed.
+##' @param FDR.th the FDR threshold to use. Default is 0.05.
+##' @param min.cn2Dev the minimum deviation from CN2. Default is 0. Using '0.5' would remove CNVs with CN estimates in [1.5,2.5]. 
+##' @param min.cov the minimum coverage in the reference samples. Default is 0.
+##' @param max.sing.kb the maximum amount of single-bin calls. Default is Inf. Use and tweak when batches or outliers are visible in the calls.
 ##' @return A list with :
 ##' \item{graphs.l}{a list of ggplot graphs}
+##' \item{cnv.df}{a data.frame with the selected CNVs}
 ##' \item{info.df}{a data.frame with different summary statistics}
 ##' @author Jean Monlong
 ##' @export
-sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
+sv.summary <- function(res.df, out.pdf=NULL, print=TRUE, FDR.th=.05, min.cn2Dev=0, min.cov=0, max.sing.kb=Inf){
   sample = gen.kb = col = cn = chr = nb = fc = type = start = end = prop = . = freq.n = nb.bin.cons = NULL ## Uglily appease R checks
 
   nb.samp = length(unique(res.df$sample))
-  freq.chr.gr <- function(cnv.o){
-    gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
-    gr.d = GenomicRanges::disjoin(gr)
-    ol = GenomicRanges::findOverlaps(gr.d, gr)
-    thits = base::table(S4Vectors::queryHits(ol))
-    freq.df = data.frame(win.id = as.numeric(names(thits)), nb=as.numeric(thits))
-    win.df = GenomicRanges::as.data.frame(gr.d[as.numeric(freq.df$win.id)])[,1:3]
-    freq.df$chr = as.character(win.df$seqnames)
-    freq.df$start = as.numeric(win.df$start)
-    freq.df$end = as.numeric(win.df$end)
-    freq.df$prop = freq.df$nb / nb.samp
-    freq.df
-  }
 
   res.df$gen.kb = with(res.df, (end-start)/1e3)
+  res.df = res.df[which(res.df$qv<FDR.th & res.df$cn2.dev>=min.cn2Dev),]
+  if(!is.infinite(max.sing.kb)){
+    samp.th = with(res.df, dplyr::summarize(dplyr::arrange(dplyr::group_by(res.df[res.df$nb.bin.cons==1,], sample), qv), sig.th=qv[max(which(cumsum(gen.kb)<max.sing.kb))]))
+    if(!all(unique(res.df$sample) %in% samp.th$sample)){
+      samp.th = rbind(samp.th, data.frame(sample=setdiff(unique(res.df$sample), samp.th$sample), sig.th=Inf))
+    }
+    res.df = merge(res.df, samp.th)
+    res.df = res.df[which(res.df$qv <= res.df$sig.th), ]
+    res.df$sig.th = NULL
+  }
+  if(any(colnames(res.df)=="mean.cov")){
+    res.df = res.df[which(res.df$mean.cov>min.cov),]
+  } else {
+    warning("No column with the mean coverage in the reference.")
+  }
 
+  cnv.df = res.df
+  cnv.df$gen.kb = NULL
+  
   samp.o = stats::aggregate(gen.kb~sample, data=res.df, sum)
   res.df$sample = factor(res.df$sample, levels=samp.o$sample[order(samp.o$gen.kb)])
 
   info.df = data.frame(variable="kb-meanPerSamp",value=mean(samp.o$gen.kb), stringsAsFactors=FALSE)
 
-  freq.df = rbind(data.frame(type="deletion",freq.chr.gr(res.df[which(res.df$fc<1),])),
-          data.frame(type="duplication",freq.chr.gr(res.df[which(res.df$fc>1),])))
+  freq.df = rbind(data.frame(type="deletion",freq.range(res.df[which(res.df$fc<1),], nb.samp=nb.samp)),
+          data.frame(type="duplication",freq.range(res.df[which(res.df$fc>1),], nb.samp=nb.samp)))
 
   output = list()
 
@@ -92,5 +102,5 @@ sv.summary <- function(res.df, out.pdf=NULL, print=TRUE){
     lapply(output, print)
   }
 
-  return(list(graphs.l = output, info.df=info.df))
+  return(list(graphs.l = output, cnv.df=cnv.df, info.df=info.df))
 }

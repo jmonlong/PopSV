@@ -5,11 +5,12 @@
 ##' @param range.df a data.frame with columns 'chr', 'start' and 'end'.
 ##' @param plot should a graph with the frequency distribution be displayed. Default is FALSE.
 ##' @param annotate.only If TRUE, the input ranges are annotated with the number of other overlapping ranges. If FALSE (Default), the input ranges are fragmented and the frequency computed for each sub-range.
+##' @param nb.samp the total number of sample. Used if not NA. Default is NA.
 ##' @return a data.frame with the frequency of each sub-range
 ##' @author Jean Monlong
 ##' @export
 ##' @import magrittr
-freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE){
+freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE, nb.samp=NA){
     . = V1 = chr = nb = prop = gen.kb = queryHits = subjectHits = NULL ## Uglily silence R checks
   if(!all(c("chr","start","end") %in% colnames(range.df))){
     stop("Missing column in 'range.df'. 'chr', 'start' and 'end' are required.")
@@ -17,7 +18,9 @@ freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE){
   if(all(colnames(range.df)!="sample")){
     range.df$sample = 1:nrow(range.df)
   }
-  nb.samp = length(unique(range.df$sample))
+  if(is.na(nb.samp)){
+    nb.samp = length(unique(range.df$sample))
+  }
   freq.chr.gr <- function(cnv.o){
     gr =  with(cnv.o, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end), sample=sample))
     if(annotate.only) {

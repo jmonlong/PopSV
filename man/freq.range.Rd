@@ -4,7 +4,7 @@
 \alias{freq.range}
 \title{Frequency computation for ranges}
 \usage{
-freq.range(range.df, plot = FALSE, annotate.only = FALSE)
+freq.range(range.df, plot = FALSE, annotate.only = FALSE, nb.samp = NA)
 }
 \arguments{
 \item{range.df}{a data.frame with columns 'chr', 'start' and 'end'.}
@@ -12,6 +12,8 @@ freq.range(range.df, plot = FALSE, annotate.only = FALSE)
 \item{plot}{should a graph with the frequency distribution be displayed. Default is FALSE.}
 
 \item{annotate.only}{If TRUE, the input ranges are annotated with the number of other overlapping ranges. If FALSE (Default), the input ranges are fragmented and the frequency computed for each sub-range.}
+
+\item{nb.samp}{the total number of sample. Used if not NA. Default is NA.}
 }
 \value{
 a data.frame with the frequency of each sub-range
