@@ -27,7 +27,7 @@ z.comp <- function(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1
 
   if (z.poisson) {
     z.comp.f <- function(x, mean.c, sd.c) {
-      if(any(mean.c==0)) mean.c = ifelse(mean.c==0, 1, mean.c)
+      if(any(mean.c==0, na.rm=TRUE)) mean.c = ifelse(mean.c==0, 1, mean.c)
       z.n = ifelse(sd.c<2, Inf, (x - mean.c)/sd.c)
       pv.p = stats::ppois(x, mean.c)
       z.p = stats::qnorm(ifelse(pv.p<.95, stats::runif(length(x),0,.99), pv.p))
