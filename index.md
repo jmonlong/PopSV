@@ -29,6 +29,8 @@ source("http://bioconductor.org/biocLite.R")
 biocLite("BSgenome.Hsapiens.UCSC.hg19", "Rsamtools", "DNAcopy")
 ```
 
+*To use hg38 instead of hg19 install `BSgenome.Hsapiens.UCSC.hg38`.*
+
 Then, run the following to install the latest development version:
 
 ```r
