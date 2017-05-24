@@ -5,14 +5,14 @@
 \title{Write VCF file}
 \usage{
 writeVcf(cnv.df, output.file = "cnvs.vcf",
-  BSgenome = BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
+  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)
 }
 \arguments{
 \item{cnv.df}{the data.frame with the cnv calls (from 'call.abnormal.cov').}
 
 \item{output.file}{the file name for the output VCF file. Default is 'cnvs.vcf'}
 
-\item{BSgenome}{BSgenome to retrieve REF nucleotide. Default is hg19 (BSgenome.Hsapiens.UCSC.hg19::Hsapiens).}
+\item{genome}{BSgenome to retrieve REF nucleotide. Default is hg19 (BSgenome.Hsapiens.UCSC.hg19::Hsapiens).}
 }
 \value{
 the output file name.

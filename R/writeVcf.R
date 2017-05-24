@@ -3,10 +3,10 @@
 ##' @title Write VCF file
 ##' @param cnv.df the data.frame with the cnv calls (from 'call.abnormal.cov').
 ##' @param output.file the file name for the output VCF file. Default is 'cnvs.vcf'
-##' @param BSgenome BSgenome to retrieve REF nucleotide. Default is hg19 (BSgenome.Hsapiens.UCSC.hg19::Hsapiens).
+##' @param genome BSgenome to retrieve REF nucleotide. Default is hg19 (BSgenome.Hsapiens.UCSC.hg19::Hsapiens).
 ##' @return the output file name.
 ##' @author Jean Monlong
-writeVcf <- function(cnv.df, output.file='cnvs.vcf', BSgenome=BSgenome.Hsapiens.UCSC.hg19::Hsapiens){
+writeVcf <- function(cnv.df, output.file='cnvs.vcf', genome=BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19){
   ## Checking input
   if(!all(c('chr', 'start', 'end', 'nb.bin.cons', 'fc', 'sample') %in% colnames(cnv.df))){
     stop("Missing column. 'cnv.df' must have 'chr', 'start', 'end', 'nb.bin.cons', 'sample' and 'fc' columns")
@@ -36,7 +36,7 @@ writeVcf <- function(cnv.df, output.file='cnvs.vcf', BSgenome=BSgenome.Hsapiens.
     if (!grepl("chr", chrs[1])) {
       chrs = paste("chr", chrs, sep = "")
     }
-    nuc = Biostrings::getSeq(BSgenome, chrs, df$start, df$start)
+    nuc = Biostrings::getSeq(genome, chrs, df$start, df$start)
     df$ref = as.character(nuc)
     df
   }
