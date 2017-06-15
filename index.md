@@ -26,7 +26,7 @@ Some [Bioconductor](http://bioconductor.org/) packages are also necessary and no
 
 ```r
 source("http://bioconductor.org/biocLite.R")
-biocLite("BSgenome.Hsapiens.UCSC.hg19", "Rsamtools", "DNAcopy")
+biocLite("BSgenome.Hsapiens.UCSC.hg19", "Rsamtools", "DNAcopy", "rtracklayer")
 ```
 
 *To use hg38 instead of hg19 install `BSgenome.Hsapiens.UCSC.hg38`.*
