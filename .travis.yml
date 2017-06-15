@@ -20,6 +20,7 @@ branches:
 bioc_packages:
   - BSgenome.Hsapiens.UCSC.hg19
   - Rsamtools
+  - rtracklayer
   - DNAcopy
 
 warnings_are_errors: false
