@@ -21,7 +21,7 @@ correct.GC <- function(bc.f, gc.df, outfile.prefix, appendIndex.outfile = TRUE) 
     gc.class = cut(gc.df$GCcontent, breaks = seq(0, 1, 0.02), include.lowest = TRUE)
     samp.ii = unlist(tapply(1:length(gc.class), gc.class, function(e) e[sample(1:length(e),
         min(c(length(e), 500)))]))
-    if(!as.data.frame(bc.f) & length(bc.f)==1 & is.character(bc.f)){
+    if(!is.data.frame(bc.f) & length(bc.f)==1 & is.character(bc.f)){
       bc.df = utils::read.table(bc.f, as.is = TRUE, header = TRUE)
     } else {
       bc.df = bc.df
