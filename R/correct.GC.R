@@ -24,7 +24,7 @@ correct.GC <- function(bc.f, gc.df, outfile.prefix, appendIndex.outfile = TRUE) 
     if(!is.data.frame(bc.f) & length(bc.f)==1 & is.character(bc.f)){
       bc.df = utils::read.table(bc.f, as.is = TRUE, header = TRUE)
     } else {
-      bc.df = bc.df
+      bc.df = bc.f
     }
     if(any(bc.df$chr != gc.df$chr) | any(bc.df$start != gc.df$start)){
       bc.df = merge(bc.df, gc.df[,c('chr','start','end','GCcontent')])
