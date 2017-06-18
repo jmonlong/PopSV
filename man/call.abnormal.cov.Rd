@@ -6,9 +6,9 @@
 \usage{
 call.abnormal.cov(files.df, samp, out.pdf = NULL, FDR.th = 0.05,
   merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist = NULL,
-  z.th = c("sdest", "consbins", "sdest2N"), norm.stats = NULL,
-  min.normal.prop = 0.9, aneu.chrs = NULL, gc.df = NULL, sub.z = NULL,
-  outfile.pv = NULL)
+  max.gap.size = 1e+05, z.th = c("sdest", "consbins", "sdest2N"),
+  norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL,
+  gc.df = NULL, sub.z = NULL, outfile.pv = NULL)
 }
 \arguments{
 \item{files.df}{a data.frame with the paths to different sample files (bin count, Z-scores, ..). Here columns 'z' and 'fc' are used to retrieve Z-scores and fold changes.}
@@ -22,6 +22,8 @@ call.abnormal.cov(files.df, samp, out.pdf = NULL, FDR.th = 0.05,
 \item{merge.cons.bins}{how the bins should be merged. Default is 'stitch'. 'zscores' is another approch (see Details), 'no' means no bin merging.}
 
 \item{stitch.dist}{the maximal distance between two calls to be merged into one (if 'merge.cons.bins="stitch"'). If NULL (default), the bin size + 1 is used.}
+
+\item{max.gap.size}{the maximum gap between bins allowed for CBS. Default is 100 kb. Calls will not span gaps larger than this (e.g. centromere).}
 
 \item{z.th}{how the threshold for abnormal Z-score is chosen. Default is 'sdest' which will use 'FDR.th=' parameter as well. 'consbins' looks at the number of consecutive bins, see Details.}
 

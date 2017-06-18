@@ -4,7 +4,8 @@
 \alias{mergeConsBin.cbs}
 \title{Segmentation using CBS (NOT READY)}
 \usage{
-mergeConsBin.cbs(df, pv.th = 0.01, stitch.dist = 10000)
+mergeConsBin.cbs(df, pv.th = 0.01, stitch.dist = 10000,
+  max.gap.size = 1e+05)
 }
 \arguments{
 \item{df}{a data.frame with at least 'chr', 'start' and 'end' columns.}
@@ -12,6 +13,8 @@ mergeConsBin.cbs(df, pv.th = 0.01, stitch.dist = 10000)
 \item{pv.th}{the P-value threshold used for the segmentation and the segment filtering. Default is 0.01.}
 
 \item{stitch.dist}{the stitching distance, i.e. the maximum distance at which two bins will be merged.}
+
+\item{max.gap.size}{the maximum gap between bins allowed. Default is 100 kb. Calls will not span gap larger than this (e.g. centromere).}
 }
 \value{
 a data.frame, similar to the input but with merged rows.

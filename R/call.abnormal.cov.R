@@ -15,6 +15,7 @@
 ##' @param FDR.th the False Discovery Rate to use for the calls.
 ##' @param merge.cons.bins how the bins should be merged. Default is 'stitch'. 'zscores' is another approch (see Details), 'no' means no bin merging.
 ##' @param stitch.dist the maximal distance between two calls to be merged into one (if 'merge.cons.bins="stitch"'). If NULL (default), the bin size + 1 is used.
+##' @param max.gap.size the maximum gap between bins allowed for CBS. Default is 100 kb. Calls will not span gaps larger than this (e.g. centromere).
 ##' @param z.th how the threshold for abnormal Z-score is chosen. Default is 'sdest' which will use 'FDR.th=' parameter as well. 'consbins' looks at the number of consecutive bins, see Details.
 ##' @param norm.stats the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.
 ##' @param min.normal.prop the minimum proportion of the regions expected to be normal. Default is 0.9. For cancers with many large aberrations, this number can be lowered. Maximum value accepted is 0.98 .
@@ -31,7 +32,7 @@
 ##' \item{cn2.dev}{Copy number deviation from the reference.}
 ##' @author Jean Monlong
 ##' @export
-call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL, z.th = c("sdest", "consbins", "sdest2N"), norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, gc.df=NULL, sub.z=NULL, outfile.pv=NULL) {
+call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, merge.cons.bins = c("stitch", "zscores", "cbs", "no"), stitch.dist=NULL, max.gap.size=1e5, z.th = c("sdest", "consbins", "sdest2N"), norm.stats = NULL, min.normal.prop = 0.9, aneu.chrs = NULL, gc.df=NULL, sub.z=NULL, outfile.pv=NULL) {
 
   if(!is.data.frame(files.df) & is.data.frame(files.df$z)){
     res.df = files.df$z
@@ -166,7 +167,7 @@ call.abnormal.cov <- function(files.df, samp, out.pdf = NULL, FDR.th = 0.05, mer
     } else if (merge.cons.bins[1] == "zscores") {
       res.df = mergeConsBin.z(res.df, fdr.th = FDR.th, sd.null = max(c(fdr$sigma.est.dup,fdr$sigma.est.del)), stitch.dist = stitch.dist)
     } else if (merge.cons.bins[1] == "cbs") {
-      res.df = mergeConsBin.cbs(res.df, pv.th = FDR.th, stitch.dist = stitch.dist)
+      res.df = mergeConsBin.cbs(res.df, pv.th = FDR.th, stitch.dist = stitch.dist, max.gap.size=max.gap.size)
     } else {
       stop("'merge.cons.bins=' : available bin merging approaches are : 'stitch', 'zscores'.")
     }

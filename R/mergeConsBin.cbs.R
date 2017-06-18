@@ -2,11 +2,12 @@
 ##' @title Segmentation using CBS (NOT READY)
 ##' @param df a data.frame with at least 'chr', 'start' and 'end' columns.
 ##' @param pv.th the P-value threshold used for the segmentation and the segment filtering. Default is 0.01.
-##' @param stitch.dist the stitching distance, i.e. the maximum distance at which two bins will be merged. 
+##' @param stitch.dist the stitching distance, i.e. the maximum distance at which two bins will be merged.
+##' @param max.gap.size the maximum gap between bins allowed. Default is 100 kb. Calls will not span gap larger than this (e.g. centromere).
 ##' @return a data.frame, similar to the input but with merged rows.
 ##' @author Jean Monlong
 ##' @keywords internal
-mergeConsBin.cbs <- function(df, pv.th=.01, stitch.dist = 10000) {
+mergeConsBin.cbs <- function(df, pv.th=.01, stitch.dist = 10000, max.gap.size=1e5) {
   if (nrow(df) == 0)
     return(df)
 
@@ -24,15 +25,25 @@ mergeConsBin.cbs <- function(df, pv.th=.01, stitch.dist = 10000) {
     res.x
   }
 
-  cna.l = lapply(unique(df$chr), function(chr.i){
-    chr.ii = which(df$chr==chr.i)
-    cna.o = DNAcopy::CNA(sign(df$z[chr.ii])*log10(df$qv[chr.ii]), df$chr[chr.ii], df$start[chr.ii])
-    cna.s = DNAcopy::segment(cna.o, alpha=pv.th, verbose=0)
-    cna.s$output
-  })
-  cna.s = as.data.frame(data.table::rbindlist(cna.l))
+  ## CBS
+  if(!is.null(max.gap.size)){
+    ## Create fake chromosome when there is a gap in the binned regions (larger than stitch.dist)
+    seg = df$chr[-1] == df$chr[-nrow(df)] & df$start[-1] <= max.gap.size + df$end[-nrow(df)]
+    chrs = rep(1:(1+sum(!seg)), diff(c(0, which(!seg), length(seg)+1)))
+    cchrs = unique(cbind(chrs, df$chr))
+    chrsTrans = cchrs[,2]
+  } else {
+    chrs = df$chr
+  }
+  cna.o = DNAcopy::CNA(sign(df$z)*log10(df$qv), chrs, df$start)
+  cna.s = DNAcopy::segment(cna.o, alpha=pv.th, verbose=0)
+  cna.s = as.data.frame(cna.s$output)
   cna.s = cna.s[which(abs(cna.s$seg.mean) > abs(log10(pv.th))),]
-  
+  if(!is.null(max.gap.size)){
+    ## Back to real chromosomes
+    cna.s$chrom = chrsTrans[cna.s$chrom]
+  }
+
   ## Merge segments
   gr.f = with(df, GenomicRanges::GRanges(chr, IRanges::IRanges(start, end)))
   df$red.i = NA
