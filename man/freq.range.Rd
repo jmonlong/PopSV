@@ -4,7 +4,8 @@
 \alias{freq.range}
 \title{Frequency computation for ranges}
 \usage{
-freq.range(range.df, plot = FALSE, annotate.only = FALSE, nb.samp = NA)
+freq.range(range.df, plot = FALSE, annotate.only = FALSE, nb.samp = NA,
+  min.rol = 0, chunk.size = 1e+05)
 }
 \arguments{
 \item{range.df}{a data.frame with columns 'chr', 'start' and 'end'.}
@@ -14,6 +15,10 @@ freq.range(range.df, plot = FALSE, annotate.only = FALSE, nb.samp = NA)
 \item{annotate.only}{If TRUE, the input ranges are annotated with the number of other overlapping ranges. If FALSE (Default), the input ranges are fragmented and the frequency computed for each sub-range.}
 
 \item{nb.samp}{the total number of sample. Used if not NA. Default is NA.}
+
+\item{min.rol}{minimum reciprocal overlap when 'annotate.only=TRUE'. If 0 (default) any overlap counts.}
+
+\item{chunk.size}{the number or regions in each chunk when 'annotate.only=TRUE'. Default is 1e5. Decrease if memory problems.}
 }
 \value{
 a data.frame with the frequency of each sub-range

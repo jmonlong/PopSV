@@ -20,6 +20,12 @@ test_that("The total amount of called region is conserved", {
   expect_equal(sum(bin.df$end-bin.df$start+1), sum((fr.df$end-fr.df$start+1)*fr.df$nb))
 })
 
+test_that("The number of regions is similar in annotation mode", {
+  fr.df = freq.range(bin.df, annotate.only=TRUE)
+  expect_true(nrow(fr.df)>0)
+  expect_equal(nrow(fr.df), nrow(bin.df))
+})
+
 test_that("Graphs doesn't throw an error", {
   pdf("tmp.pdf")
   fr.df = freq.range(bin.df, plot=TRUE)
