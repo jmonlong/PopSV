@@ -28,11 +28,8 @@ warnings_are_errors: false
 before_install:
   - if [ $TRAVIS_OS_NAME == "osx" ]; then curl -O http://r.research.att.com/libs/gfortran-4.8.2-darwin13.tar.bz2 && sudo tar fvxz gfortran-4.8.2-darwin13.tar.bz2 -C /; rm gfortran-4.8.2-darwin13.tar.bz2 ; fi
 
-install:
-  - travis_wait 30 R -e 'devtools::install_deps(dep = T)'
-
 r_github_packages:
   - jimhester/covr
 
 after_success:
-  - Rscript -e 'library(covr); codecov()'
+  - travis_wait 30 Rscript -e 'library(covr); codecov()'
