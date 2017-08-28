@@ -28,6 +28,7 @@ correct.GC <- function(bc.f, gc.df, outfile.prefix, appendIndex.outfile = TRUE) 
     }
     if(any(bc.df$chr != gc.df$chr) | any(bc.df$start != gc.df$start)){
       bc.df = merge(bc.df, gc.df[,c('chr','start','end','GCcontent')])
+      bc.df = bc.df[order(as.character(bc.df$chr), bc.df$start),]
     } else {
       bc.df$GCcontent = gc.df$GCcontent
     }
