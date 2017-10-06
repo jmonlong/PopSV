@@ -35,7 +35,7 @@ Columns *qv* and *cn2.dev* can be used to further select higher confidence calls
 + [GitHub repo](https://github.com/jmonlong/epipopsv) with code for figures and numbers.
 + [Data on FigShare](https://figshare.com/s/20dfdedcc4718e465185) includes calls and data necessary to reproduce the analysis.
 
-For the CNV calls in the epilepsy patients and controls can download be downloaded from the [FigShare repo](https://figshare.com/s/20dfdedcc4718e465185). The file `cnvs-PopSV-Epilepsy-198affected-301controls-5kb.tsv.gz` (21Mb) is tab-delimited with the following columns:
+The CNV calls in the epilepsy patients and controls can download be downloaded from the [FigShare repo](https://figshare.com/s/20dfdedcc4718e465185). The file `cnvs-PopSV-Epilepsy-198affected-301controls-5kb.tsv.gz` (21Mb) is tab-delimited with the following columns:
 
 + *chr*, *start*, *end*: the position in the reference genome.
 + *project*: either `affected` to denote an epilepsy patient, or `control` for control individuals.
