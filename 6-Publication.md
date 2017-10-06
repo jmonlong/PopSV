@@ -1,8 +1,28 @@
 ---
 layout: page
-title: Publication
+title: Publications
 permalink: /6-Publication.md/
 ---
+
+## Genome-wide characterization of copy number variants in epilepsy patients
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1002893.svg)](https://doi.org/10.5281/zenodo.1002893)
+
++ Manuscript on bioRxiv (*soon*).
++ [GitHub repo](https://github.com/jmonlong/epipopsv) with code to reproduce the figures and numbers.
++ [Data on FigShare](https://figshare.com/s/20dfdedcc4718e465185) includes calls and data necessary to reproduce the analysis.
+
+The CNV calls in the epilepsy patients and controls can download be downloaded from the [FigShare repo](https://figshare.com/s/20dfdedcc4718e465185). The file `cnvs-PopSV-Epilepsy-198affected-301controls-5kb.tsv.gz` (21Mb) is tab-delimited with the following columns:
+
++ *chr*, *start*, *end*: the position in the reference genome.
++ *project*: either `affected` to denote an epilepsy patient, or `control` for control individuals.
++ *sample*: the sample name.
++ *z*: the Z-score used for calling the CNV.
++ *fc*: the fold change compared to the coverage in the reference samples. <1 for deletions and >1 for duplications.
++ *mean.cov*: the average coverage in the reference samples. 
++ *pv*/*qv*: the P-value and Q-value (or FDR threshold) for the call.
++ *nb.bins.cons*: the number of consecutive 5 Kbp bins in the call.
+
 
 ## Human copy number variants are enriched in regions of low-mappability
 
@@ -27,21 +47,3 @@ Both files are tab-delimited text files with columns:
 Columns *qv* and *cn2.dev* can be used to further select higher confidence calls. For example, one could select calls with small *qv* and/or high *cn2.dev*. Copy number estimation (column *cn*) is only reliable when the the variant spans several bins, hence it's normal to have partial estimates for small calls. Furthermore, copy number estimation in low-coverage regions is more challenging and calls in these regions often exhibits large *cn* (or *fc*).
 
 
-## Genome-wide characterization of copy number variants in epilepsy patients
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1002893.svg)](https://doi.org/10.5281/zenodo.1002893)
-
-+ Manuscript on bioRxiv (*soon*).
-+ [GitHub repo](https://github.com/jmonlong/epipopsv) with code to reproduce the figures and numbers.
-+ [Data on FigShare](https://figshare.com/s/20dfdedcc4718e465185) includes calls and data necessary to reproduce the analysis.
-
-The CNV calls in the epilepsy patients and controls can download be downloaded from the [FigShare repo](https://figshare.com/s/20dfdedcc4718e465185). The file `cnvs-PopSV-Epilepsy-198affected-301controls-5kb.tsv.gz` (21Mb) is tab-delimited with the following columns:
-
-+ *chr*, *start*, *end*: the position in the reference genome.
-+ *project*: either `affected` to denote an epilepsy patient, or `control` for control individuals.
-+ *sample*: the sample name.
-+ *z*: the Z-score used for calling the CNV.
-+ *fc*: the fold change compared to the coverage in the reference samples. <1 for deletions and >1 for duplications.
-+ *mean.cov*: the average coverage in the reference samples. 
-+ *pv*/*qv*: the P-value and Q-value (or FDR threshold) for the call.
-+ *nb.bins.cons*: the number of consecutive 5 Kbp bins in the call.
