@@ -8,7 +8,7 @@ permalink: /6-Publication.md/
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1002893.svg)](https://doi.org/10.5281/zenodo.1002893)
 
-+ Manuscript on bioRxiv (*soon*).
++ [Manuscript on bioRxiv](https://www.biorxiv.org/content/early/2017/10/06/199224).
 + [GitHub repo](https://github.com/jmonlong/epipopsv) with code to reproduce the figures and numbers.
 + [Data on FigShare](https://figshare.com/s/20dfdedcc4718e465185) includes calls and data necessary to reproduce the analysis.
 
