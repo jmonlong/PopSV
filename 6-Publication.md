@@ -27,10 +27,10 @@ The CNV calls in the epilepsy patients and controls can download be downloaded f
 ## Human copy number variants are enriched in regions of low-mappability
 
 + [Manuscript on bioRxiv](http://www.biorxiv.org/content/early/2015/12/11/034165)
-+ [Data and scripts](https://figshare.com/s/ba79730bb87a1322480d)
++ [Data and scripts](https://figshare.com/s/8fd3007ebb0fbad09b6d)
 + New version coming up very soon.
 
-The calls from the three datasets (640 genomes total) were merged and formatted into single files to facilitate external analysis/usage of our CNV catalog. The files are available from the [FigShare repository](https://figshare.com/s/ba79730bb87a1322480d).
+The calls from the three datasets (640 genomes total) were merged and formatted into single files to facilitate external analysis/usage of our CNV catalog. The files are available from the [FigShare repository](https://figshare.com/s/8fd3007ebb0fbad09b6d).
 
 - `CNV-PopSV-Twin_CageKid_GoNL-germline.tsv` file contains all the germline CNV calls for the three datasets.
 - `CNV-PopSV-CageKid-somatic.tsv` contains the somatic CNV calls from the renal cancer dataset.
