@@ -66,8 +66,9 @@ draw.controls <- function(cnv.gr, feat.grl, nb.class=100, nb.cores=3, redo.dupli
     }
     tt = tapply(1:length(gr.ii), w.class, function(iii){
       w.i = widths[iii]
-      demi.w = mean(w.i, na.rm=TRUE) / 2
-      good.d = colSums(t(as.matrix(d.df)-demi.w)*ifelse(unlist(ol.prof[ii,]),1,-1)<0)
+      demi.w.min = min(w.i, na.rm=TRUE) / 2
+      demi.w.max = max(w.i, na.rm=TRUE) / 2
+      good.d = colSums((t(as.matrix(d.df))-ifelse(unlist(ol.prof[ii,]),demi.w.min,demi.w.max))*ifelse(unlist(ol.prof[ii,]),1,-1)<0)
       nb.feat.good = ncol(ol.prof)
       while(all(good.d!=nb.feat.good)){
         nb.feat.good = nb.feat.good - 1
