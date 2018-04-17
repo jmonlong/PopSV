@@ -3,16 +3,12 @@
 ## merge standard error and output
 #PBS -j oe
 ## direct streams to our logfile
-#PBS -o /gs/scratch/jmonlong/jobs_output/
+#PBS -o /home/jmonlong/job_outputs/
 #PBS -l walltime=<%= resources$walltime %>
 #PBS -l nodes=<%= resources$nodes %>:ppn=<%= resources$cores %>
-#PBS -A <%= resources$supervisor.group %>
-#PBS -V
+
+source ~/.bashrc
 
 ## Run R:
 ## we merge R output with stdout from PBS, which gets then logged via -o option
-R CMD BATCH --no-save --no-restore "<%= rscript %>" /dev/stdout > $LSCRATCH/temp.out
-EXIT_CODE="$?"
-cp $LSCRATCH/temp.out <%= log.file %>
-exit $EXIT_CODE
-
+R CMD BATCH --no-save --no-restore "<%= rscript %>" /dev/stdout > <%= log.file %>

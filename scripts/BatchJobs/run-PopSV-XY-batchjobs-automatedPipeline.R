@@ -2,8 +2,9 @@
 ## devtools::install_github("jmonlong/PopSV")
 
 library(BatchJobs)
+loadConfig('BatchJobs_profile.R')
 library(PopSV)
-source("automatedPipeline.R")
+source("automatedPipeline-BatchJobs.R")
 
 bam.files = read.table("bam-samples.tsv", as.is=TRUE, header=TRUE)
 bin.size = 5e3

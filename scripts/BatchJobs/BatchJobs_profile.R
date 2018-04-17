@@ -1,5 +1,5 @@
-source("~/makeClusterFunctionsAdaptive.R")
-cluster.functions <- makeClusterFunctionsAdaptive("~/guillimin.tmpl")
+source("makeClusterFunctionsAdaptive.R")
+cluster.functions <- makeClusterFunctionsAdaptive("guillimin.tmpl")
 mail.start <- "none"
 mail.done <- "none"
 mail.error <- "none"

@@ -1,11 +1,23 @@
 message(" /!\ Might need to be tweaked /!\ ")
 
-message("Two functions :
+message("Functions :
 - 'autoGCcounts' to count BC in each sample.
 - 'autoNormTest' to normalize and test all the samples.
+- 'autoExtra' for some other functions.
 ")
 
-autoGCcounts <- function(files.f, bins.f, redo=NULL, sleep=180, status=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, skip=NULL, step.walltime=c(2,20), step.cores=c(1,1)){
+autoGCcounts <- function(files.f,
+                         bins.f,
+                         redo=NULL,
+                         sleep=180,
+                         status=FALSE,
+                         file.suffix="",
+                         lib.loc=NULL,
+                         other.resources=NULL,
+                         skip=NULL,
+                         step.walltime=c(2,20),
+                         step.cores=c(1,1),
+                         resetExpired=FALSE){
   load(files.f)
   step.walltime = paste0(step.walltime, ":0:0")
 
@@ -29,6 +41,9 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, sleep=180, status=FALSE, fi
     if(length(findExpired(reg))>0){
       message("Re-submitting ", findExpired(reg))
       submitJobs(reg, findExpired(reg), resources=c(list(walltime=step.walltime[1], nodes="1", cores=step.cores[1]), other.resources))
+    }
+    if(resetExpired){
+      resetJobs(reg, c(findErrors(reg), findExpired(reg)))
     }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
@@ -63,6 +78,9 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, sleep=180, status=FALSE, fi
       message("Re-submitting ", findExpired(reg))
       submitJobs(reg, findExpired(reg), resources=c(list(walltime=step.walltime[2], nodes="1", cores=step.cores[2]), other.resources))
     }
+    if(resetExpired){
+      resetJobs(reg, c(findErrors(reg), findExpired(reg)))
+    }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
       submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime=step.walltime[2], nodes="1", cores=step.cores[2]), other.resources))
@@ -71,19 +89,37 @@ autoGCcounts <- function(files.f, bins.f, redo=NULL, sleep=180, status=FALSE, fi
     if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
   }
   if(status) showStatus(reg)
-
-  ## load(bins.f)
-  ## quick.count(files.df, bins.df, col.files="bc.gc.gz", nb.rand.bins=1e3)
 }
 
-autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, status=FALSE, loose=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, norm=c("1pass","trim"), ref.samples=NULL, FDR.th=.001, col.bc="bc.gc.gz", step.walltime=c(10,12,6,6,3,3), step.cores=c(12,2,3,1,1,1), skip=NULL){
+autoNormTest <- function(files.f,
+                         bins.f,
+                         redo=NULL,
+                         rewrite=FALSE,
+                         sleep=180,
+                         status=FALSE,
+                         loose=FALSE,
+                         file.suffix="",
+                         lib.loc=NULL,
+                         other.resources=NULL,
+                         norm=c("1pass","trim"),
+                         ref.samples=NULL,
+                         FDR.th=.001,
+                         col.bc="bc.gc.gz",
+                         step.walltime=c(10,12,6,10,3,3),
+                         step.cores=c(12,2,3,1,1,1),
+                         file.suffix.ref=NULL,
+                         skip=NULL,
+                         resetExpired=FALSE){
+  if(is.null(file.suffix.ref)){
+    file.suffix.ref = file.suffix
+  }
   load(files.f)
   step.walltime = paste0(step.walltime, ":0:0")
 
   message("\n== 1) Sample QC and reference definition.\n")
-  bc.ref.f = paste0("bc-gcCor",file.suffix,".tsv")
-  sampQC.pdf.f = paste0("sampQC",file.suffix,".pdf")
-  stepName = paste0("sampQC",file.suffix)
+  bc.ref.f = paste0("bc-gcCor",file.suffix.ref,".tsv")
+  sampQC.pdf.f = paste0("sampQC",file.suffix.ref,".pdf")
+  stepName = paste0("sampQC",file.suffix.ref)
   if(any(redo==1)) unlink(paste0(stepName, "-files"), recursive=TRUE)
   reg <- makeRegistry(id=stepName, seed=123)
   if(!any(skip==1) & length(findJobs(reg))==0){
@@ -110,6 +146,9 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
       message("Re-submitting ", findExpired(reg))
       submitJobs(reg, findExpired(reg), resources=c(list(walltime=step.walltime[1], nodes="1", cores=step.cores[1]), other.resources))
     }
+    if(resetExpired){
+      resetJobs(reg, c(findErrors(reg), findExpired(reg)))
+    }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
       submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime=step.walltime[1], nodes="1", cores=step.cores[1]), other.resources))
@@ -122,7 +161,7 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
   if(status) showStatus(reg)
 
   message("\n== 2) Reference sample normalization.\n")
-  stepName = paste0("bcNormTN",file.suffix)
+  stepName = paste0("bcNormTN",file.suffix.ref)
   if(any(redo==2)) unlink(paste0(stepName, "-files"), recursive=TRUE)
   reg <- makeRegistry(id=stepName, seed=123)
   if(!any(skip==2) & length(findJobs(reg))==0){
@@ -147,6 +186,9 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
       message("Re-submitting ", findExpired(reg))
       submitJobs(reg, findExpired(reg), resources=c(list(walltime=step.walltime[2], nodes="1", cores=step.cores[2]), other.resources))
     }
+    if(resetExpired){
+      resetJobs(reg, c(findErrors(reg), findExpired(reg)))
+    }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
       submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime=step.walltime[2], nodes="1", cores=step.cores[2]), other.resources))
@@ -155,7 +197,7 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     if(length(findJobs(reg))!=length(findDone(reg))) stop("Not done yet or failed, see for yourself")
   }
   ## Write normalized bin counts and reference metrics
-  out.files = paste(paste0("ref",file.suffix), c("bc-norm.tsv", "norm-stats.tsv"), sep="-")
+  out.files = paste(paste0("ref",file.suffix.ref), c("bc-norm.tsv", "norm-stats.tsv"), sep="-")
   if(rewrite | all(!file.exists(out.files))){
     if(any(file.exists(out.files))){
       tmp = file.remove(out.files[which(file.exists(out.files))])
@@ -168,7 +210,7 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
   if(status) showStatus(reg)
 
   message("\n== 3) Compute Z-scores in reference samples.\n")
-  stepName = paste0("zRef",file.suffix)
+  stepName = paste0("zRef",file.suffix.ref)
   if(any(redo==3)) unlink(paste0(stepName, "-files"), recursive=TRUE)
   reg <- makeRegistry(id=stepName, seed=123)
   if(!any(skip==3) & length(findJobs(reg))==0){
@@ -187,6 +229,9 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     if(length(findExpired(reg))>0){
       message("Re-submitting ", findExpired(reg))
       submitJobs(reg, findExpired(reg), resources=c(list(walltime=step.walltime[3], nodes="1", cores=step.cores[3]), other.resources))
+    }
+    if(resetExpired){
+      resetJobs(reg, c(findErrors(reg), findExpired(reg)))
     }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
@@ -215,6 +260,9 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
     if(length(findExpired(reg))>0){
       message("Re-submitting ", findExpired(reg))
       submitJobs(reg, findExpired(reg), resources=c(list(walltime=step.walltime[4], nodes="1", cores=step.cores[4]), other.resources))
+    }
+    if(resetExpired){
+      resetJobs(reg, c(findErrors(reg), findExpired(reg)))
     }
     if(length(findNotSubmitted(reg))>0){
       message("Re-submitting ", findNotSubmitted(reg))
@@ -245,6 +293,9 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
       if(length(findExpired(reg))>0){
         message("Re-submitting ", findExpired(reg))
         submitJobs(reg, findExpired(reg), resources=c(list(walltime=step.walltime[5], nodes="1", cores=step.cores[5]), other.resources))
+      }
+      if(resetExpired){
+        resetJobs(reg, c(findErrors(reg), findExpired(reg)))
       }
       if(length(findNotSubmitted(reg))>0){
         message("Re-submitting ", findNotSubmitted(reg))
@@ -277,6 +328,9 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
         message("Re-submitting ", findExpired(reg))
         submitJobs(reg, findExpired(reg), resources=c(list(walltime=step.walltime[6], nodes="1", cores=step.cores[6]), other.resources))
       }
+      if(resetExpired){
+        resetJobs(reg, c(findErrors(reg), findExpired(reg)))
+      }
       if(length(findNotSubmitted(reg))>0){
         message("Re-submitting ", findNotSubmitted(reg))
         submitJobs(reg, findNotSubmitted(reg), resources=c(list(walltime=step.walltime[6], nodes="1", cores=step.cores[6]), other.resources))
@@ -292,7 +346,21 @@ autoNormTest <- function(files.f, bins.f, redo=NULL, rewrite=FALSE, sleep=180, s
 }
 
 
-autoExtra <- function(files.f, bins.f, do=NULL, redo=NULL, sleep=180, status=FALSE, file.suffix="", lib.loc=NULL, other.resources=NULL, step.walltime=c(6,6), step.cores=c(3,2), col.files="bc.gc.gz", bc.ref.f="ref-bc-norm.tsv", seed.c=123){
+autoExtra <- function(files.f,
+                      bins.f,
+                      do=NULL,
+                      redo=NULL,
+                      sleep=180,
+                      status=FALSE,
+                      file.suffix="",
+                      lib.loc=NULL,
+                      other.resources=NULL,
+                      step.walltime=c(6,6),
+                      step.cores=c(3,2),
+                      col.files="bc.gc.gz",
+                      bc.ref.f="ref-bc-norm.tsv",
+                      resetExpired=FALSE,
+                      seed.c=123){
   load(files.f)
   step.walltime = paste0(step.walltime, ":0:0")
 
@@ -320,6 +388,9 @@ autoExtra <- function(files.f, bins.f, do=NULL, redo=NULL, sleep=180, status=FAL
       if(length(findExpired(reg))>0){
         message("Re-submitting ", findExpired(reg))
         submitJobs(reg, findExpired(reg), resources=c(list(walltime=step.walltime[1], nodes="1", cores=step.cores[1]), other.resources))
+      }
+      if(resetExpired){
+        resetJobs(reg, c(findErrors(reg), findExpired(reg)))
       }
       if(length(findNotSubmitted(reg))>0){
         message("Re-submitting ", findNotSubmitted(reg))
@@ -354,6 +425,9 @@ autoExtra <- function(files.f, bins.f, do=NULL, redo=NULL, sleep=180, status=FAL
       if(length(findExpired(reg))>0){
         message("Re-submitting ", findExpired(reg))
         submitJobs(reg, findExpired(reg), resources=c(list(walltime=step.walltime[2], nodes="1", cores=step.cores[2]), other.resources))
+      }
+      if(resetExpired){
+        resetJobs(reg, c(findErrors(reg), findExpired(reg)))
       }
       if(length(findNotSubmitted(reg))>0){
         message("Re-submitting ", findNotSubmitted(reg))

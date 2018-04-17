@@ -2,6 +2,8 @@
 ## devtools::install_github("jmonlong/PopSV")
 
 library(BatchJobs)
+loadConfig('BatchJobs_profile.R')
+
 library(PopSV)
 
 bam.files = read.table("bams.tsv", as.is=TRUE, header=TRUE)
@@ -76,7 +78,7 @@ samp.qc.o = loadResult(sampQC.reg, 1)
 ## 5) Normalize bin counts in reference samples
 bcNormTN.reg <- makeRegistry(id="bcNormTN")
 load("bins.RData")
-bins.df = chunk.bin(bins.df, bg.chunk.size=1e5, sm.chunk.size=1e4, large.chr.chunks=TRUE) 
+bins.df = chunk.bin(bins.df, bg.chunk.size=1e5, sm.chunk.size=1e4, large.chr.chunks=TRUE)
 save(bins.df, file="bins.RData")
 bcNormTN.f <- function(chunk.id, file.bc, file.bin, cont.sample){
   load(file.bin)

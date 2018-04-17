@@ -2,6 +2,8 @@
 ## devtools::install_github("jmonlong/PopSV")
 
 library(BatchJobs)
+loadConfig('BatchJobs_profile.R')
+
 library(PopSV)
 
 bam.files = read.table("bams.tsv", as.is=TRUE, header=TRUE)
@@ -14,11 +16,12 @@ save(files.df, file="files.RData")
 save(bins.df, file="bins.RData")
 ####
 
-source("automatedPipeline.R")
+source("automatedPipeline-BatchJobs.R")
 
 res.GCcounts = autoGCcounts("files.RData", "bins.RData")
 
-qc.samples.cluster(res.GCcounts) ## Run locally because it opens an interactive web browser application
+res.forQC = autoExtra("files.RData", "bins.RData", do=1)
+qc.samples.cluster(res.forQC) ## Run locally because it opens an interactive web browser application
 
 res.df = autoNormTest("files.RData", "bins.RData")
 

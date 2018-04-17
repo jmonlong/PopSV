@@ -1,4 +1,4 @@
-## This version is UNPRACTICAL AND NOT RECOMMENDED FOR REAL ANALYSIS. It is there as a more readable worflow. The BatchJobs version should be used in real analysis. Eventually, if BatchJobs is not desired, this script could help the user to deconstruct it to fit his computing cluster favorite strategy (but seriously don't waste your time and "learn" BatchJobs).
+## This version is UNPRACTICAL AND NOT RECOMMENDED FOR REAL ANALYSIS. It is there as a more readable worflow. The BatchJobs version should be used in real analysis. Eventually, if BatchJobs is not desired, this script could help the user to deconstruct it to fit her computing cluster favorite strategy.
 
 ## FTE : FOR TOY EXAMPLE: lines marked with this flag should be adapted to the analysis. Here I used smaller numbers to run a small toy example. '=>' shows what should be used instead for an analysis in practice.
 
