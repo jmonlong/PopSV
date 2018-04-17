@@ -1,7 +1,7 @@
 ---
 layout: page
 title: About
-permalink: /about/
+permalink: /9-About.md/
 ---
 
 This software is being developed in [Guillaume Bourque's lab](http://www.computationalgenomics.ca/BourqueLab/) as part of Jean Monlong's PhD project.

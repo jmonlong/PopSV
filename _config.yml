@@ -4,7 +4,7 @@ highlighter:      rouge
 
 redcarpet:
   extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data"]
-exclude: ['README.md', 'TODO.md', 'LICENSE']
+exclude: ['README.md', 'TODO.md', 'LICENSE','2-ClusterManagement-BatchJobs.md']
 
 # Setup
 title: PopSV
