@@ -1,12 +1,11 @@
 library(batchtools)
 
-message(" /!\ Might need to be tweaked /!\ ")
-
 message("Functions :
 - 'autoGCcounts' to count BC in each sample.
 - 'autoNormTest' to normalize and test all the samples.
 - 'autoExtra' for some other functions.
 ")
+
 
 autoGCcounts <- function(files.f,
                          bins.f,
@@ -19,7 +18,7 @@ autoGCcounts <- function(files.f,
                          skip=NULL,
                          step.walltime=c(2,20),
                          step.cores=c(1,1),
-                         resetExpired=FALSE){
+                         resetError=FALSE){
   load(files.f)
   step.walltime = paste0(step.walltime, ":0:0")
 
@@ -30,6 +29,15 @@ autoGCcounts <- function(files.f,
     reg = loadRegistry(stepName, writeable=TRUE)
   } else {
     reg <- makeRegistry(stepName, seed=123)
+  }
+  if(status){
+    print(getStatus(reg=reg))
+    if(nrow(findErrors(reg=reg))>0){
+      tmp = sapply(unlist(findErrors(reg=reg)), function(id){
+        message('Error in job ', id)
+        message(paste(tail(getLog(id, reg=reg),10), collapse='\n'))
+      })
+    }
   }
   if(!any(skip==1) & nrow(findJobs(reg=reg))==0){
     getGC.f <- function(imF){
@@ -44,21 +52,17 @@ autoGCcounts <- function(files.f,
   }
   if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
     print(getStatus(reg=reg))
-    if(nrow(findExpired(reg=reg))>0){
-      message("Re-submitting ", findExpired(reg=reg))
-      submitJobs(reg=reg, findExpired(reg=reg), resources=c(list(walltime=step.walltime[1], cores=step.cores[1]), other.resources))
+    if(resetError){
+      resetJobs(findErrors(reg=reg), reg=reg)
     }
-    if(resetExpired){
-      resetJobs(c(findErrors(reg=reg), findExpired(reg=reg)), reg=reg)
-    }
-    if(nrow(findNotSubmitted(reg=reg))>0){
-      message("Re-submitting ", findNotSubmitted(reg=reg))
-      submitJobs(reg=reg, findNotSubmitted(reg=reg), resources=c(list(walltime=step.walltime[1], cores=step.cores[1]), other.resources))
+    toresubmit = rbind(findNotSubmitted(reg=reg), findExpired(reg=reg))
+    if(nrow(toresubmit)>0){
+      message("Re-submitting ", paste(unlist(toresubmit), collapse=' '))
+      submitJobs(reg=reg, toresubmit, resources=c(list(walltime=step.walltime[1], cores=step.cores[1]), other.resources))
     }
     waitForJobs(reg=reg, sleep=sleep)
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
   }
-  if(status) print(getStatus(reg=reg))
 
   message("\n== 2) Get bin counts in each sample and correct for GC bias.\n")
   stepName = paste0("getBC",file.suffix)
@@ -67,6 +71,15 @@ autoGCcounts <- function(files.f,
     reg = loadRegistry(stepName, writeable=TRUE)
   } else {
     reg <- makeRegistry(stepName, seed=123)
+  }
+  if(status){
+    print(getStatus(reg=reg))
+    if(nrow(findErrors(reg=reg))>0){
+      tmp = sapply(unlist(findErrors(reg=reg)), function(id){
+        message('Error in job ', id)
+        message(paste(tail(getLog(id, reg=reg),10), collapse='\n'))
+      })
+    }
   }
   if(!any(skip==2) & nrow(findJobs(reg=reg))==0){
     getBC.f <- function(file.i, bins.f, files.df, lib.loc){
@@ -84,21 +97,17 @@ autoGCcounts <- function(files.f,
   }
   if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
     print(getStatus(reg=reg))
-    if(nrow(findExpired(reg=reg))>0){
-      message("Re-submitting ", findExpired(reg=reg))
-      submitJobs(reg=reg, findExpired(reg=reg), resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
+    if(resetError){
+      resetJobs(findErrors(reg=reg), reg=reg)
     }
-    if(resetExpired){
-      resetJobs(c(findErrors(reg=reg), findExpired(reg=reg)), reg=reg)
-    }
-    if(nrow(findNotSubmitted(reg=reg))>0){
-      message("Re-submitting ", findNotSubmitted(reg=reg))
-      submitJobs(reg=reg, findNotSubmitted(reg=reg), resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
+    toresubmit = rbind(findNotSubmitted(reg=reg), findExpired(reg=reg))
+    if(nrow(toresubmit)>0){
+      message("Re-submitting ", paste(unlist(toresubmit), collapse=' '))
+      submitJobs(reg=reg, toresubmit, resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
     }
     waitForJobs(reg=reg, sleep=sleep)
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
   }
-  if(status) print(getStatus(reg=reg))
 }
 
 autoNormTest <- function(files.f,
@@ -119,7 +128,7 @@ autoNormTest <- function(files.f,
                          step.cores=c(12,2,3,1,1,1),
                          file.suffix.ref=NULL,
                          skip=NULL,
-                         resetExpired=FALSE){
+                         resetError=FALSE){
 
   load(files.f)
   step.walltime = paste0(step.walltime, ":0:0")
@@ -133,6 +142,15 @@ autoNormTest <- function(files.f,
     reg = loadRegistry(stepName, writeable=TRUE)
   } else {
     reg <- makeRegistry(stepName, seed=123)
+  }
+  if(status){
+    print(getStatus(reg=reg))
+    if(nrow(findErrors(reg=reg))>0){
+      tmp = sapply(unlist(findErrors(reg=reg)), function(id){
+        message('Error in job ', id)
+        message(paste(tail(getLog(id, reg=reg),10), collapse='\n'))
+      })
+    }
   }
   if(!any(skip==1) & nrow(findJobs(reg=reg))==0){
     if(!is.null(ref.samples)){
@@ -154,23 +172,19 @@ autoNormTest <- function(files.f,
   }
   if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
     print(getStatus(reg=reg))
-    if(nrow(findExpired(reg=reg))>0){
-      message("Re-submitting ", findExpired(reg=reg))
-      submitJobs(reg=reg, findExpired(reg=reg), resources=c(list(walltime=step.walltime[1], cores=step.cores[1]), other.resources))
+    if(resetError){
+      resetJobs(findErrors(reg=reg), reg=reg)
     }
-    if(resetExpired){
-      resetJobs(c(findErrors(reg=reg), findExpired(reg=reg)), reg=reg)
-    }
-    if(nrow(findNotSubmitted(reg=reg))>0){
-      message("Re-submitting ", findNotSubmitted(reg=reg))
-      submitJobs(reg=reg, findNotSubmitted(reg=reg), resources=c(list(walltime=step.walltime[1], cores=step.cores[1]), other.resources))
+    toresubmit = rbind(findNotSubmitted(reg=reg), findExpired(reg=reg))
+    if(nrow(toresubmit)>0){
+      message("Re-submitting ", paste(unlist(toresubmit), collapse=' '))
+      submitJobs(reg=reg, toresubmit, resources=c(list(walltime=step.walltime[1], cores=step.cores[1]), other.resources))
     }
     waitForJobs(reg=reg, sleep=sleep)
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
   }
   samp.qc.o = loadResult(reg=reg, 1)
   save(samp.qc.o, file=paste0(stepName,".RData"))
-  if(status) print(getStatus(reg=reg))
 
   message("\n== 2) Reference sample normalization.\n")
   stepName = paste0("bcNormTN",file.suffix)
@@ -179,6 +193,15 @@ autoNormTest <- function(files.f,
     reg = loadRegistry(stepName, writeable=TRUE)
   } else {
     reg <- makeRegistry(stepName, seed=123)
+  }
+  if(status){
+    print(getStatus(reg=reg))
+    if(nrow(findErrors(reg=reg))>0){
+      tmp = sapply(unlist(findErrors(reg=reg)), function(id){
+        message('Error in job ', id)
+        message(paste(tail(getLog(id, reg=reg),10), collapse='\n'))
+      })
+    }
   }
   if(!any(skip==2) & nrow(findJobs(reg=reg))==0){
     load(bins.f)
@@ -198,16 +221,13 @@ autoNormTest <- function(files.f,
   }
   if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
     print(getStatus(reg=reg))
-    if(nrow(findExpired(reg=reg))>0){
-      message("Re-submitting ", findExpired(reg=reg))
-      submitJobs(reg=reg, findExpired(reg=reg), resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
+    if(resetError){
+      resetJobs(findErrors(reg=reg), reg=reg)
     }
-    if(resetExpired){
-      resetJobs(c(findErrors(reg=reg), findExpired(reg=reg)), reg=reg)
-    }
-    if(nrow(findNotSubmitted(reg=reg))>0){
-      message("Re-submitting ", findNotSubmitted(reg=reg))
-      submitJobs(reg=reg, findNotSubmitted(reg=reg), resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
+    toresubmit = rbind(findNotSubmitted(reg=reg), findExpired(reg=reg))
+    if(nrow(toresubmit)>0){
+      message("Re-submitting ", paste(unlist(toresubmit), collapse=' '))
+      submitJobs(reg=reg, toresubmit, resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
     }
     waitForJobs(reg=reg, sleep=sleep)
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
@@ -223,7 +243,6 @@ autoNormTest <- function(files.f,
       write.table(res$norm.stats, file=out.files[2], sep="\t", row.names=FALSE, quote=FALSE, append=file.exists(out.files[2]), col.names=!file.exists(out.files[2]))
     })
   }
-  if(status) print(getStatus(reg=reg))
 
   message("\n== 3) Compute Z-scores in reference samples.\n")
   stepName = paste0("zRef",file.suffix)
@@ -232,6 +251,15 @@ autoNormTest <- function(files.f,
     reg = loadRegistry(stepName, writeable=TRUE)
   } else {
     reg <- makeRegistry(stepName, seed=123)
+  }
+  if(status){
+    print(getStatus(reg=reg))
+    if(nrow(findErrors(reg=reg))>0){
+      tmp = sapply(unlist(findErrors(reg=reg)), function(id){
+        message('Error in job ', id)
+        message(paste(tail(getLog(id, reg=reg),10), collapse='\n'))
+      })
+    }
   }
   if(!any(skip==3) & nrow(findJobs(reg=reg))==0){
     files.ref = subset(files.df, sample %in% samp.qc.o$ref.samples)
@@ -246,21 +274,17 @@ autoNormTest <- function(files.f,
   }
   if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
     print(getStatus(reg=reg))
-    if(nrow(findExpired(reg=reg))>0){
-      message("Re-submitting ", findExpired(reg=reg))
-      submitJobs(reg=reg, findExpired(reg=reg), resources=c(list(walltime=step.walltime[3], cores=step.cores[3]), other.resources))
+    if(resetError){
+      resetJobs(findErrors(reg=reg), reg=reg)
     }
-    if(resetExpired){
-      resetJobs(c(findErrors(reg=reg), findExpired(reg=reg)), reg=reg)
-    }
-    if(nrow(findNotSubmitted(reg=reg))>0){
-      message("Re-submitting ", findNotSubmitted(reg=reg))
-      submitJobs(reg=reg, findNotSubmitted(reg=reg), resources=c(list(walltime=step.walltime[3], cores=step.cores[3]), other.resources))
+    toresubmit = rbind(findNotSubmitted(reg=reg), findExpired(reg=reg))
+    if(nrow(toresubmit)>0){
+      message("Re-submitting ", paste(unlist(toresubmit), collapse=' '))
+      submitJobs(reg=reg, toresubmit, resources=c(list(walltime=step.walltime[3], cores=step.cores[3]), other.resources))
     }
     waitForJobs(reg=reg, sleep=sleep)
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
   }
-  if(status) print(getStatus(reg=reg))
 
   message("\n== 4) Normalization and Z-score computation for other samples.\n")
   stepName = paste0("zOthers",file.suffix)
@@ -269,6 +293,15 @@ autoNormTest <- function(files.f,
     reg = loadRegistry(stepName, writeable=TRUE)
   } else {
     reg <- makeRegistry(stepName, seed=123)
+  }
+  if(status){
+    print(getStatus(reg=reg))
+    if(nrow(findErrors(reg=reg))>0){
+      tmp = sapply(unlist(findErrors(reg=reg)), function(id){
+        message('Error in job ', id)
+        message(paste(tail(getLog(id, reg=reg),10), collapse='\n'))
+      })
+    }
   }
   if(!any(skip==4) & nrow(findJobs(reg=reg))==0){
     callOthers.f <- function(samp, cont.sample, files.df, norm.stats.f, bc.ref.f, lib.loc, col.bc){
@@ -281,21 +314,17 @@ autoNormTest <- function(files.f,
   }
   if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
     print(getStatus(reg=reg))
-    if(nrow(findExpired(reg=reg))>0){
-      message("Re-submitting ", findExpired(reg=reg))
-      submitJobs(reg=reg, findExpired(reg=reg), resources=c(list(walltime=step.walltime[4], cores=step.cores[4]), other.resources))
+    if(resetError){
+      resetJobs(findErrors(reg=reg), reg=reg)
     }
-    if(resetExpired){
-      resetJobs(c(findErrors(reg=reg), findExpired(reg=reg)), reg=reg)
-    }
-    if(nrow(findNotSubmitted(reg=reg))>0){
-      message("Re-submitting ", findNotSubmitted(reg=reg))
-      submitJobs(reg=reg, findNotSubmitted(reg=reg), resources=c(list(walltime=step.walltime[4], cores=step.cores[4]), other.resources))
+    toresubmit = rbind(findNotSubmitted(reg=reg), findExpired(reg=reg))
+    if(nrow(toresubmit)>0){
+      message("Re-submitting ", paste(unlist(toresubmit), collapse=' '))
+      submitJobs(reg=reg, toresubmit, resources=c(list(walltime=step.walltime[4], cores=step.cores[4]), other.resources))
     }
     waitForJobs(reg=reg, sleep=sleep)
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
   }
-  if(status) print(getStatus(reg=reg))
 
   if(!loose){
     message("\n== 5) Calling abnormal bin.\n")
@@ -305,6 +334,15 @@ autoNormTest <- function(files.f,
       reg = loadRegistry(stepName, writeable=TRUE)
     } else {
       reg <- makeRegistry(stepName, seed=123)
+    }
+    if(status){
+      print(getStatus(reg=reg))
+      if(nrow(findErrors(reg=reg))>0){
+        tmp = sapply(unlist(findErrors(reg=reg)), function(id){
+          message('Error in job ', id)
+          message(paste(tail(getLog(id, reg=reg),10), collapse='\n'))
+        })
+      }
     }
     if(!any(skip==5) & nrow(findJobs(reg=reg))==0){
       abCovCallCases.f <- function(samp, files.df, norm.stats.f, bins.f, stitch.dist, lib.loc, FDR.th){
@@ -318,21 +356,17 @@ autoNormTest <- function(files.f,
     }
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
       print(getStatus(reg=reg))
-      if(nrow(findExpired(reg=reg))>0){
-        message("Re-submitting ", findExpired(reg=reg))
-        submitJobs(reg=reg, findExpired(reg=reg), resources=c(list(walltime=step.walltime[5], cores=step.cores[5]), other.resources))
+      if(resetError){
+        resetJobs(findErrors(reg=reg), reg=reg)
       }
-      if(resetExpired){
-        resetJobs(c(findErrors(reg=reg), findExpired(reg=reg)), reg=reg)
-      }
-      if(nrow(findNotSubmitted(reg=reg))>0){
-        message("Re-submitting ", findNotSubmitted(reg=reg))
-        submitJobs(reg=reg, findNotSubmitted(reg=reg), resources=c(list(walltime=step.walltime[5], cores=step.cores[5]), other.resources))
+      toresubmit = rbind(findNotSubmitted(reg=reg), findExpired(reg=reg))
+      if(nrow(toresubmit)>0){
+        message("Re-submitting ", paste(unlist(toresubmit), collapse=' '))
+        submitJobs(reg=reg, toresubmit, resources=c(list(walltime=step.walltime[5], cores=step.cores[5]), other.resources))
       }
       waitForJobs(reg=reg, sleep=sleep)
       if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
     }
-    if(status) print(getStatus(reg=reg))
 
   } else {
     message("\n== 6) Calling abnormal bin with loose threshold.\n")
@@ -342,6 +376,15 @@ autoNormTest <- function(files.f,
       reg = loadRegistry(stepName, writeable=TRUE)
     } else {
       reg <- makeRegistry(stepName, seed=123)
+    }
+    if(status){
+      print(getStatus(reg=reg))
+      if(nrow(findErrors(reg=reg))>0){
+        tmp = sapply(unlist(findErrors(reg=reg)), function(id){
+          message('Error in job ', id)
+          message(paste(tail(getLog(id, reg=reg),10), collapse='\n'))
+        })
+      }
     }
     if(!any(skip==6) & nrow(findJobs(reg=reg))==0){
       abCovCallCases.f <- function(samp, files.df, norm.stats.f, bins.f, stitch.dist, lib.loc){
@@ -356,21 +399,17 @@ autoNormTest <- function(files.f,
     }
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
       print(getStatus(reg=reg))
-      if(nrow(findExpired(reg=reg))>0){
-        message("Re-submitting ", findExpired(reg=reg))
-        submitJobs(reg=reg, findExpired(reg=reg), resources=c(list(walltime=step.walltime[6], cores=step.cores[6]), other.resources))
+      if(resetError){
+        resetJobs(findErrors(reg=reg), reg=reg)
       }
-      if(resetExpired){
-        resetJobs(c(findErrors(reg=reg), findExpired(reg=reg)), reg=reg)
-      }
-      if(nrow(findNotSubmitted(reg=reg))>0){
-        message("Re-submitting ", findNotSubmitted(reg=reg))
-        submitJobs(reg=reg, findNotSubmitted(reg=reg), resources=c(list(walltime=step.walltime[6], cores=step.cores[6]), other.resources))
+      toresubmit = rbind(findNotSubmitted(reg=reg), findExpired(reg=reg))
+      if(nrow(toresubmit)>0){
+        message("Re-submitting ", paste(unlist(toresubmit), collapse=' '))
+        submitJobs(reg=reg, toresubmit, resources=c(list(walltime=step.walltime[6], cores=step.cores[6]), other.resources))
       }
       waitForJobs(reg=reg, sleep=sleep)
       if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
     }
-    if(status) print(getStatus(reg=reg))
   }
 
   res.df = do.call(rbind, reduceResultsList(reg=reg))
@@ -391,7 +430,7 @@ autoExtra <- function(files.f,
                       step.cores=c(3,2),
                       col.files="bc.gc.gz",
                       bc.ref.f="ref-bc-norm.tsv",
-                      resetExpired=FALSE,
+                      resetError=FALSE,
                       seed.c=123){
   load(files.f)
   step.walltime = paste0(step.walltime, ":0:0")
@@ -409,6 +448,15 @@ autoExtra <- function(files.f,
     } else {
       reg <- makeRegistry(stepName, seed=seed.c)
     }
+    if(status){
+      print(getStatus(reg=reg))
+      if(nrow(findErrors(reg=reg))>0){
+        tmp = sapply(unlist(findErrors(reg=reg)), function(id){
+          message('Error in job ', id)
+          message(paste(tail(getLog(id, reg=reg),10), collapse='\n'))
+        })
+      }
+    }
     if(nrow(findJobs(reg=reg))==0){
       quickCount.f <- function(col.files, bins.f, files.df, lib.loc, nb.cores){
         load(bins.f)
@@ -421,21 +469,17 @@ autoExtra <- function(files.f,
     }
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
       print(getStatus(reg=reg))
-      if(nrow(findExpired(reg=reg))>0){
-        message("Re-submitting ", findExpired(reg=reg))
-        submitJobs(reg=reg, findExpired(reg=reg), resources=c(list(walltime=step.walltime[1], cores=step.cores[1]), other.resources))
+      if(resetError){
+        resetJobs(findErrors(reg=reg), reg=reg)
       }
-      if(resetExpired){
-        resetJobs(c(findErrors(reg=reg), findExpired(reg=reg)), reg=reg)
-      }
-      if(nrow(findNotSubmitted(reg=reg))>0){
-        message("Re-submitting ", findNotSubmitted(reg=reg))
-        submitJobs(reg=reg, findNotSubmitted(reg=reg), resources=c(list(walltime=step.walltime[1], cores=step.cores[1]), other.resources))
+      toresubmit = rbind(findNotSubmitted(reg=reg), findExpired(reg=reg))
+      if(nrow(toresubmit)>0){
+        message("Re-submitting ", paste(unlist(toresubmit), collapse=' '))
+        submitJobs(reg=reg, toresubmit, resources=c(list(walltime=step.walltime[1], cores=step.cores[1]), other.resources))
       }
       waitForJobs(reg=reg, sleep=sleep)
       if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
     }
-    if(status) print(getStatus(reg=reg))
     return(loadResult(reg=reg, 1))
   }
 
@@ -451,6 +495,15 @@ autoExtra <- function(files.f,
     } else {
       reg <- makeRegistry(stepName, seed=seed.c)
     }
+    if(status){
+      print(getStatus(reg=reg))
+      if(nrow(findErrors(reg=reg))>0){
+        tmp = sapply(unlist(findErrors(reg=reg)), function(id){
+          message('Error in job ', id)
+          message(paste(tail(getLog(id, reg=reg),10), collapse='\n'))
+        })
+      }
+    }
     if(nrow(findJobs(reg=reg))==0){
       splitRef.f <- function(bc.ref, files.df, lib.loc){
         library(PopSV, lib.loc=lib.loc)
@@ -462,21 +515,17 @@ autoExtra <- function(files.f,
     }
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
       print(getStatus(reg=reg))
-      if(nrow(findExpired(reg=reg))>0){
-        message("Re-submitting ", findExpired(reg=reg))
-        submitJobs(reg=reg, findExpired(reg=reg), resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
+      if(resetError){
+        resetJobs(findErrors(reg=reg), reg=reg)
       }
-      if(resetExpired){
-        resetJobs(c(findErrors(reg=reg), findExpired(reg=reg)), reg=reg)
-      }
-      if(nrow(findNotSubmitted(reg=reg))>0){
-        message("Re-submitting ", findNotSubmitted(reg=reg))
-        submitJobs(reg=reg, findNotSubmitted(reg=reg), resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
+      toresubmit = rbind(findNotSubmitted(reg=reg), findExpired(reg=reg))
+      if(nrow(toresubmit)>0){
+        message("Re-submitting ", paste(unlist(toresubmit), collapse=' '))
+        submitJobs(reg=reg, toresubmit, resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
       }
       waitForJobs(reg=reg, sleep=sleep)
       if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
     }
-    if(status) print(getStatus(reg=reg))
     return(loadResult(reg=reg, 1))
   }
 }

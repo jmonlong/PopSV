@@ -4,129 +4,102 @@ title: Cluster management in R
 permalink: /2-ClusterManagement.md/
 ---
 
-## *BatchJobs* package
 
-[*BatchJobs*](https://github.com/tudo-r/BatchJobs) is a useful package to communicate with a computing cluster: send jobs, check their status, eventually rerun them, retrieve the results.
-PopSV has been designed into separate steps to be ran more easily on a computing cluster using *BatchJobs*. 
-Thanks to the multi-step workflow, the computation is parallelized sometimes by sample, other times by genomic regions.
+*batchtools* is the successor of *BatchJobs* and will be used from now on as it is more stable and more flexible. 
+To see the old version of this page, detailing how *BatchJobs* was used to run PopSV, see [this page](2-ClusterManagement-BatchJobs).
 
-Instead of running each step manually, we recommend using the two-commands wrappers (see *Automated run* below). It's basically a wrapper for the basic analysis steps with some useful functions (running custom steps, stop/restart). It should be sufficient for most analysis but it's less flexible and if you want to change some specific parameters you might have to tweak it.
+## *batchtools* package
+
+[*batchtools*](https://mllg.github.io/batchtools/) is a useful package to communicate with a computing cluster: send jobs, check their status, eventually rerun them, retrieve the results.
+PopSV has been designed into separate steps to run more easily on a computing cluster using *batchtools*. 
+Thanks to the multi-step workflow, the computation is parallelized as much as possible (sometimes by sample, other times by genomic regions).
+
+Instead of running each step manually, we recommend using the two-commands wrappers (see *Automated run* below). 
+It's basically a wrapper for the basic analysis steps with some useful functions (running custom steps, stop/restart). 
+It should be sufficient for most analysis but it's less flexible and if you want to change some specific parameters you might have to tweak the code within the functions.
 
 ## Installation and configuration
 
-*BatchJobs* package can be installed through [CRAN](https://www.cran.r-project.org/)
+*batchtools* package can be installed through [CRAN](https://www.cran.r-project.org/):
 
 ```r
-install.packages("BatchJobs")
+install.packages("batchtools")
 ```
 
-The most important step is **configuring it for your computing cluster**. It's not long but should be done carefully. And once this is done correctly, the rest follows nicely.
+The most important step is **configuring it for your computing cluster**. 
+It's not long to do and once this is done correctly, the rest follows nicely.
 
-You will need to create **3 files** :
+You will need to place **2 files** in the working directory of your project:
 
 + a cluster template
-+ a script with parser functions
-+ a `.BatchJobs.R` configuration file.
++ a configuration file.
 
-I would recommend to put these 3 files **in the root of your personal space**, i.e. `~/`. You could put them in the project folder, but then it means you have to copy them each time you create/run another project. Putting them in your root means that they will always be used by default by *BatchJobs*.
+I put some **examples of configuration and template files for Slurm and TORQUE HPC** in the [`scripts` folder pf the GitHub repo](https://github.com/jmonlong/PopSV/tree/master/scripts/batchtools).
+If you are using Slurm/TORQUE or some of the HPC from Compute Canada (e.g. Cedar/Guillimin), you can use these files with only minimal edits (see instructions on GitHub).
 
 ### Cluster template
 
-A cluster template is a template form of the bash script that you would send through `qsub`/`msub`. There you define the placeholder for the resources or parameters of the job. This file will be parsed by *BatchJobs*.
+A cluster template is a template form of the bash script that you would send through `qsub`/`msub`. 
+There you define the placeholder for the resources or parameters of the job. This file will be parsed by *batchtools*.
 
-For our cluster [Guillimin](http://www.hpc.mcgill.ca/), I created a `guillimin.tmpl` file like this :
+For the Compute Canada cluster [Cedar](https://docs.computecanada.ca/wiki/Cedar), I created use a template that looks like this:
 
 ```sh
-#PBS -N <%= job.name %>
-#PBS -j oe
-#PBS -o <%= log.file %>
-#PBS -l walltime=<%= resources$walltime %>
-#PBS -l nodes=<%= resources$nodes %>:ppn=<%= resources$cores %>
-#PBS -A bws-221-ae
-#PBS -V
+#!/bin/bash
+
+#SBATCH --job-name=<%= job.name %>
+#SBATCH --output=<%= log.file %>
+#SBATCH --error=<%= log.file %>
+#SBATCH --time=<%= resources$walltime %>
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=<%= resources$cores %>
+#SBATCH --mem-per-cpu=<%= resources$memory %>
+#SBATCH --account=<%= resources$account %>
+<%= if (!is.null(resources$partition)) sprintf(paste0("#SBATCH --partition='", resources$partition, "'")) %>
+<%= if (array.jobs) sprintf("#SBATCH --array=1-%i", nrow(jobs)) else "" %>
+
+## Initialize work environment like
+## source /etc/profile
+## module add ...
+
+## Export value of DEBUGME environemnt var to slave
+export DEBUGME=<%= Sys.getenv("DEBUGME") %>
 
 ## Run R:
-## we merge R output with stdout from PBS, which gets then logged via -o option
-R CMD BATCH --no-save --no-restore "<%= rscript %>" /dev/stdout
+## we merge R output with stdout from SLURM, which gets then logged via --output option
+Rscript -e 'batchtools::doJobCollection("<%= uri %>")'
 ```
 
-Placeholders are in the form of `<%= resources$walltime %>`. *BatchJobs* will insert there the value defined by `walltime` element in the `resources` list (see later in `submitJobs` command). Although you most likely won't have to change these placeholders, you might need to update the lines if your cluster uses a different syntax. For example, in our cluster, we need to give an ID for our lab with `-A`.
+Placeholders are in the form of `<%= resources$walltime %>`. 
+*batchtools* will insert there the value defined by `walltime` element in the `resources` list (see later in `submitJobs` command). 
+Although you most likely won't have to change these placeholders, you might need to update the lines if your cluster uses a different syntax. 
+For example, in our cluster, we need to give an account ID for our lab, that will be passed in the template by `<%= resources$account %>`.
 
-In order to easily use the pipelines provided with PopSV package, I would recommend to **put exactly the placeholders** `walltime`, `cores` and `nodes` but to hard-code the rest (e.g. queue, lab ID) in the template.
+In order to easily use the pipelines provided with PopSV package, you should **use at least the placeholders `walltime`, `cores` and `nodes`**.
+For the other arguments (e.g. queue, lab ID) you can either hard-code them in the template or pass it in the R pipeline functions with `other.resources=list(...)`.
 
-### Parser functions
+### Configuration file
 
-Parser functions are saved in a R script, called for example `makeClusterFunctionsAdaptive.R`. This will parse the template and create the actual commands to send, cancel and check jobs.
+The `batchtools.conf.R` file will be read when running the R pipeline functions.
+It will load the template file defined above. 
+There is nothing special to change here. 
+Just making sure that the command fits the HPC:
 
-Most likely, you just need to check/replace `qsub`/`qdel`/`qstat` calls with the correct bash commands (sometimes `msub`/`canceljob`/`showq`).
+- For Slurm, `batchtools.conf.R` contains `cluster.functions = makeClusterFunctionsSlurm()` and will look for a template file called `batchtools.slurm.tmpl`.
+- For TORQUE, `batchtools.conf.R` contains `cluster.functions = makeClusterFunctionsTORQUE()` and will look for a template file called `batchtools.torque.tmpl`.
 
-From [our file](https://github.com/jmonlong/PopSV/blob/master/scripts/makeClusterFunctionsAdaptive.R), these are the lines you might need to change :
-
-```sh
-res =  BatchJobs:::runOSCommandLinux("qsub", outfile, stop.on.exit.code = FALSE)
-cfKillBatchJob("canceljob", batch.job.id)
-BatchJobs:::runOSCommandLinux("showq", "-u $USER")$output
-```
-
-### `.BatchJobs.R` configuration file
-`.BatchJobs.R`  is just the configuration files that links the two other files. You don't really need to change it. Eventually change the email address.
-
-It looks like this :
-
-```r
-source("~/makeClusterFunctionsAdaptive.R")
-cluster.functions <- makeClusterFunctionsAdaptive("~/guillimin.tmpl")
-mail.start <- "none"
-mail.done <- "none"
-mail.error <- "none"
-mail.from <- "<jean.monlong@mail.mcgill.ca>"
-mail.to <- "<jean.monlong@mail.mcgill.ca>"
-```
-
-*Note: If `.BatchJobs.R` files are present at both `~/` and the project folder, the one in the project folder will override the parameters.*
-
-
-## Sending Jobs
-
-In practice, **you won't have to write this part** as we provide full pipelines. You might still need to **change a bit the resources of the jobs** (they might change from one cluster to another). More precisely I'm talking about the `resource=` parameter in the `submitJobs` command. After doing this, if you are not interested in more details, you can jump directly to the next section for an overview of a pipeline script.
-
-Otherwise here is a quick summary of *BatchJobs* commands used in the scripts:
-
-* `makeRegistry` creates a registry used to manipulate jobs for a particular analysis step.
-* `batchMap` adds jobs to a registry. Simply, you give it a function and a list of parameters. One job per parameter will be created to compute the output of the function using this specific parameter.
-* `submitJobs` submits the jobs to the cluster. This is where the queue, maximum computation time, number of cores can be specified. Moreover, if needed, a subset of the jobs can be sent to the cluster. Functions `findNotDone` and `findErrors` are particularly useful to find which jobs didn't finish or were lost in the limbo of the cluster management process.
-* `showStatus` outputs the status of the computations.
-* `loadResult` retrieves the output of one specific job, while `reduceResultsList` retrieves output for all jobs into a list format.
-
-For example, to run the step that retrieve the bin count in each BAM files it looks like this :
-
-```r
-getBC.reg <- makeRegistry(id="getBC")
-getBC.f <- function(file.i, bins.f, files.df){
-  library(PopSV)
-  load(bins.f)
-  bin.bam(files.df$bam[file.i], bins.df, files.df$bc[file.i])
-}
-batchMap(getBC.reg, getBC.f,1:nrow(files.df), more.args=list(bins.f="bins.RData", files.df=files.df))
-submitJobs(getBC.reg, findNotDone(getBC.reg), resources=list(walltime="20:0:0", nodes="1", cores="1"))
-showStatus(getBC.reg)
-```
-
-Here we want to get the bin counts of each sample. We create a registry called *getBC*. Then we define the function that will get the bin counts for a sample. The first parameter of this function (here `file.i` which is the index of the sample) will be different for each job sent by *BatchJobs*. Other parameters are common to all jobs. Within the function, we load the package and useful data and run the instructions we want. `batchMap` creates one job per sample ID and links the function we've just defined. The jobs are finally submitted to the cluster with the desired number of cores, wall time, etc
-
-We can check the status of the job with `showStatus(getBC.reg)` command.
-
-## Pipeline workflow
+## Running the pipeline
 
 ### Automated run
 
-Two wrapper functions around *BatchJobs* allows you to run PopSV without manually sending the jobs for each steps. These two functions (`autoGCcounts` and `autoNormTest`) are located in [`automatedPipeline.R`](https://github.com/jmonlong/PopSV/blob/master/scripts/automatedPipeline.R). Now, a full analysis can be run like this:
+Two wrapper functions around *batchtools* allows you to run PopSV without manually sending the jobs for each steps. 
+These two functions (`autoGCcounts` and `autoNormTest`) are located in [`automatedPipeline-batchtools.R`](https://github.com/jmonlong/PopSV/tree/master/scripts/batchtools). 
+A full analysis can be run like this:
 
 ```r
 ## Load package and wrapper
-library(BatchJobs)
 library(PopSV)
-source("automatedPipeline.R")
+source("automatedPipeline-batchtools.R")
 ## Set-up files and bins
 bam.files = read.table("bams.tsv", as.is=TRUE, header=TRUE)
 files.df = init.filenames(bam.files, code="example")
@@ -139,23 +112,66 @@ res.GCcounts = autoGCcounts("files.RData", "bins.RData")
 res.df = autoNormTest("files.RData", "bins.RData")
 ```
 
-The advantage of this wrapper is a easier management of the cluster and pipeline. However it's not so flexible: if a step need to be changed for some reason, you might have to change it within the `automatedPipeline.R` script.
+The advantage of this wrapper is a easier management of the cluster and pipeline. 
+However it's not so flexible: if a step need to be changed for some reason, you might have to change it within the `automatedPipeline-batchtools.R` script.
 
-Still, a few parameters can be passed to the two functions for the user convenience:
+Still, a few parameters can be passed to the two functions for the user's convenience:
 
 + Use `lib.loc=` if you installed PopSV in a specific location. The value will be passed to `library(PopSV)`.
 + `redo=` can be used to force a step to be redone (i.e. previous jobs deleted and re-submitted). E.g. `redo=5` to redo step 5.
++ `other.resources=` to specify resources for the jobs to match the template (see HPC configuration section above). We use this to specify queues/accounts when the HPC requires it.
++ `resetError=TRUE` to reset jobs that had errors and rerun them. Better than a *redo* because the jobs that are done don't need to be rerun.
 + `rewrite=TRUE` will force the normalized bin counts and normalization stats to be rewritten.
 + `file.suffix=` to add a suffix to the temporary files. This is useful when the pipeline is run several times on the same folder, for example when splitting the samples in batches (e.g. presence of batch effects, male/female split for XY chrs).
++ `step.walltime=` the walltime for each step. See in the `automatedPipeline-batchtools.R` script for default values. 
++ `step.cores=` the number of cores for each step. See in the `automatedPipeline-batchtools.R` script for default values. 
++ `status=TRUE` will print the status of the jobs for each steps and the end of the log of jobs with errors.
++ `skip=` to skip some steps.
 
-As an example [this script](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-batchjobs-automatedPipeline.R) shows how PopSV is run using these wrappers. In addition, when we want to analyze X and Y chromosomes, the samples have to be split and these wrappers come handy to run easily three analysis (see this [example](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-XY-batchjobs-automatedPipeline.R)).
 
-### Step-by-step manual run
+As an example, the `run-PopSV-batchtools-automatedPipeline.R` script in [the scripts folder](https://github.com/jmonlong/PopSV/tree/master/scripts/batchtools) shows how PopSV is run using these wrappers on Cedar (Slurm HPC). 
 
-The general idea is to have one script per analysis (e.g. bin size, project). Each such analysis should be in its own folder to avoid possible confusion between temporary files. Examples of pipeline scripts can be found in the [`scripts` folder of the GitHub repository](https://github.com/jmonlong/PopSV/tree/master/scripts).
+### Practical details
 
-Because it manipulates large data (BAM files, genome-wide coverage) and large sample sizes, PopSV was designed to create and work with intermediate files. The management of these files are mostly handled automatically. In practice all the important path and folder structure is saved in the `files.df` data.frame, originally created by  `init.filenames` function. For this reason, the results of each analysis steps are saved as the local files so that the next steps can be run later without the need for you to think about what to save etc.
+- The configuration files and `automatedPipeline-batchtools.R` script should be in the working directory. 
+- Use different `file.suffix` if PopSV is run several times in the same folder (e.g. different bin size, sample batches).
+- The master script (~`run-PopSV-batchtools-automatedPipeline.R`) can be left running on a login node of the HPC because it doesn't compute anything, it just sends jobs and wait. Even better, let it run on a [*screen*](https://www.gnu.org/software/screen/manual/screen.html) so that you can detach it and disconnect from the server without stopping the pipeline.
+- The paths and folder structure is saved in the `files.df` data.frame, originally created by  `init.filenames` function. 
 
-So the script doesn't need to be ran each time from the start but rather ran step by step. In practice you often have to wait a couple of hours for some step to compute. Think about R as a new shell: you would open R, check the status of the jobs in the clusters, rerun them if necessary, or start the next step, etc. You can run R on this master script in a login node because nothing will be directly computed there, the real computation are sent as actual jobs.
+## Sending a job with *batchtools* 
 
-After one step sends jobs to the cluster, the user can exit R, log out, have a coffee, think about all the time saved thanks to *BatchJobs* and then open everything again later and continue. No need to rerun everything, just load the libraries and the registries (e.g. running `getBC.reg <- makeRegistry(id="getBC")` again) you want to check.
+In practice, **you don't have to write this part**, it's what the `automatedPipeline-batchtools.R` functions are made of.
+If ever you want to tweak these functions or just use *batchtools* for something else, here is how we use it.
+
+Useful functions:
+
+- `loadRegistry` creates a registry used to manipulate jobs for a particular analysis step. Use `writable=TRUE` if the registry already exists. 
+- `batchMap` adds jobs to a registry. You give it a function and a list of parameters. One job per parameter will be created to compute the output of the function using this specific parameter. `more.args=` to provide additional arguments (same for all jobs).
+- `submitJobs` submits the jobs to the cluster. This is where the walltime time, number of cores, etc can be specified. Moreover, if needed, a subset of the jobs can be sent to the cluster. Functions `findNotDone` and `findErrors` are particularly useful to find which jobs didn't finish or were lost in the limbo of the cluster management process.
+- `getStatus` outputs the status of the computations.
+- `loadResult` retrieves the output of one specific job, while `reduceResultsList` retrieves output for all jobs into a list format.
+- `waitForJobs` waits for all the jobs to finish.
+
+For example, to run the step that retrieve the bin count in each BAM files, a simple version would look like this:
+
+```r
+reg <- loadRegistry("getBC", writeable=TRUE)
+getBC.f <- function(file.i, bins.f, files.df){
+  library(PopSV)
+  load(bins.f)
+  bin.bam(files.df$bam[file.i], bins.df, files.df$bc[file.i])
+}
+batchMap(reg=reg, getBC.f,1:nrow(files.df), more.args=list(bins.f="bins.RData", files.df=files.df))
+submitJobs(reg=reg, findNotDone(reg=reg), resources=list(walltime="20:0:0", nodes="1", cores="1"))
+getStatus(reg=reg)
+```
+
+Here we want to get the bin counts of each sample. 
+We create a registry called *getBC*. 
+Then we define the function that will get the bin counts for a sample. 
+The first parameter of this function (here `file.i` which is the index of the sample) will be different for each job sent by *batchtools*.
+Other parameters are the same in all jobs. 
+Within the function, we load the package and useful data and run the instructions we want. 
+`batchMap` creates one job per sample ID and links the function we've just defined. 
+The jobs are finally submitted to the cluster with the desired number of cores, walltime, etc
+we can check the status of the job with `getStatus` function.

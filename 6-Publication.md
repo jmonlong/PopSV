@@ -8,7 +8,8 @@ permalink: /6-Publication.md/
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1002893.svg)](https://doi.org/10.5281/zenodo.1002893)
 
-+ [Manuscript on bioRxiv](https://www.biorxiv.org/content/early/2017/10/06/199224).
++ [Article in PLoS Genetics](http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1007285)
++ [Manuscript in bioRxiv](https://www.biorxiv.org/content/early/2018/03/05/199224).
 + [GitHub repo](https://github.com/jmonlong/epipopsv) with code to reproduce the figures and numbers.
 + [Data on FigShare](https://figshare.com/s/20dfdedcc4718e465185) includes calls and data necessary to reproduce the analysis.
 
@@ -26,7 +27,7 @@ The CNV calls in the epilepsy patients and controls can download be downloaded f
 
 ## Human copy number variants are enriched in regions of low-mappability
 
-+ [Manuscript on bioRxiv](http://www.biorxiv.org/content/early/2015/12/11/034165)
++ [Manuscript in bioRxiv](https://www.biorxiv.org/content/early/2018/02/20/034165)
 + [Data and scripts](https://figshare.com/s/8fd3007ebb0fbad09b6d)
 + New version coming up very soon.
 
