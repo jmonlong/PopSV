@@ -138,7 +138,7 @@ As an example, the `run-PopSV-batchtools-automatedPipeline.R` script in [the scr
 - The master script (~`run-PopSV-batchtools-automatedPipeline.R`) can be left running on a login node of the HPC because it doesn't compute anything, it just sends jobs and wait. Even better, let it run on a [*screen*](https://www.gnu.org/software/screen/manual/screen.html) so that you can detach it and disconnect from the server without stopping the pipeline.
 - The paths and folder structure is saved in the `files.df` data.frame, originally created by  `init.filenames` function. 
 
-## Sending a job with *batchtools* 
+## Preparing and submitting a job with *batchtools* 
 
 In practice, **you don't have to write this part**, it's what the `automatedPipeline-batchtools.R` functions are made of.
 If ever you want to tweak these functions or just use *batchtools* for something else, here is how we use it.
