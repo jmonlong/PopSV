@@ -13,7 +13,7 @@ Abnormal Read-Depth signal is detected by using a population of samples as refer
 Thanks to this population view, the whole genome can be robustly interrogated, including regions of low mappability. 
 Moreover, any divergence from the reference samples are detected, even if the signal is incomplete, e.g. tumoral aberrations or SV involving repeats.
 
-The manuscript presenting the methods and an application to epilepsy patients was published in [PLoS Genetics](http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1007285).
+The manuscript presenting the methods and an application to epilepsy patients was published in [PLoS Genetics](http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1007285). [More details about the publications]({{ site.baseurl }}/6-Publication.md).
 
 # Getting started
 
@@ -100,6 +100,8 @@ PopSV workflow uses [*BatchJobs* package](https://github.com/tudo-r/BatchJobs) o
 It needs some configuration but then it saves a lot of time and the pipeline can be run easily. 
 For more information on how to configure these package for your HPC system, go to [this page]({{ site.baseurl }}/2-ClusterManagement.md).
 
-# FAQ
+# Questions ?
 
-Find frequently asked questions [there]({{ site.baseurl }}/5-FAQ.md). E.g. about reference samples, bin size, exome.
+Questions about reference samples, bin size, exome or other ? [Have a look at the FAQ]({{ site.baseurl }}/5-FAQ.md).
+
+Otherwise, feel free to [post an issue on GitHub](https://github.com/jmonlong/PopSV/issues) or to [send me an email](mailto:jean.monlong@mail.mcgill.ca).
