@@ -27,7 +27,7 @@ You will need to place **2 files** in the working directory of your project:
 + a cluster template
 + a configuration file.
 
-I put some **examples of configuration and template files for Slurm and TORQUE HPC** in the [`scripts` folder pf the GitHub repo](https://github.com/jmonlong/PopSV/tree/master/scripts/batchtools).
+I put some **examples of configuration and template files for Slurm and TORQUE HPC** in the [`scripts` folder of the GitHub repo](https://github.com/jmonlong/PopSV/tree/master/scripts/batchtools).
 If you are using Slurm/TORQUE or some of the HPC from Compute Canada (e.g. Cedar/Guillimin), you can use these files with only minimal edits (see instructions on GitHub).
 
 ### Cluster template
