@@ -15,7 +15,7 @@ Then in a R script, call the functions like in `run-PopSV-batchtools-automatedPi
 Slurm is used by Compute Canada on **Cedar**.
 
 `batchtools.conf.R` is currently set up for Slurm (it calls *makeClusterFunctionsSlurm*).
-When running the pipeline functions, it will look for this configuration file and then for a template named `batchtools.slurm.tmpl`.
+When running the pipeline functions, this configuration file will be loaded and look for a template named `batchtools.slurm.tmpl`.
 
 To work on Slurm (or at least on Cedar) you will have to specify your "account".
 As you can see, there is a field for "account" in the template.
@@ -27,18 +27,18 @@ For example, in `run-PopSV-batchtools-automatedPipeline.R`, we used `other.resou
 TORQUE is used at McGill's Genome Center on **Abacus**.
 
 To use TORQUE, `batchtools.conf.torque.R` should be renamed to `batchtools.conf.R` in the working directory.
-This configuration will look for a `batchtools.torque.tmpl` template file when the pipeline is run.
+This configuration will look for the `batchtools.torque.tmpl` template file when the pipeline is run.
 
 ### Others
 
 To use other HPC systems you will need different configuration and template files.
 There are a few examples of templates on [the *batchtools* GitHub](https://github.com/mllg/batchtools/tree/master/inst/templates).
-In the configuration it about which *makeClusterFunctions* to use (more details in *batchtools* documentation](https://mllg.github.io/batchtools/articles/batchtools.html)):  *makeClusterFunctionsDocker*, *makeClusterFunctionsInteractive*, *makeClusterFunctionsLSF*, *makeClusterFunctionsMulticore*, *makeClusterFunctionsOpenLava*, *makeClusterFunctionsSGE*, *makeClusterFunctionsSSH*, *makeClusterFunctionsSlurm*, *makeClusterFunctionsSocket*, *makeClusterFunctionsTORQUE*.
+In the configuration it about which *makeClusterFunctions* to use (more details in [*batchtools* documentation](https://mllg.github.io/batchtools/articles/batchtools.html)):  *makeClusterFunctionsDocker*, *makeClusterFunctionsInteractive*, *makeClusterFunctionsLSF*, *makeClusterFunctionsMulticore*, *makeClusterFunctionsOpenLava*, *makeClusterFunctionsSGE*, *makeClusterFunctionsSSH*, *makeClusterFunctionsSlurm*, *makeClusterFunctionsSocket*, *makeClusterFunctionsTORQUE*.
 
 ### Testing with a simple job
 
 It's a good idea to check that everything is configured properly before trying to run the pipeline.
-To test that sending jobs work you could try running the following commands:
+To test that sending jobs works you could try running the following commands:
 
 ```r
 library(batchtools)
@@ -54,8 +54,8 @@ test.f <- function(ii){
 batchMap(reg=reg, test.f, 1:2)
 submitJobs(reg=reg, ids=findJobs(reg=reg), resources=list(walltime='10:00', cores=1))
 waitForJobs(reg=reg, sleep=10)
-getStatus()
-reduceResultsList()
+getStatus(reg=reg)
+reduceResultsList(reg=reg)
 ```
 
-These commands load the package, create a registry called *test*, define a function that will be run in the job, setup two jobs with this functions and inputs 1 and 2, submit the jobs with a 10min walltime and 1 core per job, wait for the jobs to finish, show a summary of the status, list the results.
+These commands load the package, create a registry called *test*, define a function that will be run in the job, setup two jobs with this function and inputs 1 and 2, submit the jobs with a 10min walltime and 1 core per job, wait for the jobs to finish, show a summary of the status, list the results.
