@@ -4,7 +4,7 @@ title: Cluster management in R using BatchJobs
 permalink: /2-ClusterManagement-BatchJobs.md/
 ---
 
-***batchtools* is the successor of *BatchJobs* and will be used from now on as it is more stable and more flexible.** [Go to *batchtools* instructions]({{ site.baseurl }}2-ClusterManagement-BatchJobs).
+***batchtools* is the successor of *BatchJobs* and will be used from now on as it is more stable and more flexible.** [Go to *batchtools* instructions]({{ site.baseurl }}/2-ClusterManagement-BatchJobs).
 
 ## *BatchJobs* package
 

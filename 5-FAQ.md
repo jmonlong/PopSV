@@ -6,9 +6,9 @@ permalink: /5-FAQ.md/
 
 ### Can I run PopSV on my laptop ?
 
-Yes, it's possible but not recommended. You can have a look at the [pipeline to run PopSV locally](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-local.R). However, PopSV has been designed to be easily run in a cluster using *BatchJobs* package. Moreover, you likely have access to a computing cluster, especially to store the BAM files of several WGS samples. Have a look [there]({{ site.baseurl }}2-ClusterManagement.md#installation-and-configuration) to see how to configure it.
+Yes, it's possible but not recommended. You can have a look at the [pipeline to run PopSV locally](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-local.R). However, PopSV has been designed to be easily run in a cluster using *BatchJobs* package. Moreover, you likely have access to a computing cluster, especially to store the BAM files of several WGS samples. Have a look [there]({{ site.baseurl }}/2-ClusterManagement.md#installation-and-configuration) to see how to configure it.
 
-Eventually, if you really want to run it locally (and slowly) but want to benefit from the pipelines with *BatchJobs* (e.g. the [automated pipeline]({{ site.baseurl }}2-ClusterManagement.md#automated-run)), you can use your laptop/computer as a cluster. Then you don't need [3 configuration files]({{ site.baseurl }}2-ClusterManagement.md#installation-and-configuration), just create a `.BatchJobs.R` file in the project folder or `~/` with
+Eventually, if you really want to run it locally (and slowly) but want to benefit from the pipelines with *BatchJobs* (e.g. the [automated pipeline]({{ site.baseurl }}/2-ClusterManagement.md#automated-run)), you can use your laptop/computer as a cluster. Then you don't need [3 configuration files]({{ site.baseurl }}/2-ClusterManagement.md#installation-and-configuration), just create a `.BatchJobs.R` file in the project folder or `~/` with
 
 ```r
 cluster.functions <- makeClusterFunctionsMulticore(ncpus=6)
@@ -31,7 +31,7 @@ Then you should load the package with:
 library(PopSV, lib.loc="~/R")
 ```
 
-If you are using the [automated pipeline]({{ site.baseurl }}2-ClusterManagement.md#automated-run) you can pass this path to the `lib.loc=` parameter.
+If you are using the [automated pipeline]({{ site.baseurl }}/2-ClusterManagement.md#automated-run) you can pass this path to the `lib.loc=` parameter.
 
 
 ### What bin size should I use ?
@@ -44,7 +44,7 @@ To a certain point, the homogeneity of your samples would also affect what is th
 
 First, the reference samples should be normal genomes. They will be used as baseline to define what is a normal genome so in most cases they should be healthy individuals. You could use cases as reference if you don't expect frequent (>50%) CNVs (e.g. complex disease), and they are not tumors.
 
-Second, they need to be homogeneous. `qc.samples.summary` function can be used to interactively cluster the samples using the coverage. It should be done after counting the reads in all the samples and before normalization/test. More details [there]({{ site.baseurl }}1-BasicWorkflow.md#sample-quality-control).
+Second, they need to be homogeneous. `qc.samples.summary` function can be used to interactively cluster the samples using the coverage. It should be done after counting the reads in all the samples and before normalization/test. More details [there]({{ site.baseurl }}/1-BasicWorkflow.md#sample-quality-control).
 
 
 ### Are `FDR.th=` parameter and `qv` column the same thing ?
@@ -55,7 +55,7 @@ Yes and no. They represent the same measure but in practice are used at differen
 
 For this reason, it's usually better to play with the `FDR.th=` parameter as it will affect which bins are selected and merged. The `qv` column is used to rank the selected calls. So better run `call.abnormal.cov` several times with different `FDR.th` than running it once  and filtering the `qv`.
 
-More details on `call.abnormal.cov` function [there]({{ site.baseurl }}1-BasicWorkflow.md#abnormal-coverage-calls).
+More details on `call.abnormal.cov` function [there]({{ site.baseurl }}/1-BasicWorkflow.md#abnormal-coverage-calls).
 
 ### Can PopSV detect common variants ?
 

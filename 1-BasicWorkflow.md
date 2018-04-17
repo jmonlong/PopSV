@@ -26,7 +26,7 @@ GC bias is corrected using a LOESS model. Using this model, a normalization coef
 ## Sample Quality Control
 The last "pre-processing" step aims at defining the set of reference samples. These samples will define "normal" coverage. A natural set of reference samples are the controls in case/control studies or normal samples in normal/tumor paired samples designs. The more the better but **reference samples should be homogeneous** to get optimal detection power. Eventually, if all available samples are normal, they can all be used as reference and later tested against themselves. 
 
-`qc.samples.cluster` opens an interactive web-browser application to explore how homogeneous the samples are. The samples are represented and clustered using the first two principal components. You can then decide how many clear clusters are present. If any the different batches could be analyzed separately or some clusters completely removed (outliers). **This step is usually not necessary** because samples analyzed should have been sequenced with similar protocol and technologies. It is mostly a safety check. For this QC, a subset of the bins can be used, e.g. using `quick.count` function. More information on the usage [there]({{ site.baseurl }}3-Visualization.md#data-quality-before-analysis).
+`qc.samples.cluster` opens an interactive web-browser application to explore how homogeneous the samples are. The samples are represented and clustered using the first two principal components. You can then decide how many clear clusters are present. If any the different batches could be analyzed separately or some clusters completely removed (outliers). **This step is usually not necessary** because samples analyzed should have been sequenced with similar protocol and technologies. It is mostly a safety check. For this QC, a subset of the bins can be used, e.g. using `quick.count` function. More information on the usage [there]({{ site.baseurl }}/3-Visualization.md#data-quality-before-analysis).
 
 `qc.samples` function will join all bin count files and produce some graphs on the set of reference samples. If too many reference samples are available (lucky you), you can specify how many samples to use with `nb.ref.samples=`. 200 reference samples are usually enough.
 
@@ -45,12 +45,12 @@ From the normalized bin counts the mean and standard deviation across reference 
 At this point the rest of the samples can be tested using `tn.test.sample` function. Both normalization and Z-score computation are performed by the function.
 
 ## Abnormal coverage calls
-To find which bins have abnormally low/high coverage, `call.abnormal.cov` will derive P-value from the Z-score from a particular sample and use False Discovery Rate control. A stitching bin merging strategy is performed (parameters `merge.cons.bins=` and `stitch.dist=`). Other parameters are described in the function documentation, such as the strategy for P-value definition or additional tricks (e.g. [for cancer samples]({{ site.baseurl }}4-Cancer.md)). 
+To find which bins have abnormally low/high coverage, `call.abnormal.cov` will derive P-value from the Z-score from a particular sample and use False Discovery Rate control. A stitching bin merging strategy is performed (parameters `merge.cons.bins=` and `stitch.dist=`). Other parameters are described in the function documentation, such as the strategy for P-value definition or additional tricks (e.g. [for cancer samples]({{ site.baseurl }}/4-Cancer.md)). 
 
 ## Visualizing the results
 `sv.summary.interactive` function opens an interactive web-browser application to look at the results. The number of calls across samples, distribution of copy-number estimates or frequency is visualized. You can play with different stringency filters in order to retrieve the ones that gives the best result quality.
 
-More on the different visualizations available in PopSV [here]({{ site.baseurl }}3-Visualization.md).
+More on the different visualizations available in PopSV [here]({{ site.baseurl }}/3-Visualization.md).
 
 ## Save results
 

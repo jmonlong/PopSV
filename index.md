@@ -62,7 +62,7 @@ There are a few functions to run the CNV analysis and others to explore the resu
 
 ## I don't want to think, how can I run it quickly ?
 
-After quickly [configuring *batchtools*]({{ site.baseurl }}2-ClusterManagement.md#installation-and-configuration) for your computing cluster, you can run the [automated pipeline]({{ site.baseurl }}2-ClusterManagement.md#automated-run):
+After quickly [configuring *batchtools*]({{ site.baseurl }}/2-ClusterManagement.md#installation-and-configuration) for your computing cluster, you can run the [automated pipeline]({{ site.baseurl }}/2-ClusterManagement.md#automated-run):
 
 ```r
 ## Load package and wrapper
@@ -87,19 +87,19 @@ I also have this in a [*screen*](https://www.gnu.org/software/screen/manual/scre
 
 # Workflow
 
-![PopSV workflow]({{ site.baseurl }}public/PopSVworkflow.png)
+![PopSV workflow]({{ site.baseurl }}/public/PopSVworkflow.png)
 
 First the genome is fragmented and reads mapping in each bin are counted for each sample and GC corrected (1). Next, coverage of the sample is normalized (2) and each bin is tested by computing a Z-score (3), estimating p-values (4) and identifying abnormal regions (5).
 
-A quick description of the different analysis steps and their corresponding functions can be found in [this page]({{ site.baseurl }}1-BasicWorkflow.md).
+A quick description of the different analysis steps and their corresponding functions can be found in [this page]({{ site.baseurl }}/1-BasicWorkflow.md).
 
 
 # Running PopSV on computing clusters
 
 PopSV workflow uses [*BatchJobs* package](https://github.com/tudo-r/BatchJobs) or its successor the [*batchtools* package](https://mllg.github.io/batchtools/) to send computations to a cluster. 
 It needs some configuration but then it saves a lot of time and the pipeline can be run easily. 
-For more information on how to configure these package for your HPC system, go to [this page]({{ site.baseurl }}2-ClusterManagement.md).
+For more information on how to configure these package for your HPC system, go to [this page]({{ site.baseurl }}/2-ClusterManagement.md).
 
 # FAQ
 
-Find frequently asked questions [there]({{ site.baseurl }}5-FAQ.md). E.g. about reference samples, bin size, exome.
+Find frequently asked questions [there]({{ site.baseurl }}/5-FAQ.md). E.g. about reference samples, bin size, exome.

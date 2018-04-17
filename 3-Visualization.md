@@ -6,7 +6,7 @@ permalink: /3-Visualization.md/
 
 ## Data quality before analysis
 
-The most important quality control is to check the **homogeneity of the reference samples**. We perform this QC after counting the reads and GC bias correction. Have a look at the [Analysis Step]({{ site.baseurl }}1-BasicWorkflow.md) for more details on its place in the workflow.
+The most important quality control is to check the **homogeneity of the reference samples**. We perform this QC after counting the reads and GC bias correction. Have a look at the [Analysis Step]({{ site.baseurl }}/1-BasicWorkflow.md) for more details on its place in the workflow.
 
 `qc.samples.cluster` runs the application. It takes as input a *data.frame* with bin counts across samples. Read counting has been done in each sample in the previous step. To merge the bin counts across samples in a few (e.g. 1000) bins, use `quick.count` function. The code looks like this:
 
@@ -21,7 +21,7 @@ qc.samples.cluster(bc.rand)
 
 The interface looks like this :
 
-![Sample clustering QC]({{ site.baseurl }}public/qcClustApp.png)
+![Sample clustering QC]({{ site.baseurl }}/public/qcClustApp.png)
 
 You can play with the number of clusters and cluster linkage approach. When you are satisfied, you can either:
 
@@ -36,7 +36,7 @@ Eventually if you have a lot of samples (good!) and you suspect the presence of 
 bc.rand = quick.count(files.df, bins.df, nb.cores=3, nb.rand.bins=1e3)
 ```
 
-Here, we didn't specify to use the GC corrected bin counts (`col.files="bc.gc.gz"` parameter before), so it will actually go to the BAM files and count the reads in 1000 random bins. Depending on your sample size, it might take some time and might be a good idea to use a cluster job (with [BatchJobs]({{ site.baseurl }}2-ClusterManagement.md)).
+Here, we didn't specify to use the GC corrected bin counts (`col.files="bc.gc.gz"` parameter before), so it will actually go to the BAM files and count the reads in 1000 random bins. Depending on your sample size, it might take some time and might be a good idea to use a cluster job (with [BatchJobs]({{ site.baseurl }}/2-ClusterManagement.md)).
 
 
 ## Summary of the calls
@@ -55,7 +55,7 @@ res.filt.df = sv.summary.interactive(res.df)
 
 The interface looks like this:
 
-![SV summary - Affected genome]({{ site.baseurl }}public/svSummaryNb.png)
+![SV summary - Affected genome]({{ site.baseurl }}/public/svSummaryNb.png)
 
 On the left you see the four parameters you can tweak:
 
@@ -66,21 +66,21 @@ On the left you see the four parameters you can tweak:
 
 The first tab looks at the amount of called genome in each sample. The bars can be colored in different ways. Clicking on *Colour by event size*, we get an idea of the amount of single bin called. 
 
-![SV summary - Affected genome]({{ site.baseurl }}public/svSummaryNbSize.png)
+![SV summary - Affected genome]({{ site.baseurl }}/public/svSummaryNbSize.png)
 
 This might be useful because outlier samples tend to show an excess of single-bin calls. That's the graph to look at if you need to tweak the *Maximum of single bins (Kb)* parameter.
 
 Then we look at the copy number estimates.
 
-![SV summary - Affected genome]({{ site.baseurl }}public/svSummaryCN.png)
+![SV summary - Affected genome]({{ site.baseurl }}/public/svSummaryCN.png)
 
 We can play with the minimum number of consecutive bins. Keep in mind, we expect peaks at integer values for call with at least three consecutive bins. Lower than that, it's OK to have partial copy number estimates.
 
-![SV summary - Affected genome]({{ site.baseurl }}public/svSummaryFreq.png)
+![SV summary - Affected genome]({{ site.baseurl }}/public/svSummaryFreq.png)
 
 The frequency distribution can be good to check too. Here, it's a twin study, so the peak at 3-sample frequency is actually good (variant in twins + one parent). 
 
-![SV summary - Affected genome]({{ site.baseurl }}public/svSummaryExport.png)
+![SV summary - Affected genome]({{ site.baseurl }}/public/svSummaryExport.png)
 
 Finally, once you are satisfied click on the *Export results* button on the *Export* tab. This will return the filtered *data.frame* in R.
 
@@ -104,7 +104,7 @@ PopSV calls are defined at the bin resolution, hence hundreds to thousands of bp
 
 `breakpoint.finder.interactive` takes as **input a genomic region, some samples and the path to the bam files**. It then opens an application in the web-browser where you can slide the breakpoints where desired. The interface looks like this:
 
-![Interactive breakpoint fine-tuning]({{ site.baseurl }}public/bkptInteractive.jpg)
+![Interactive breakpoint fine-tuning]({{ site.baseurl }}/public/bkptInteractive.jpg)
 
 
 ```r
@@ -130,7 +130,7 @@ dev.off()
 
 You can also specify related samples (e.g. parents) that will be displayed with a specific color. This might help understanding the mode of inheritance or veracity of the variant. It looks like this:
 
-![Interactive breakpoint fine-tuning trio]({{ site.baseurl }}public/bkptInteractive-trio.jpg)
+![Interactive breakpoint fine-tuning trio]({{ site.baseurl }}/public/bkptInteractive-trio.jpg)
 
 
 In practice, you **need access to the BAM files** and to **run it locally** (for the web-browser application). I would recommend to **mount** the cluster/server with the BAM files on your laptop. Then you might need to tweak a bit the paths in the *bam* column of `files.df` to include your mounting location.
