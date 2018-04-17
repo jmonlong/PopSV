@@ -1,10 +1,3 @@
----
-layout: pagetoc
-title: Frequently Asked Questions
-permalink: /5-FAQ.md/
----
-
-
 ### Can I run PopSV on my laptop ?
 
 Yes, it's possible but not recommended. You can have a look at the [pipeline to run PopSV locally](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-local.R). However, PopSV has been designed to be easily run in a cluster using *BatchJobs* package. Moreover, you likely have access to a computing cluster, especially to store the BAM files of several WGS samples. Have a look [there](2-ClusterManagement.md#installation-and-configuration) to see how to configure it.

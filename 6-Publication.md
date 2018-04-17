@@ -1,9 +1,3 @@
----
-layout: page
-title: Publications
-permalink: /6-Publication.md/
----
-
 ## Genome-wide characterization of copy number variants in epilepsy patients
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1002893.svg)](https://doi.org/10.5281/zenodo.1002893)

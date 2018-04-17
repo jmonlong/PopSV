@@ -1,8 +1,3 @@
----
-layout: default
-title: PopSV
----
-
 [![Build Status](https://travis-ci.org/jmonlong/PopSV.svg?branch=master)](https://travis-ci.org/jmonlong/PopSV)
 [![codecov](https://codecov.io/gh/jmonlong/PopSV/branch/master/graph/badge.svg)](https://codecov.io/gh/jmonlong/PopSV)
 

@@ -1,10 +1,3 @@
----
-layout: pagetoc
-title: Cluster management in R
-permalink: /2-ClusterManagement.md/
----
-
-
 *batchtools* is the successor of *BatchJobs* and will be used from now on as it is more stable and more flexible. 
 To see the old version of this page, detailing how *BatchJobs* was used to run PopSV, see [this page](2-ClusterManagement-BatchJobs).
 

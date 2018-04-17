@@ -1,9 +1,3 @@
----
-layout: pagetoc
-title: Visualization
-permalink: /3-Visualization.md/
----
-
 ## Data quality before analysis
 
 The most important quality control is to check the **homogeneity of the reference samples**. We perform this QC after counting the reads and GC bias correction. Have a look at the [Analysis Step](1-BasicWorkflow.md) for more details on its place in the workflow.

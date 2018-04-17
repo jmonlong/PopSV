@@ -1,9 +1,3 @@
----
-layout: pagetoc
-title: Cluster management in R
-permalink: /2-ClusterManagement-BatchJobs.md/
----
-
 ***batchtools* is the successor of *BatchJobs* and will be used from now on as it is more stable and more flexible.** [Go to *batchtools* instructions](2-ClusterManagement-BatchJobs).
 
 ## *BatchJobs* package

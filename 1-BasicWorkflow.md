@@ -1,9 +1,3 @@
----
-layout: page
-title: Analysis steps
-permalink: /1-BasicWorkflow.md/
----
-
 Examples of an analysis, for local computation or computing cluster usage, can be found on the [`scripts` folder of the GitHub repository](https://github.com/jmonlong/PopSV/tree/master/scripts). For more information on a specific function, see the manual or access the documentation through `?the.function.name`.
 
 ## Input files
