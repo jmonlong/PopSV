@@ -32,6 +32,7 @@ autoGCcounts <- function(files.f,
   }
   if(status){
     print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(nrow(findErrors(reg=reg))>0){
       tmp = sapply(unlist(findErrors(reg=reg)), function(id){
         message('Error in job ', id)
@@ -52,6 +53,7 @@ autoGCcounts <- function(files.f,
   }
   if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
     print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(resetError){
       resetJobs(findErrors(reg=reg), reg=reg)
     }
@@ -74,6 +76,7 @@ autoGCcounts <- function(files.f,
   }
   if(status){
     print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(nrow(findErrors(reg=reg))>0){
       tmp = sapply(unlist(findErrors(reg=reg)), function(id){
         message('Error in job ', id)
@@ -97,6 +100,7 @@ autoGCcounts <- function(files.f,
   }
   if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
     print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(resetError){
       resetJobs(findErrors(reg=reg), reg=reg)
     }
@@ -145,6 +149,7 @@ autoNormTest <- function(files.f,
   }
   if(status){
     print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(nrow(findErrors(reg=reg))>0){
       tmp = sapply(unlist(findErrors(reg=reg)), function(id){
         message('Error in job ', id)
@@ -172,6 +177,7 @@ autoNormTest <- function(files.f,
   }
   if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
     print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(resetError){
       resetJobs(findErrors(reg=reg), reg=reg)
     }
@@ -196,6 +202,7 @@ autoNormTest <- function(files.f,
   }
   if(status){
     print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(nrow(findErrors(reg=reg))>0){
       tmp = sapply(unlist(findErrors(reg=reg)), function(id){
         message('Error in job ', id)
@@ -221,6 +228,7 @@ autoNormTest <- function(files.f,
   }
   if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
     print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(resetError){
       resetJobs(findErrors(reg=reg), reg=reg)
     }
@@ -254,6 +262,7 @@ autoNormTest <- function(files.f,
   }
   if(status){
     print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(nrow(findErrors(reg=reg))>0){
       tmp = sapply(unlist(findErrors(reg=reg)), function(id){
         message('Error in job ', id)
@@ -274,6 +283,7 @@ autoNormTest <- function(files.f,
   }
   if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
     print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(resetError){
       resetJobs(findErrors(reg=reg), reg=reg)
     }
@@ -296,6 +306,7 @@ autoNormTest <- function(files.f,
   }
   if(status){
     print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(nrow(findErrors(reg=reg))>0){
       tmp = sapply(unlist(findErrors(reg=reg)), function(id){
         message('Error in job ', id)
@@ -314,6 +325,7 @@ autoNormTest <- function(files.f,
   }
   if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
     print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(resetError){
       resetJobs(findErrors(reg=reg), reg=reg)
     }
@@ -337,6 +349,7 @@ autoNormTest <- function(files.f,
     }
     if(status){
       print(getStatus(reg=reg))
+      message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
       if(nrow(findErrors(reg=reg))>0){
         tmp = sapply(unlist(findErrors(reg=reg)), function(id){
           message('Error in job ', id)
@@ -356,6 +369,7 @@ autoNormTest <- function(files.f,
     }
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
       print(getStatus(reg=reg))
+      message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
       if(resetError){
         resetJobs(findErrors(reg=reg), reg=reg)
       }
@@ -379,6 +393,7 @@ autoNormTest <- function(files.f,
     }
     if(status){
       print(getStatus(reg=reg))
+      message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
       if(nrow(findErrors(reg=reg))>0){
         tmp = sapply(unlist(findErrors(reg=reg)), function(id){
           message('Error in job ', id)
@@ -399,6 +414,7 @@ autoNormTest <- function(files.f,
     }
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
       print(getStatus(reg=reg))
+      message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
       if(resetError){
         resetJobs(findErrors(reg=reg), reg=reg)
       }
@@ -450,6 +466,7 @@ autoExtra <- function(files.f,
     }
     if(status){
       print(getStatus(reg=reg))
+      message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
       if(nrow(findErrors(reg=reg))>0){
         tmp = sapply(unlist(findErrors(reg=reg)), function(id){
           message('Error in job ', id)
@@ -469,6 +486,7 @@ autoExtra <- function(files.f,
     }
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
       print(getStatus(reg=reg))
+      message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
       if(resetError){
         resetJobs(findErrors(reg=reg), reg=reg)
       }
@@ -497,6 +515,7 @@ autoExtra <- function(files.f,
     }
     if(status){
       print(getStatus(reg=reg))
+      message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
       if(nrow(findErrors(reg=reg))>0){
         tmp = sapply(unlist(findErrors(reg=reg)), function(id){
           message('Error in job ', id)
@@ -515,6 +534,7 @@ autoExtra <- function(files.f,
     }
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
       print(getStatus(reg=reg))
+      message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
       if(resetError){
         resetJobs(findErrors(reg=reg), reg=reg)
       }
