@@ -62,7 +62,7 @@ There are a few functions to run the CNV analysis and others to explore the resu
 
 ## I don't want to think, how can I run it quickly ?
 
-After quickly [configuring *batchtools*]({{ site.baseurl }}/2-ClusterManagement.md#installation-and-configuration) for your computing cluster, you can run the [automated pipeline]({{ site.baseurl }}/2-ClusterManagement.md#automated-run):
+After quickly [configuring *batchtools*]({{ site.baseurl }}/2-ClusterManagement.md#installation-and-configuration) for your computing cluster, you can run the [automated pipeline]({{ site.baseurl }}/2-ClusterManagement.md#automated-run) (files in [the `scripts` folder of the GitHub repo](https://github.com/jmonlong/PopSV/tree/master/scripts/batchtools)):
 
 ```r
 ## Load package and wrapper
