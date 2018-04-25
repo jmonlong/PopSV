@@ -35,6 +35,9 @@ To use other HPC systems you will need different configuration and template file
 There are a few examples of templates on [the *batchtools* GitHub](https://github.com/mllg/batchtools/tree/master/inst/templates).
 In the configuration it about which *makeClusterFunctions* to use (more details in [*batchtools* documentation](https://mllg.github.io/batchtools/articles/batchtools.html)):  *makeClusterFunctionsDocker*, *makeClusterFunctionsInteractive*, *makeClusterFunctionsLSF*, *makeClusterFunctionsMulticore*, *makeClusterFunctionsOpenLava*, *makeClusterFunctionsSGE*, *makeClusterFunctionsSSH*, *makeClusterFunctionsSlurm*, *makeClusterFunctionsSocket*, *makeClusterFunctionsTORQUE*.
 
+To run the jobs locally across several cores, rename `batchtools.conf.local.R` to `batchtools.conf.R` in the working directory. 
+Eventually change the number of cores to use (`ncpus=` argument in the configuration file).
+
 ### Testing with a simple job
 
 It's a good idea to check that everything is configured properly before trying to run the pipeline.
