@@ -11,12 +11,19 @@ save(files.df, file="files.RData")
 save(bins.df, file="bins.RData")
 ####
 
+## Bin and count reads in each bin
 res.GCcounts = autoGCcounts("files.RData", "bins.RData", other.resources=list(account='rrg-bourqueg-ad'))
 
+## QC (optional)
 res.forQC = autoExtra("files.RData", "bins.RData", do=1, other.resources=list(account='rrg-bourqueg-ad')))
 qc.samples.cluster(res.forQC) ## Run locally because it opens an interactive web browser application
+##
 
+## Normalize and call CNVs
 res.df = autoNormTest("files.RData", "bins.RData", other.resources=list(account='rrg-bourqueg-ad')))
+write.table(res.df, file='PopSV-CNVcalls.tsv', sep='\t', row.names=FALSE, quote=FALSE)
 
+## Filter CNVs
 res.filt.df = sv.summary.interactive(res.df) ## Run locally because it opens an interactive web browser application
+write.table(res.filt.df, file='PopSV-CNVcalls-filtered.tsv', sep='\t', row.names=FALSE, quote=FALSE)
 
