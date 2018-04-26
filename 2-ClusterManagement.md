@@ -124,7 +124,7 @@ Still, a few parameters can be passed to the two functions for the user's conven
 + `file.suffix=` to add a suffix to the temporary files. This is useful when the pipeline is run several times on the same folder, for example when splitting the samples in batches (e.g. presence of batch effects, male/female split for XY chrs).
 + `step.walltime=` the walltime for each step. See in the `automatedPipeline-batchtools.R` script for default values. 
 + `step.cores=` the number of cores for each step. See in the `automatedPipeline-batchtools.R` script for default values. 
-+ `status=TRUE` will print the status of the jobs for each steps and the end of the log of jobs with errors.
++ `status=TRUE` will only print the status of the jobs for each steps and the log of jobs with errors.
 + `skip=` to skip some steps.
 
 
