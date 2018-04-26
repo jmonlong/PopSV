@@ -7,6 +7,7 @@ Place in the working directory:
 - `batchtools.slurm.tmpl`, the template for a job in your HPC.
 
 Then in a R script, call the functions like in `run-PopSV-batchtools-automatedPipeline.R` (or copy and edit this script).
+More information on [PopSV's website](http://jmonlong.github.io/PopSV/2-ClusterManagement.md/).
 
 ## Configuring your HPC
 
