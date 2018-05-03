@@ -30,7 +30,7 @@ autoGCcounts <- function(files.f,
   } else {
     reg <- makeRegistry(stepName, seed=123)
   }
-  if(status){
+  if(status | any(skip == 1)){
     print(getStatus(reg=reg))
     message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(nrow(findErrors(reg=reg))>0){
@@ -75,7 +75,7 @@ autoGCcounts <- function(files.f,
   } else {
     reg <- makeRegistry(stepName, seed=123)
   }
-  if(status){
+  if(status | any(skip == 2)){
     print(getStatus(reg=reg))
     message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(nrow(findErrors(reg=reg))>0){
@@ -149,6 +149,9 @@ autoNormTest <- function(files.f,
   } else {
     reg <- makeRegistry(stepName, seed=123)
   }
+    if(any(skip == 1)){
+        stop('Step 1 cannot be skipped.')
+    }
   if(status){
     print(getStatus(reg=reg))
     message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
@@ -203,7 +206,7 @@ autoNormTest <- function(files.f,
   } else {
     reg <- makeRegistry(stepName, seed=123)
   }
-  if(status){
+  if(status | any(skip == 2)){
     print(getStatus(reg=reg))
     message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(nrow(findErrors(reg=reg))>0){
@@ -264,7 +267,7 @@ autoNormTest <- function(files.f,
   } else {
     reg <- makeRegistry(stepName, seed=123)
   }
-  if(status){
+  if(status | any(skip == 3)){
     print(getStatus(reg=reg))
     message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(nrow(findErrors(reg=reg))>0){
@@ -309,7 +312,7 @@ autoNormTest <- function(files.f,
   } else {
     reg <- makeRegistry(stepName, seed=123)
   }
-  if(status){
+  if(status | any(skip == 4)){
     print(getStatus(reg=reg))
     message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
     if(nrow(findErrors(reg=reg))>0){
@@ -353,7 +356,7 @@ autoNormTest <- function(files.f,
     } else {
       reg <- makeRegistry(stepName, seed=123)
     }
-    if(status){
+    if(status | any(skip == 5)){
       print(getStatus(reg=reg))
       message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
       if(nrow(findErrors(reg=reg))>0){
@@ -397,7 +400,7 @@ autoNormTest <- function(files.f,
     } else {
       reg <- makeRegistry(stepName, seed=123)
     }
-    if(status){
+    if(status | any(skip == 6)){
       print(getStatus(reg=reg))
       message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
       if(nrow(findErrors(reg=reg))>0){
