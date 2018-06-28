@@ -3,7 +3,7 @@ layout: default
 title: PopSV
 ---
 
-[![Build Status](https://travis-ci.org/jmonlong/PopSV.svg?branch=master)](https://travis-ci.org/jmonlong/PopSV)
+7[![Build Status](https://travis-ci.org/jmonlong/PopSV.svg?branch=master)](https://travis-ci.org/jmonlong/PopSV)
 [![codecov](https://codecov.io/gh/jmonlong/PopSV/branch/master/graph/badge.svg)](https://codecov.io/gh/jmonlong/PopSV)
 
 # What is PopSV ?
@@ -29,7 +29,7 @@ Some [Bioconductor](http://bioconductor.org/) packages are also necessary and no
 
 ```r
 source("http://bioconductor.org/biocLite.R")
-biocLite("BSgenome.Hsapiens.UCSC.hg19", "Rsamtools", "DNAcopy", "rtracklayer")
+biocLite(c("BSgenome.Hsapiens.UCSC.hg19", "Rsamtools", "DNAcopy", "rtracklayer"))
 ```
 
 *To use hg38 instead of hg19 install `BSgenome.Hsapiens.UCSC.hg38`.*
