@@ -124,10 +124,14 @@ autoNormTest <- function(files.f,
   load(files.f)
   step.walltime = paste0(step.walltime, ":0:0")
 
+  if(is.null(file.suffix.ref)){
+    file.suffix.ref = file.suffix
+  }
+
   message("\n== 1) Sample QC and reference definition.\n")
-  bc.ref.f = paste0("bc-gcCor",file.suffix,".tsv")
-  sampQC.pdf.f = paste0("sampQC",file.suffix,".pdf")
-  stepName = paste0("sampQC",file.suffix)
+  bc.ref.f = paste0("bc-gcCor",file.suffix.ref,".tsv")
+  sampQC.pdf.f = paste0("sampQC",file.suffix.ref,".pdf")
+  stepName = paste0("sampQC",file.suffix.ref)
   if(any(redo==1)) unlink(stepName, recursive=TRUE)
   if(file.exists(stepName)){
     reg = loadRegistry(stepName, writeable=TRUE)
@@ -173,7 +177,7 @@ autoNormTest <- function(files.f,
   if(status) print(getStatus(reg=reg))
 
   message("\n== 2) Reference sample normalization.\n")
-  stepName = paste0("bcNormTN",file.suffix)
+  stepName = paste0("bcNormTN",file.suffix.ref)
   if(any(redo==2)) unlink(stepName, recursive=TRUE)
   if(file.exists(stepName)){
     reg = loadRegistry(stepName, writeable=TRUE)
@@ -213,7 +217,7 @@ autoNormTest <- function(files.f,
     if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
   }
   ## Write normalized bin counts and reference metrics
-  out.files = paste(paste0("ref",file.suffix), c("bc-norm.tsv", "norm-stats.tsv"), sep="-")
+  out.files = paste(paste0("ref",file.suffix.ref), c("bc-norm.tsv", "norm-stats.tsv"), sep="-")
   if(rewrite | all(!file.exists(out.files))){
     if(any(file.exists(out.files))){
       tmp = file.remove(out.files[which(file.exists(out.files))])
@@ -226,7 +230,7 @@ autoNormTest <- function(files.f,
   if(status) print(getStatus(reg=reg))
 
   message("\n== 3) Compute Z-scores in reference samples.\n")
-  stepName = paste0("zRef",file.suffix)
+  stepName = paste0("zRef",file.suffix.ref)
   if(any(redo==3)) unlink(stepName, recursive=TRUE)
   if(file.exists(stepName)){
     reg = loadRegistry(stepName, writeable=TRUE)
