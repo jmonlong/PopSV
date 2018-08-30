@@ -1,10 +1,3 @@
----
-layout: page
-title: Cancer analysis
-permalink: /4-Cancer.md/
----
-
-
 Analyzing cancer samples if more challenging. PopSV is able to detect partial signal which would benefit for the discovery of variant in presence of stromal contamination or cell heterogeneity. However we have to be cautious, especially if the genome is highly rearranged.
 
 ## More robust normalization

@@ -7,6 +7,7 @@ Place in the working directory:
 - `batchtools.slurm.tmpl`, the template for a job in your HPC.
 
 Then in a R script, call the functions like in `run-PopSV-batchtools-automatedPipeline.R` (or copy and edit this script).
+More information on [PopSV's website](http://jmonlong.github.io/PopSV/2-ClusterManagement.md/).
 
 ## Configuring your HPC
 
@@ -34,6 +35,9 @@ This configuration will look for the `batchtools.torque.tmpl` template file when
 To use other HPC systems you will need different configuration and template files.
 There are a few examples of templates on [the *batchtools* GitHub](https://github.com/mllg/batchtools/tree/master/inst/templates).
 In the configuration it about which *makeClusterFunctions* to use (more details in [*batchtools* documentation](https://mllg.github.io/batchtools/articles/batchtools.html)):  *makeClusterFunctionsDocker*, *makeClusterFunctionsInteractive*, *makeClusterFunctionsLSF*, *makeClusterFunctionsMulticore*, *makeClusterFunctionsOpenLava*, *makeClusterFunctionsSGE*, *makeClusterFunctionsSSH*, *makeClusterFunctionsSlurm*, *makeClusterFunctionsSocket*, *makeClusterFunctionsTORQUE*.
+
+To run the jobs locally across several cores, rename `batchtools.conf.local.R` to `batchtools.conf.R` in the working directory. 
+Eventually change the number of cores to use (`ncpus=` argument in the configuration file).
 
 ### Testing with a simple job
 
