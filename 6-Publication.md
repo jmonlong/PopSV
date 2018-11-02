@@ -31,8 +31,8 @@ The CNV calls in the epilepsy patients and controls can download be downloaded f
 
 + [Article in Nucleic Acids Research](https://academic.oup.com/nar/article/46/14/7236/5042037)
 + [Manuscript in bioRxiv](https://www.biorxiv.org/content/early/2018/02/20/034165)
-+ [GitHub repo](https://github.com/jmonlong/reppopsv)
-+ [Data and scripts](https://figshare.com/articles/PopSV_Data_Scripts/2007630)
++ [GitHub repo](https://github.com/jmonlong/reppopsv) with code to reproduce the figures and numbers.
++ [Data on FigShare](https://figshare.com/articles/PopSV_Data_Scripts/2007630) includes calls and data necessary to reproduce the analysis.
 
 The calls from the three datasets (640 genomes total) were merged and formatted into single files to facilitate external analysis/usage of our CNV catalog. The files are available from the [FigShare repository](https://figshare.com/articles/PopSV_Data_Scripts/2007630).
 
