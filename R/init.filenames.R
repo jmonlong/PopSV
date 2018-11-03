@@ -1,5 +1,5 @@
 ##' Init the names for the files to use in the analysis to come. Specifically the
-##' name of the files with the bin counts and compressed bin counts are created.
+##' name of the files with the bin counts and compressed bin counts are created. Normalized bin counts, Z-scores, fold-changes will also be written following the paths created by this function.
 ##' @title Init file names for analysis
 ##' @param files.df a data.frame with the information about the files to
 ##' use. Columns 'sample' and 'bam' are required.
@@ -7,18 +7,18 @@
 ##' be created.
 ##' @param sample.folder if TRUE (default), a folder is created for each sample
 ##' on the specified destination folder.
-##' @param code if not NULL, a name for the analysis. Useful PopSV is to be run
+##' @param code if not NULL, a name for the analysis. Useful when PopSV is to be run
 ##' several times with different parameters. Default is NULL.
 ##' @param dest.folder.relative.path Is the specified folder defined relatively to
 ##' the working directory. Default is TRUE. Set to FALSE if providing absolute
 ##' paths (recommended).
 ##' @param sub.folder if non-null, sample folders will be structure into sub folder
-##' defined by the column in 'files.df' named 'sub.folder'. Useful when many samples
+##' defined by the column in 'files.df' named according to 'sub.folder's value. Useful when many samples
 ##' from different projects are studied together.
 ##' @return an updated data.frame with the information about the files.
-##' Specifically a new column 'bc', 'bc.gz', 'bc.gc' and 'bc.gc.bz' holds the name
+##' For example a new column 'bc', 'bc.gz', 'bc.gc' and 'bc.gc.bz' holds the name
 ##' of the bin counts (raw/compressed), GC corrected bin counts (raw/compressed) files
-##' to be created later.
+##' to be created later. 
 ##' @author Jean Monlong
 ##' @export
 init.filenames <- function(files.df, dest.folder = ".", sample.folder = TRUE, code = NULL, 
@@ -35,7 +35,7 @@ init.filenames <- function(files.df, dest.folder = ".", sample.folder = TRUE, co
     ## Check duplicate sample names
     files.df = unique(files.df)
     if (any(duplicated(files.df$sample))) {
-        stop("Duplicated sample names: ", head(files.df$sample[duplicated(files.df$sample)]))
+        stop("Duplicated sample names: ", utils::head(files.df$sample[duplicated(files.df$sample)]))
     }
     
     ## Create folder structure as required

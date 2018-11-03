@@ -14,15 +14,7 @@
 ##' @keywords internal
 norm.tm.opt <- function(df, ref.col, lm.min.prop = 0.1, bc.mean.norm = NULL, chrs = NULL) {
     trimmed.mean.TN.best <- function(a, b, lm.min.prop = 0.1, bc.mean.norm = NULL) {
-        localMax <- function(x, min.max.prop = 0.1, max = FALSE) {
-            d = density(x, na.rm = TRUE)
-            im = 1 + which(diff(sign(diff(d$y))) == -2)
-            my = max(d$y)
-            max.id = im[which(d$y[im] >= min.max.prop * my)]
-            max.id.o = max.id[order(d$y[max.id], decreasing = TRUE)]
-            return(list(lM = d$x[max.id], h = d$y[max.id]/my))
-        }
-        if (sum(a != 0 & b != 0) > 10) {
+        if (sum(a != 0 & b != 0) > 10 & any(a!=b)) {
             r = log(a/b)[a != 0 & b != 0]
             if (!is.null(bc.mean.norm) & !is.null(chrs)) {
                 chrs = chrs[a != 0 & b != 0]
@@ -36,7 +28,7 @@ norm.tm.opt <- function(df, ref.col, lm.min.prop = 0.1, bc.mean.norm = NULL, chr
                 ## return(lM.o$lM[which.max(s.mn+s.h+s.c)])
                 return(lM.o$lM[which.max(s.mn + s.h)])
             } else {
-                return(median(r, na.rm = TRUE))
+                return(stats::median(r, na.rm = TRUE))
             }
         } else {
             return(0)

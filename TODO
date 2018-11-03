@@ -1,9 +1,0 @@
-qc.samples.cluster shiny app
-Reduce unecessary decimal accuracy to limit file size
-   (e.g. qc.samples, tn.norm)
-z.comp in chunks
-Add other segmentation option
-Homogenize other normalization outputs
-One test function for testing one "case" (once reference and
-   normalization is computed)
-Update pipeline script: local and BatchJobs

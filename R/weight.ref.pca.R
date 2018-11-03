@@ -1,4 +1,4 @@
-##' Compute weight that represent how similar samples are to the reference samples, from the PCA. These weights are used to adjust the stringency of the threshold for the calls. Indeed, some subtle 'abnormal' signal detected might be due to fact that a sample is globally different from the reference samples, hence a more stringent threshold is advised. 
+##' Compute weight that represent how similar samples are to the reference samples, from the PCA. These weights could be used to guide a better normalization or adjustment of the stringency for the calls. Indeed, some subtle 'abnormal' signal detected might be due to fact that a sample is globally different from the reference samples, hence a stronger normalization and/or a more stringent calling is advised. STILL IN DEVELOPMENT.
 ##' @title Weight sample difference from a set of reference samples
 ##' @param pca.mat a matrix with the principal components as columns and the sample names as row names. The first two components are used.
 ##' @param ref.samples the names of the samples used as reference.
@@ -22,10 +22,10 @@ weight.ref.pca <- function(pca.mat, ref.samples, plot = FALSE, output.dist = FAL
         stop("Inconsistent samples in 'ref.samples' and 'pca.mat' row names.")
     }
     
-    centroid.ref = apply(pca.mat[ref.samples, ], 2, median, na.rm = TRUE)
+    centroid.ref = apply(pca.mat[ref.samples, ], 2, stats::median, na.rm = TRUE)
     d.cent = sqrt(rowSums((pca.mat - matrix(centroid.ref, nrow(pca.mat), ncol = ncol(pca.mat), 
         byrow = TRUE))^2))
-    d.cent.med = median(d.cent[ref.samples])
+    d.cent.med = stats::median(d.cent[ref.samples])
     w.pca = sapply(d.cent, weight.f, min.x = d.cent.med, max.x = 2 * d.cent.med)
     
     if (plot) {

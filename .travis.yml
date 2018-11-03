@@ -1,0 +1,35 @@
+language: r
+
+pandoc: false
+
+r:
+  - oldrel
+  - release
+
+cache: packages
+bioc_required: true
+
+os:
+  - linux
+  - osx
+
+branches:
+  only:
+    - master
+
+bioc_packages:
+  - BSgenome.Hsapiens.UCSC.hg19
+  - Rsamtools
+  - rtracklayer
+  - DNAcopy
+
+warnings_are_errors: false
+
+before_install:
+  - if [ $TRAVIS_OS_NAME == "osx" ]; then curl -O http://r.research.att.com/libs/gfortran-4.8.2-darwin13.tar.bz2 && sudo tar fvxz gfortran-4.8.2-darwin13.tar.bz2 -C /; rm gfortran-4.8.2-darwin13.tar.bz2 ; fi
+
+r_github_packages:
+  - jimhester/covr
+
+after_success:
+  - travis_wait 30 Rscript -e 'library(covr); codecov()'

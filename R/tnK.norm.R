@@ -1,6 +1,4 @@
-##' Bin count targeted normalization using K-mean clustering to group bins with similar coverage profile across the samples. For outlier bins, i.e. showing unique profile, the set of most similar bins is computed for each bin. Eventually the importance of each sample in the definition of the coverage profile can be weighted using principal components.
-##'
-##' DETAILS PC WEIGHT
+##' Bin count targeted normalization using K-mean clustering to group bins with similar coverage profile across the samples. For outlier bins, i.e. showing unique profile, the set of most similar bins is computed for each bin. Eventually the importance of each sample in the definition of the coverage profile can be weighted using principal components. This normalization is still in development state. It is supposed to be more faster than the full targeted normalization ('tn.norm') and better normalize outlier samples (e.g. if the data is not homogeneous).
 ##' @title Weighted targeted normalization using K-mean optimization.
 ##' @param bc.ref a data.frame with the coverage in the reference samples.
 ##' @param samp the name of the sample to normalize.
@@ -23,7 +21,7 @@ tnK.norm <- function(bc.ref, samp, bc.to.norm = NULL, cont.sample, pca.weights =
     
     norm.mat <- function(bc, row.ids, col.id, ref.col.id = 1) {
         col.bc = bc[row.ids, col.id]
-        bc.out = col.bc * median(bc[row.ids, ref.col.id])/median(col.bc)
+        bc.out = col.bc * stats::median(bc[row.ids, ref.col.id])/stats::median(col.bc)
         names(bc.out) = rownames(bc)[row.ids]
         return(bc.out)
     }
@@ -39,7 +37,7 @@ tnK.norm <- function(bc.ref, samp, bc.to.norm = NULL, cont.sample, pca.weights =
         return(res.v)
     }
     rec.kmeans <- function(mat, k = 2, max.size = 100) {
-        km.o = kmeans(mat, k)
+        km.o = stats::kmeans(mat, k)
         res.l = list()
         for (kid in 1:k) {
             if (km.o$size[kid] > max.size) {
@@ -58,8 +56,8 @@ tnK.norm <- function(bc.ref, samp, bc.to.norm = NULL, cont.sample, pca.weights =
         id.bins = 1:nrow(bc.to.norm)
         names(id.bins) = with(bc.to.norm, paste(chr, as.integer(start), as.integer(end), 
             sep = "-"))
-        med.bc = median(apply(bc.ref[, samples], 2, median, na.rm = TRUE))
-        med.samp = median(bc.to.norm[, 4], na.rm = TRUE)
+        med.bc = stats::median(apply(bc.ref[, samples], 2, stats::median, na.rm = TRUE))
+        med.samp = stats::median(bc.to.norm[, 4], na.rm = TRUE)
         bc.ref = cbind(bc.to.norm[id.bins[bc.rn], 4] * med.bc/med.samp, bc.ref[, 
             samples])
         colnames(bc.ref)[1] = samp
@@ -75,9 +73,9 @@ tnK.norm <- function(bc.ref, samp, bc.to.norm = NULL, cont.sample, pca.weights =
     ## PCA
     if (pca.weights) {
         bc.rand = bc.ref[sample.int(nrow(bc.ref), min(10000, nrow(bc.ref))), ]
-        pca.o = prcomp(t(bc.rand[apply(bc.rand, 1, function(ee) all(!is.na(ee))), 
+        pca.o = stats::prcomp(t(bc.rand[apply(bc.rand, 1, function(ee) all(!is.na(ee))), 
             ]))
-        pca.d = dist(t(t(pca.o$x[samples, 1:nb.pcs])))
+        pca.d = stats::dist(t(t(pca.o$x[samples, 1:nb.pcs])))
         w.i = as.matrix(pca.d)[samples == samp, ]
         w.i = 1 - w.i/max(w.i)
     } else {
@@ -86,7 +84,7 @@ tnK.norm <- function(bc.ref, samp, bc.to.norm = NULL, cont.sample, pca.weights =
     w.i[samples == samp] = 0
     
     ## Transform BC for geometric distance computation
-    quant.c = apply(bc.ref, 1, quantile, probs = 0.75)
+    quant.c = apply(bc.ref, 1, stats::quantile, probs = 0.75)
     bc.n = (bc.ref/quant.c) %*% diag(w.i)
     colnames(bc.n) = samples
     quant.c.non.null = which(quant.c > 0)

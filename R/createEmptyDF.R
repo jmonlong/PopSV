@@ -1,4 +1,4 @@
-##' Create an empty data.frame with NA and specified column types.
+##' Create an empty data.frame with NA and specified column types. Probably not the best way to do.
 ##' @title Create empty data.frame
 ##' @param colClasses a vector with the types definition for the columns.
 ##' @param nrows the number of rows in the data.frame to create.

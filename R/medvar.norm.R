@@ -1,34 +1,36 @@
-##' The median and deviation to the median is normalized across samples. 
+##' The median and deviation to the median is normalized across samples.
 ##' @title Median-variance normalization of bin counts
 ##' @param bc a matrix or data.frame with the bin counts (bin x sample).
 ##' @param ref.samples a vector with the names of the samples to be used as reference.
 ##' @param bc.support TODO
 ##' @param z.poisson Should the Z-score be computed as an normal-poisson hybrid (see
 ##' Details). Default is FALSE.
-##' @return a matrix with the normalized bin counts (bin x sample).
+##' @return a list with
+##' \item{norm.stats}{a data.frame with some metrics about the normalization of each
+##' bin (row) : coverage average and standard deviation; number of outlier samples}
+##' \item{bc.norm}{a data.frame, similar to the input 'bc.df', with the normalized bin counts.}
 ##' @author Jean Monlong
 ##' @export
 medvar.norm <- function(bc, ref.samples, bc.support = NULL, z.poisson = FALSE) {
     all.samples = setdiff(colnames(bc), c("chr", "start", "end"))
     ref.samples.ii = which(all.samples %in% ref.samples)
-    rownames(bc) = bins = paste(bc$chr, as.integer(bc$start), sep = "-")
-    norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 3)), 
-        length(bins))
+    norm.stats = createEmptyDF(c("character", rep("integer", 2), rep("numeric", 3)),
+        nrow(bc))
     colnames(norm.stats) = c("chr", "start", "end", "m", "sd", "nb.remove")
-    bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))), 
-        length(bins))
-    z = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))), 
-        length(bins))
-    fc = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))), 
-        length(bins))
+    bc.norm = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))),
+        nrow(bc))
+    z = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))),
+        nrow(bc))
+    fc = createEmptyDF(c("character", rep("integer", 2), rep("numeric", length(all.samples))),
+        nrow(bc))
     colnames(bc.norm) = colnames(z) = colnames(fc) = c("chr", "start", "end", all.samples)
-    norm.stats$chr = bc.norm$chr = z$chr = fc$chr = bc[bins, "chr"]
-    norm.stats$start = bc.norm$start = z$start = fc$start = bc[bins, "start"]
-    norm.stats$end = bc.norm$end = z$end = fc$end = bc[bins, "end"]
+    norm.stats$chr = bc.norm$chr = z$chr = fc$chr = bc[, "chr"]
+    norm.stats$start = bc.norm$start = z$start = fc$start = bc[, "start"]
+    norm.stats$end = bc.norm$end = z$end = fc$end = bc[, "end"]
     if (z.poisson) {
         z.comp <- function(x, mean.c, sd.c) {
             z.n = (x - mean.c)/sd.c
-            z.p = qnorm(ppois(x, mean.c))
+            z.p = stats::qnorm(stats::ppois(x, mean.c))
             n.ii = abs(z.n) < abs(z.p)
             z.p[n.ii] = z.n[n.ii]
             z.p
@@ -38,28 +40,27 @@ medvar.norm <- function(bc, ref.samples, bc.support = NULL, z.poisson = FALSE) {
             (x - mean.c)/sd.c
         }
     }
-    
+
     if (is.null(bc.support)) {
         bc.support = bc[, all.samples]
     } else {
         bc.support = bc.support[, all.samples]
     }
-    med = apply(bc.support, 2, median, na.rm = TRUE)
+    med = apply(bc.support, 2, stats::median, na.rm = TRUE)
     med.c = mean(med)
     bc.support = t(t(bc.support) * med.c/med)
     bc.support = bc.support - med.c
-    md = apply(bc.support, 2, function(x) median(abs(x), na.rm = TRUE))
-    md.c = median(abs(bc.support), na.rm = TRUE)
+    md = apply(bc.support, 2, function(x) stats::median(abs(x), na.rm = TRUE))
+    md.c = stats::median(abs(bc.support), na.rm = TRUE)
     bc = bc[, all.samples] - med.c
     bc.norm[, -(1:3)] = t(t(bc) * md.c/md) + med.c
     if (any(bc.norm[, -(1:3)] < 0)) {
         bc.norm[, -(1:3)][bc.norm[, -(1:3)] < 0] = 0
     }
-    msd = apply(bc.norm[, ref.samples], 1, function(ee) unlist(mean.sd.outlierR(ee, 
-        pv.max.ol = 1e-06)))
+    msd = apply(bc.norm[, ref.samples], 1, function(ee) unlist(mean.sd.outlierR(ee)))
     norm.stats[, 4:6] = cbind(msd[1, ], msd[2, ], msd[3, ])
     z[, -(1:3)] = apply(bc.norm[, -(1:3)], 2, z.comp, mean.c = norm.stats$m, sd.c = norm.stats$sd)
     fc[, -(1:3)] = bc.norm[, -(1:3)]/norm.stats$m
-    
+
     list(norm.stats = norm.stats, bc.norm = bc.norm, z = z, fc = fc, z.poisson = z.poisson)
-} 
+}
