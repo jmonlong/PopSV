@@ -1,4 +1,4 @@
-## Genome-wide characterization of copy number variants in epilepsy patients
+## Global characterization of copy number variants in epilepsy patients from whole genome sequencing
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1002893.svg)](https://doi.org/10.5281/zenodo.1002893)
 
@@ -19,13 +19,16 @@ The CNV calls in the epilepsy patients and controls can download be downloaded f
 + *nb.bins.cons*: the number of consecutive 5 Kbp bins in the call.
 
 
-## Human copy number variants are enriched in regions of low-mappability
+## Human copy number variants are enriched in regions of low mappability
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1241137.svg)](https://doi.org/10.5281/zenodo.1241137)
+
++ [Article in Nucleic Acids Research](https://academic.oup.com/nar/article/46/14/7236/5042037)
 + [Manuscript in bioRxiv](https://www.biorxiv.org/content/early/2018/02/20/034165)
-+ [Data and scripts](https://figshare.com/s/8fd3007ebb0fbad09b6d)
-+ New version coming up very soon.
++ [GitHub repo](https://github.com/jmonlong/reppopsv) with code to reproduce the figures and numbers.
++ [Data on FigShare](https://figshare.com/articles/PopSV_Data_Scripts/2007630) includes calls and data necessary to reproduce the analysis.
 
-The calls from the three datasets (640 genomes total) were merged and formatted into single files to facilitate external analysis/usage of our CNV catalog. The files are available from the [FigShare repository](https://figshare.com/s/8fd3007ebb0fbad09b6d).
+The calls from the three datasets (640 genomes total) were merged and formatted into single files to facilitate external analysis/usage of our CNV catalog. The files are available from the [FigShare repository](https://figshare.com/articles/PopSV_Data_Scripts/2007630).
 
 - `CNV-PopSV-Twin_CageKid_GoNL-germline.tsv` file contains all the germline CNV calls for the three datasets.
 - `CNV-PopSV-CageKid-somatic.tsv` contains the somatic CNV calls from the renal cancer dataset.
