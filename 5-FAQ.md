@@ -4,6 +4,22 @@ title: Frequently Asked Questions
 permalink: /5-FAQ.md/
 ---
 
+### How to specify the reference genome version? How to use GRCh38?
+
+If you are creating the bins using the `fragment.genome` function, you can specify the genome with `genome=BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19` or `genome=BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38`.
+
+Same thing for the function that computes GC content, `getGC`.
+
+In the automated script in [scripts/batchtools/run-PopSV-batchtools-automatedPipeline.R](https://github.com/jmonlong/PopSV/blob/master/scripts/batchtools/run-PopSV-batchtools-automatedPipeline.R) there is a `genome` object that can be used to specify the reference version. 
+It is passed to `fragment.genome` and `autoGCcounts` (which internally passes it to `getGC`).
+
+### How to start directly from bin counts?
+
+Follow instructions in [scripts/batchtools/run-PopSV-batchtools-automatedPipeline-fromCounts.R](https://github.com/jmonlong/PopSV/blob/master/scripts/batchtools/run-PopSV-batchtools-automatedPipeline-fromCounts.R).
+
+Briefly, after initializing file names, bgzip and index the bin counts file using the expected file names (`comp.index.files` function).
+Then use `autoGCcorrect` instead of `autoGCcounts` to just perform the GC correction.
+
 ### Can I run PopSV on my laptop ?
 
 Yes, it's possible but not recommended. You can have a look at the [pipeline to run PopSV locally](https://github.com/jmonlong/PopSV/blob/master/scripts/run-PopSV-local.R). However, PopSV has been designed to be easily run in a cluster using *BatchJobs* package. Moreover, you likely have access to a computing cluster, especially to store the BAM files of several WGS samples. Have a look [there]({{ site.baseurl }}/2-ClusterManagement.md#installation-and-configuration) to see how to configure it.
