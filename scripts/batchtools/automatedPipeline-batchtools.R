@@ -4,6 +4,15 @@ message("Functions :
 - 'autoGCcounts' to count BC in each sample.
 - 'autoNormTest' to normalize and test all the samples.
 - 'autoExtra' for some other functions.
+
+Relevant parameters:
+- 'redo=' force redo of steps specified.
+- 'status=TRUE' just prints the status of the steps, doesn't (re)-send jobs etc.
+- 'file.suffix=' suffixes for the files. Useful if several batches ran. Used to specify reference batch.
+- 'other.resources=' list with resources for the HPC, e.g. account name.
+- 'skip=' skips the steps specified. E.g. skip step 1 of autoGCcounts if bins.df already has a GCcontent column.
+- 'step.walltime'/'step.cores' the walltimes and number of cores for each step.
+- 'resetError=TRUE' reset jobs with errors and resend them.
 ")
 
 
@@ -18,6 +27,7 @@ autoGCcounts <- function(files.f,
                          skip=NULL,
                          step.walltime=c(2,20),
                          step.cores=c(1,1),
+                         genome=BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
                          resetError=FALSE){
   load(files.f)
   step.walltime = paste0(step.walltime, ":0:0")
@@ -41,13 +51,13 @@ autoGCcounts <- function(files.f,
     }
   } else {
     if(!any(skip==1) & nrow(findJobs(reg=reg))==0){
-      getGC.f <- function(imF){
+      getGC.f <- function(imF, genome){
         load(imF)
         library(PopSV, lib.loc=lib.loc)
-        bins.df = getGC.hg19(bins.df)
+        bins.df = getGC(bins.df, genome=genome)
         save(bins.df, file=imF)
       }
-      batchMap(reg=reg, getGC.f,bins.f)
+      batchMap(reg=reg, getGC.f,bins.f, more.args=list(genome=genome))
       submitJobs(reg=reg, ids=findJobs(reg=reg), resources=c(list(walltime=step.walltime[1], cores=step.cores[1]), other.resources))
       waitForJobs(reg=reg, sleep=sleep)
     }
@@ -96,6 +106,115 @@ autoGCcounts <- function(files.f,
         bb.o
       }
       batchMap(reg=reg, getBC.f,1:nrow(files.df), more.args=list(bins.f=bins.f, files.df=files.df, lib.loc=lib.loc))
+      submitJobs(reg=reg, findJobs(reg=reg), resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
+      waitForJobs(reg=reg, sleep=sleep)
+    }
+    if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
+      print(getStatus(reg=reg))
+      message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
+      if(resetError){
+        resetJobs(findErrors(reg=reg), reg=reg)
+      }
+      toresubmit = rbind(findNotSubmitted(reg=reg), findExpired(reg=reg))
+      if(nrow(toresubmit)>0){
+        message("Re-submitting ", paste(unlist(toresubmit), collapse=' '))
+        submitJobs(reg=reg, toresubmit, resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
+      }
+      waitForJobs(reg=reg, sleep=sleep)
+      if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
+    }
+  }
+}
+
+## Almost the same as the other function but assumes that
+## the bin counts are available and just performs GC correction.
+autoGCcorrect <- function(files.f,
+                         bins.f,
+                         redo=NULL,
+                         sleep=180,
+                         status=FALSE,
+                         file.suffix="",
+                         lib.loc=NULL,
+                         other.resources=NULL,
+                         skip=NULL,
+                         step.walltime=c(3,3),
+                         step.cores=c(1,1),
+                         genome=BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
+                         resetError=FALSE){
+  load(files.f)
+  step.walltime = paste0(step.walltime, ":0:0")
+
+  message("\n== 1) Get GC content in each bin.\n")
+  stepName = paste0("getGC",file.suffix)
+  if(any(redo==1)) unlink(stepName, recursive=TRUE)
+  if(file.exists(stepName)){
+    reg = loadRegistry(stepName, writeable=TRUE)
+  } else {
+    reg <- makeRegistry(stepName, seed=123)
+  }
+  if(status | any(skip == 1)){
+    print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
+    if(nrow(findErrors(reg=reg))>0){
+      tmp = sapply(unlist(findErrors(reg=reg)), function(id){
+        message('Error in job ', id)
+        message(paste(tail(getLog(id, reg=reg),10), collapse='\n'))
+      })
+    }
+  } else {
+    if(!any(skip==1) & nrow(findJobs(reg=reg))==0){
+      getGC.f <- function(imF, genome){
+        load(imF)
+        library(PopSV, lib.loc=lib.loc)
+        bins.df = getGC(bins.df, genome=genome)
+        save(bins.df, file=imF)
+      }
+      batchMap(reg=reg, getGC.f,bins.f, more.args=list(genome=genome))
+      submitJobs(reg=reg, ids=findJobs(reg=reg), resources=c(list(walltime=step.walltime[1], cores=step.cores[1]), other.resources))
+      waitForJobs(reg=reg, sleep=sleep)
+    }
+    if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))){
+      print(getStatus(reg=reg))
+      message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
+      if(resetError){
+        resetJobs(findErrors(reg=reg), reg=reg)
+      }
+      toresubmit = rbind(findNotSubmitted(reg=reg), findExpired(reg=reg))
+      if(nrow(toresubmit)>0){
+        message("Re-submitting ", paste(unlist(toresubmit), collapse=' '))
+        submitJobs(reg=reg, toresubmit, resources=c(list(walltime=step.walltime[1], cores=step.cores[1]), other.resources))
+      }
+      waitForJobs(reg=reg, sleep=sleep)
+      if(nrow(findJobs(reg=reg))!=nrow(findDone(reg=reg))) stop("Not done yet or failed, see for yourself")
+    }
+  }
+
+  message("\n== 2) Correct for GC bias in each sample.\n")
+  stepName = paste0("correctGC",file.suffix)
+  if(any(redo==2)) unlink(stepName, recursive=TRUE)
+  if(file.exists(stepName)){
+    reg = loadRegistry(stepName, writeable=TRUE)
+  } else {
+    reg <- makeRegistry(stepName, seed=123)
+  }
+  if(status | any(skip == 2)){
+    print(getStatus(reg=reg))
+    message('Mean run time: ', signif(mean(as.numeric(getJobTable(reg=reg)$time.running, units='hours'), na.rm=TRUE),3), ' hours.')
+    if(nrow(findErrors(reg=reg))>0){
+      tmp = sapply(unlist(findErrors(reg=reg)), function(id){
+        message('Error in job ', id)
+        message(paste(tail(getLog(id, reg=reg),10), collapse='\n'))
+      })
+    }
+  } else {
+    if(!any(skip==2) & nrow(findJobs(reg=reg))==0){
+      correctGC.f <- function(file.i, bins.f, files.df, lib.loc){
+        library(PopSV, lib.loc=lib.loc)
+        load(bins.f)
+        correct.GC(files.df$bc.gz[file.i], bins.df, files.df$bc.gc[file.i])
+        bb.o
+      }
+      batchMap(reg=reg, correctGC.f,1:nrow(files.df), more.args=list(bins.f=bins.f, files.df=files.df, lib.loc=lib.loc))
       submitJobs(reg=reg, findJobs(reg=reg), resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
       waitForJobs(reg=reg, sleep=sleep)
     }
@@ -445,7 +564,6 @@ autoNormTest <- function(files.f,
   res.df = do.call(rbind, reduceResultsList(reg=reg))
   return(res.df)
 }
-
 
 autoExtra <- function(files.f,
                       bins.f,

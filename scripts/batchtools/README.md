@@ -9,6 +9,8 @@ Place in the working directory:
 Then in a R script, call the functions like in `run-PopSV-batchtools-automatedPipeline.R` (or copy and edit this script).
 More information on [PopSV's website](http://jmonlong.github.io/PopSV/2-ClusterManagement.md/).
 
+To start directly from bin counts (files with columns chr/start/end/bc) follow the commands in `run-PopSV-batchtools-automatedPipeline-fromCounts.R`.
+
 ## Configuring your HPC
 
 ### Slurm

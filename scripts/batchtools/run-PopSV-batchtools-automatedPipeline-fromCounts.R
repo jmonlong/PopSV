@@ -1,3 +1,6 @@
+## If the bin counts are already available, you should make sure that the files
+## are bgzipped and indexed. Then the bin counts should be GC corrected.
+
 library(PopSV)
 source('automatedPipeline-batchtools.R')
 
@@ -10,15 +13,25 @@ genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
 ## Run only once to create the files files.RData and bins.RData
 ##
 
-bam.files = read.table("bams.tsv", as.is=TRUE, header=TRUE)
+## Assuming a file with a column 'sample' with sample names and
+## 'bincount' with path to the bin count file (columns chr/start/end/bc)
+bc.files = read.table("bincounts.tsv", as.is=TRUE, header=TRUE)
 bin.size = 1e3
 
 #### Init file names and construct bins
-files.df = init.filenames(bam.files, code="example")
-bins.df = fragment.genome(bin.size, genome=genome)
+bc.files$bam = NA
+files.df = init.filenames(bc.files, code="example")
 save(files.df, file="files.RData")
+## If the bins are already counted, you should have the bins definition, e.g.
+bins.df = read.table('bins.bed', sep='\t', as.is=TRUE)
+colnames(bins.df) = c('chr', 'start', 'end')
 save(bins.df, file="bins.RData")
 ####
+
+## Order, bgzip and index
+tmp = comp.index.files(files.df$bincount, files.df$bc, rm.input=FALSE, reorder=TRUE)
+## Note: if reorder=TRUE it might be worth doing this in a job rather than
+## the login node. If not, it's just doing bgzip and indexing.
 
 
 ##
@@ -27,7 +40,7 @@ save(bins.df, file="bins.RData")
 ##
 
 ## Bin and count reads in each bin
-res.GCcounts = autoGCcounts("files.RData", "bins.RData", other.resources=list(account='rrg-bourqueg-ad'), genome=genome)
+res.GCcounts = autoGCcorrect("files.RData", "bins.RData", other.resources=list(account='rrg-bourqueg-ad'), genome=genome)
 
 ## QC (optional)
 res.forQC = autoExtra("files.RData", "bins.RData", do=1, other.resources=list(account='rrg-bourqueg-ad')))
