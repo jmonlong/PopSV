@@ -265,13 +265,20 @@ autoNormTest <- function(files.f,
   if(is.null(file.suffix.ref)){
     file.suffix.ref = file.suffix
   }
+  ext.ref.mode = file.suffix.ref != file.suffix | ref.dir != '.'
   ref.dir = gsub('/$', '', ref.dir)
 
   message("\n== 1) Sample QC and reference definition.\n")
   bc.ref.f = paste0(ref.dir, "/bc-gcCor",file.suffix.ref,".tsv")
   sampQC.pdf.f = paste0(ref.dir, "/sampQC",file.suffix.ref,".pdf")
   stepName = paste0(ref.dir, "/sampQC",file.suffix.ref)
-  if(any(redo==1)) unlink(stepName, recursive=TRUE)
+  if(any(redo==1)) {
+    if(ext.ref.mode){
+      message('This step was done by a different (reference) analysis. Safer to not redo.')
+    } else {
+      unlink(stepName, recursive=TRUE)
+    }
+  }
   if(file.exists(stepName)){
     reg = loadRegistry(stepName, writeable=TRUE)
   } else {
@@ -329,7 +336,13 @@ autoNormTest <- function(files.f,
   message("\n== 2) Reference sample normalization.\n")
   stepName = paste0(ref.dir, "/bcNormTN",file.suffix.ref)
   out.files = paste(paste0(ref.dir, "/ref",file.suffix.ref), c("bc-norm.tsv", "norm-stats.tsv"), sep="-")
-  if(any(redo==2)) unlink(stepName, recursive=TRUE)
+  if(any(redo==2)) {
+    if(ext.ref.mode){
+      message('This step was done by a different (reference) analysis. Safer to not redo.')
+    } else {
+      unlink(stepName, recursive=TRUE)
+    }
+  }
   if(file.exists(stepName)){
     reg = loadRegistry(stepName, writeable=TRUE)
   } else {
@@ -389,7 +402,13 @@ autoNormTest <- function(files.f,
 
   message("\n== 3) Compute Z-scores in reference samples.\n")
   stepName = paste0(ref.dir, "/zRef",file.suffix.ref)
-  if(any(redo==3)) unlink(stepName, recursive=TRUE)
+  if(any(redo==3)) {
+    if(ext.ref.mode){
+      message('This step was done by a different (reference) analysis. Safer to not redo.')
+    } else {
+      unlink(stepName, recursive=TRUE)
+    }
+  }
   if(file.exists(stepName)){
     reg = loadRegistry(stepName, writeable=TRUE)
   } else {
