@@ -1,7 +1,8 @@
 library(batchtools)
 
 message("Functions :
-- 'autoGCcounts' to count BC in each sample.
+- 'autoGCcounts' to count BC in each sample starting from bam files.
+- 'autoGCcorrect' to correct BC in each sample starting from bin counts.
 - 'autoNormTest' to normalize and test all the samples.
 - 'autoExtra' for some other functions.
 
@@ -9,6 +10,8 @@ Relevant parameters:
 - 'redo=' force redo of steps specified.
 - 'status=TRUE' just prints the status of the steps, doesn't (re)-send jobs etc.
 - 'file.suffix=' suffixes for the files. Useful if several batches ran. Used to specify reference batch.
+- 'file.suffix.ref' the suffix used for the batch to use as reference
+- 'ref.dir' the path to the directory where the reference files are located
 - 'other.resources=' list with resources for the HPC, e.g. account name.
 - 'skip=' skips the steps specified. E.g. skip step 1 of autoGCcounts if bins.df already has a GCcontent column.
 - 'step.walltime'/'step.cores' the walltimes and number of cores for each step.
@@ -212,7 +215,7 @@ autoGCcorrect <- function(files.f,
         library(PopSV, lib.loc=lib.loc)
         load(bins.f)
         correct.GC(files.df$bc.gz[file.i], bins.df, files.df$bc.gc[file.i])
-        bb.o
+        files.df$bc.gc.gz[file.i]
       }
       batchMap(reg=reg, correctGC.f,1:nrow(files.df), more.args=list(bins.f=bins.f, files.df=files.df, lib.loc=lib.loc))
       submitJobs(reg=reg, findJobs(reg=reg), resources=c(list(walltime=step.walltime[2], cores=step.cores[2]), other.resources))
@@ -252,6 +255,7 @@ autoNormTest <- function(files.f,
                          step.walltime=c(10,12,6,10,3,3),
                          step.cores=c(12,2,3,1,1,1),
                          file.suffix.ref=NULL,
+                         ref.dir='.',
                          skip=NULL,
                          resetError=FALSE){
 
@@ -261,11 +265,12 @@ autoNormTest <- function(files.f,
   if(is.null(file.suffix.ref)){
     file.suffix.ref = file.suffix
   }
+  ref.dir = gsub('/$', '', ref.dir)
 
   message("\n== 1) Sample QC and reference definition.\n")
-  bc.ref.f = paste0("bc-gcCor",file.suffix.ref,".tsv")
-  sampQC.pdf.f = paste0("sampQC",file.suffix.ref,".pdf")
-  stepName = paste0("sampQC",file.suffix.ref)
+  bc.ref.f = paste0(ref.dir, "/bc-gcCor",file.suffix.ref,".tsv")
+  sampQC.pdf.f = paste0(ref.dir, "/sampQC",file.suffix.ref,".pdf")
+  stepName = paste0(ref.dir, "/sampQC",file.suffix.ref)
   if(any(redo==1)) unlink(stepName, recursive=TRUE)
   if(file.exists(stepName)){
     reg = loadRegistry(stepName, writeable=TRUE)
@@ -322,8 +327,8 @@ autoNormTest <- function(files.f,
   save(samp.qc.o, file=paste0(stepName,".RData"))
 
   message("\n== 2) Reference sample normalization.\n")
-  stepName = paste0("bcNormTN",file.suffix.ref)
-  out.files = paste(paste0("ref",file.suffix.ref), c("bc-norm.tsv", "norm-stats.tsv"), sep="-")
+  stepName = paste0(ref.dir, "/bcNormTN",file.suffix.ref)
+  out.files = paste(paste0(ref.dir, "/ref",file.suffix.ref), c("bc-norm.tsv", "norm-stats.tsv"), sep="-")
   if(any(redo==2)) unlink(stepName, recursive=TRUE)
   if(file.exists(stepName)){
     reg = loadRegistry(stepName, writeable=TRUE)
@@ -383,7 +388,7 @@ autoNormTest <- function(files.f,
   }
 
   message("\n== 3) Compute Z-scores in reference samples.\n")
-  stepName = paste0("zRef",file.suffix.ref)
+  stepName = paste0(ref.dir, "/zRef",file.suffix.ref)
   if(any(redo==3)) unlink(stepName, recursive=TRUE)
   if(file.exists(stepName)){
     reg = loadRegistry(stepName, writeable=TRUE)
@@ -450,7 +455,7 @@ autoNormTest <- function(files.f,
         library(PopSV, lib.loc=lib.loc)
         tn.test.sample(samp, files.df, cont.sample, bc.ref.f, norm.stats.f, z.poisson=TRUE, aberrant.cases=FALSE, col.file=col.bc)
       }
-      batchMap(reg=reg, callOthers.f,setdiff(files.df$sample, samp.qc.o$ref.samples), more.args=list(cont.sample=samp.qc.o$cont.sample, files.df=files.df, norm.stats.f=out.files[2], bc.ref.f=samp.qc.o$bc, lib.loc=lib.loc, col.bc=col.bc))
+      batchMap(reg=reg, callOthers.f,setdiff(files.df$sample, samp.qc.o$ref.samples), more.args=list(cont.sample=samp.qc.o$cont.sample, files.df=files.df, norm.stats.f=out.files[2], bc.ref.f=paste0(bc.ref.f, '.bgz'), lib.loc=lib.loc, col.bc=col.bc))
       submitJobs(reg=reg, findJobs(reg=reg), resources=c(list(walltime=step.walltime[4], cores=step.cores[4]), other.resources))
       waitForJobs(reg=reg, sleep=sleep)
     }

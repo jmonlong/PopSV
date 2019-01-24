@@ -42,3 +42,28 @@ write.table(res.df, file='PopSV-CNVcalls.tsv', sep='\t', row.names=FALSE, quote=
 res.filt.df = sv.summary.interactive(res.df) ## Run locally because it opens an interactive web browser application
 write.table(res.filt.df, file='PopSV-CNVcalls-filtered.tsv', sep='\t', row.names=FALSE, quote=FALSE)
 
+
+
+##
+## Optional: Run additional samples using references from the previous analysis
+##
+
+## Option 1: in the same folder but using suffixes for the new batches
+bam.files2 = read.table("bams2.tsv", as.is=TRUE, header=TRUE)
+files.df = init.filenames(bam.files2, code="example2")
+save(files.df, file="files2.RData")
+
+res2.GCcounts = autoGCcorrect("files2.RData", "bins.RData", skip=1, file.suffix='batch2') # different suffix for batch2
+res2.df = autoNormTest("files2.RData", "bins.RData", file.suffix.ref='', file.suffix='batch2') # and also specify suffix for reference analysis
+write.table(res2.df, file='PopSV-CNVcalls-batch2.tsv', sep='\t', row.names=FALSE, quote=FALSE)
+
+## Option 2: new batch in a separate folder
+## Assuming that we work in a new "batch2" folder containing the "bams2.tsv' file
+setwd('batch2') # update working directory
+bam.files2 = read.table("bams2.tsv", as.is=TRUE, header=TRUE)
+files.df = init.filenames(bam.files2, code="example2")
+save(files.df, file="files2.RData")
+
+res.GCcounts = autoGCcorrect("files2.RData", "../bins.RData", skip=1)
+res.df = autoNormTest("files2.RData", "../bins.RData", ref.dir='..') # ref.dir specify the folder containing the reference analysis
+write.table(res.df, file='PopSV-CNVcalls-batch2.tsv', sep='\t', row.names=FALSE, quote=FALSE)
