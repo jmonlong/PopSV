@@ -4,14 +4,13 @@
 \alias{getGC}
 \title{GC content computation for specific bins}
 \usage{
-getGC(bins.df,
-  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)
+getGC(bins.df, genome = "hg19")
 }
 \arguments{
 \item{bins.df}{a data.frame with bin information. Columns 'chr', 'start' and 'end'
 are required.}
 
-\item{genome}{the BSgenome object with the genome. Usually BSgenome.Hsapiens.UCSC.hg19 or BSgenome.Hsapiens.UCSC.hg38.}
+\item{genome}{either 'hg19', 'GRCh38' or a BSgenome object with the genome.}
 }
 \value{
 the same input data.frame with an extra column 'GCcontent'.

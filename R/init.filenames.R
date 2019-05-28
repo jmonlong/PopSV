@@ -65,7 +65,10 @@ init.filenames <- function(files.df, dest.folder = ".", sample.folder = TRUE, co
         code = paste0("-", code)
     }
     file.prefix = paste0(sample.destf, .Platform$file.sep, files.df$sample, code)
-    files.df$bc = paste0(file.prefix, "-bc.tsv")
+    if(all(colnames(files.df) != 'bc')){
+      files.df$bc = NA
+    } 
+    files.df$bc = ifelse(!is.na(files.df$bc), files.df$bc, paste0(file.prefix, "-bc.tsv"))
     files.df$bc.gz = paste0(files.df$bc, ".bgz")
     files.df$bc.gc = paste0(file.prefix, "-bc-gcCor.tsv")
     files.df$bc.gc.gz = paste0(files.df$bc.gc, ".bgz")

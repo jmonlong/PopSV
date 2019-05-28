@@ -4,9 +4,10 @@
 \alias{bin.bw}
 \title{Get read counts from BigWig coverage file}
 \usage{
-bin.bw(bw.file, bin.df, outfile.prefix = NULL, appendIndex.outfile = TRUE,
-  chunk.size = 10000, check.chr.name = TRUE, no.checks = FALSE,
-  read.length = 100, fromSummaries = TRUE)
+bin.bw(bw.file, bin.df, outfile.prefix = NULL,
+  appendIndex.outfile = TRUE, chunk.size = 10000,
+  check.chr.name = TRUE, no.checks = FALSE, read.length = 100,
+  fromSummaries = TRUE)
 }
 \arguments{
 \item{bw.file}{the BigWig file}

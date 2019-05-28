@@ -40,7 +40,9 @@ freq.range <- function(range.df, plot=FALSE, annotate.only=FALSE, nb.samp=NA, mi
       df$prop = df$nb/nb.samp
       df
     }
-    fr.df = range.df %>% dplyr::ungroup(.) %>% dplyr::mutate(chunk=cut(1:n(), 1+ceiling(n()/chunk.size))) %>% dplyr::group_by(chunk) %>% dplyr::do(freq.chunk(.)) %>% dplyr::ungroup(.) %>% dplyr::select(-chunk) %>% as.data.frame
+    fr.df = range.df %>% dplyr::ungroup(.) %>%
+      dplyr::mutate(chunk=cut(1:dplyr::n(), 1+ceiling(dplyr::n()/chunk.size))) %>% dplyr::group_by(chunk) %>%
+      dplyr::do(freq.chunk(.)) %>% dplyr::ungroup(.) %>% dplyr::select(-chunk) %>% as.data.frame
   } else {
     gr.d = GenomicRanges::disjoin(gr.all)
     fr.df = GenomicRanges::as.data.frame(gr.d)[, 1:3]

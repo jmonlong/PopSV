@@ -5,8 +5,8 @@
 \title{Get read counts between pairs of bins from BAM file}
 \usage{
 bin.bam.2d(bam.file, bins.df, outfile.prefix = NULL,
-  appendIndex.outfile = TRUE, chunk.size = 1000, check.chr.name = TRUE,
-  no.checks = FALSE, bai.file = NULL)
+  appendIndex.outfile = TRUE, chunk.size = 1000,
+  check.chr.name = TRUE, no.checks = FALSE, bai.file = NULL)
 }
 \arguments{
 \item{bam.file}{the BAM file}

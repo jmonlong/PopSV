@@ -31,7 +31,7 @@ comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrit
            Rsamtools::bgzip(files[file.ii], dest = final.file, overwrite = TRUE)
            if (rm.input)
              file.remove(files[file.ii])
-           Rsamtools::indexTabix(final.file, format = "bed")
+           Rsamtools::indexTabix(final.file, format = "bed", skip=1L)
            ##message(paste(final.file, "created and indexed."))
            return(final.file)
          })

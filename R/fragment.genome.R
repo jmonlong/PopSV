@@ -8,13 +8,27 @@
 ##' @param chr.prefix should chromosome name be in the form "chr1" instead of "1". Default is FALSE.
 ##' @param XY.chr should chromosome X and Y be included. Default is FALSE. If TRUE, male and female should be analyzed separately, at least for chromosomes X and Y.
 ##' @param quiet should any verbose display be avoided ? Default is FALSE.
-##' @param genome the BSgenome object with the genome. Usually BSgenome.Hsapiens.UCSC.hg19 or BSgenome.Hsapiens.UCSC.hg38.
+##' @param genome either 'hg19', 'GRCh38' or a BSgenome object with the genome. 
 ##' @return a data.frame with columns 'chr', 'start' and 'end'.
 ##' @author Jean Monlong
 ##' @import GenomicRanges
 ##' @import GenomeInfoDb
 ##' @export
-fragment.genome <- function(bin.size = 1000, slid.window=bin.size, chr.prefix=FALSE, XY.chr=FALSE, quiet=FALSE, genome=BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19) {
+fragment.genome <- function(bin.size = 1000, slid.window=bin.size, chr.prefix=FALSE, XY.chr=FALSE, quiet=FALSE, genome='hg19') {
+
+  ## Check that the genome is installed
+  if(genome=='hg19'){
+    if (!require(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE)) {
+      stop("Please install BSgenome first: see https://doi.org/doi:10.18129/B9.bioc.BSgenome.Hsapiens.UCSC.hg19\n")
+    }
+    genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
+  } else if(genome=='GRCh38'){
+    if (!require(BSgenome.Hsapiens.UCSC.hg38, quietly = TRUE)) {
+      stop("Please install BSgenome first: see https://doi.org/doi:10.18129/B9.bioc.BSgenome.Hsapiens.UCSC.hg38\n")
+    }
+    genome = BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg39
+  }
+
   if(XY.chr){
     chrs = c(1:22, "X", "Y")
     if(!quiet){

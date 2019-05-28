@@ -103,7 +103,7 @@ bin.bw <- function(bw.file, bin.df, outfile.prefix = NULL, appendIndex.outfile =
     final.file = paste(final.file, ".bgz", sep = "")
     Rsamtools::bgzip(outfile.prefix, dest = final.file, overwrite = TRUE)
     file.remove(outfile.prefix)
-    Rsamtools::indexTabix(final.file, format = "bed")
+    Rsamtools::indexTabix(final.file, format = "bed", skip=1L)
   }
   if(is.null(outfile.prefix)) {
     bc.df$chunk = NULL

@@ -4,8 +4,8 @@
 \alias{freq.range}
 \title{Frequency computation for ranges}
 \usage{
-freq.range(range.df, plot = FALSE, annotate.only = FALSE, nb.samp = NA,
-  min.rol = 0, chunk.size = 1e+05)
+freq.range(range.df, plot = FALSE, annotate.only = FALSE,
+  nb.samp = NA, min.rol = 0, chunk.size = 1e+05)
 }
 \arguments{
 \item{range.df}{a data.frame with columns 'chr', 'start' and 'end'.}

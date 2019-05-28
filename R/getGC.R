@@ -4,12 +4,26 @@
 ##' @title GC content computation for specific bins
 ##' @param bins.df a data.frame with bin information. Columns 'chr', 'start' and 'end'
 ##' are required.
-##' @param genome the BSgenome object with the genome. Usually BSgenome.Hsapiens.UCSC.hg19 or BSgenome.Hsapiens.UCSC.hg38.
+##' @param genome either 'hg19', 'GRCh38' or a BSgenome object with the genome. 
 ##' @return the same input data.frame with an extra column 'GCcontent'.
 ##' @author Jean Monlong
 ##' @export
-getGC <- function(bins.df, genome=BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19) {
-    if(!all(c("chr","start","end") %in% colnames(bins.df))){
+getGC <- function(bins.df, genome='hg19') {
+
+  ## Check that the genome is installed
+  if(genome=='hg19'){
+    if (!require(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE)) {
+      stop("Please install BSgenome first: see https://doi.org/doi:10.18129/B9.bioc.BSgenome.Hsapiens.UCSC.hg19\n")
+    }
+    genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
+  } else if(genome=='GRCh38'){
+    if (!require(BSgenome.Hsapiens.UCSC.hg38, quietly = TRUE)) {
+      stop("Please install BSgenome first: see https://doi.org/doi:10.18129/B9.bioc.BSgenome.Hsapiens.UCSC.hg38\n")
+    }
+    genome = BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg39
+  }
+
+  if(!all(c("chr","start","end") %in% colnames(bins.df))){
     stop("Missing column in 'bin.df'. 'chr', 'start' and 'end' are required.")
   }
     bins.df$chunk = rep(1:ceiling(nrow(bins.df)/1000), each = 1000)[1:nrow(bins.df)]

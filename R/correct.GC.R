@@ -45,7 +45,7 @@ correct.GC <- function(bc.f, gc.df, outfile.prefix, appendIndex.outfile = TRUE) 
         final.file = paste(outfile.prefix, ".bgz", sep = "")
         Rsamtools::bgzip(outfile.prefix, dest = final.file, overwrite = TRUE)
         file.remove(outfile.prefix)
-        Rsamtools::indexTabix(final.file, format = "bed")
+        Rsamtools::indexTabix(final.file, format = "bed", skip=1L)
         return(final.file)
     } else {
         return(bc.df)
