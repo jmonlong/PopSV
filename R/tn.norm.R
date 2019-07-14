@@ -25,7 +25,9 @@
 tn.norm <- function(bc, cont.sample, nb.support.bins = 1000, bins = NULL, save.support.bins = TRUE, norm = c("1pass", "trim"), force.diff.chr=TRUE) {
 
   all.samples = setdiff(colnames(bc), c("chr", "start", "end"))
-  rownames(bc) = paste(bc$chr, as.integer(bc$start), sep = "-")
+  bc$start = as.integer(bc$start)
+  bc$end = as.integer(bc$end)
+  rownames(bc) = paste(bc$chr, bc$start, sep = "-")
   if (is.null(bins))
     bins = rownames(bc)
 

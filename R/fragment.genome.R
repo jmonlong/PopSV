@@ -18,12 +18,12 @@ fragment.genome <- function(bin.size = 1000, slid.window=bin.size, chr.prefix=FA
 
   ## Check that the genome is installed
   if(genome=='hg19'){
-    if (!require(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE)) {
+    if (!requireNamespace('BSgenome.Hsapiens.UCSC.hg19', quietly = TRUE)) {
       stop("Please install BSgenome first: see https://doi.org/doi:10.18129/B9.bioc.BSgenome.Hsapiens.UCSC.hg19\n")
     }
     genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
   } else if(genome=='GRCh38'){
-    if (!require(BSgenome.Hsapiens.UCSC.hg38, quietly = TRUE)) {
+    if (!requireNamespace('BSgenome.Hsapiens.UCSC.hg38', quietly = TRUE)) {
       stop("Please install BSgenome first: see https://doi.org/doi:10.18129/B9.bioc.BSgenome.Hsapiens.UCSC.hg38\n")
     }
     genome = BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg39

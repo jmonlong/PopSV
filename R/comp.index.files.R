@@ -25,6 +25,8 @@ comp.index.files <- function(files, outprefix = files, rm.input = TRUE, overwrit
              } else {
                data.table::setkey(dt, chr, start)
              }
+             dt$start = as.integer(dt$start)
+             dt$end = as.integer(dt$end)
              utils::write.table(dt, file=files[file.ii], quote=FALSE, row.names=FALSE, sep="\t")
            }
            final.file = paste(outprefix[file.ii], ".bgz", sep = "")

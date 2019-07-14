@@ -46,6 +46,8 @@ qc.samples <- function(files.df, bin.df, outfile.prefix, ref.samples = NULL, nb.
   if (is.null(nb.ref.samples)) {
     nb.ref.samples = length(ref.samples)
   }
+  bin.df$start = as.integer(bin.df$start)
+  bin.df$end = as.integer(bin.df$end)
 
   ## Flexible function to read bin counts on specific bins, several files, ...
   read.bc.samples <- function(df, files.df, nb.cores = 1, med.med = NULL, med.samp = NULL,

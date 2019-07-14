@@ -12,7 +12,7 @@
 ##' @import GenomeInfoDb
 ##' @export
 fragment.genome.hg19 <- function(bin.size = 1000, slid.window=bin.size, chr.prefix=FALSE, XY.chr=FALSE, quiet=FALSE) {
-  if (!require(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE)) {
+  if (!requireNamespace('BSgenome.Hsapiens.UCSC.hg19', quietly = TRUE)) {
     stop("Please install BSgenome first by running:\n> source(\"http://bioconductor.org/biocLite.R\")\n> biocLite(\"BSgenome.Hsapiens.UCSC.hg19\")\n")
   }
 

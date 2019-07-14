@@ -37,6 +37,8 @@ wrap <- function(args=commandArgs(TRUE)){
     if(file.exists(bin_file_input)){
       message('File exists. Reading ', bin_file_input)
       bins.df = utils::read.table(bin_file_input, as.is=TRUE, header=TRUE, sep='\t')
+      bins.df$start = as.integer(bins.df$start)
+      bins.df$end = as.integer(bins.df$end)
     } else {
         message('Binning in windows of ', bin_size, ' bp')
         bins.df = fragment.genome(bin_size, genome=genome)
@@ -98,6 +100,7 @@ wrap <- function(args=commandArgs(TRUE)){
     bin_file = args[2]
     ref_file = args[3]
     cont_sample_file = args[4]
+    nb.cores = ifelse(length(args)>4, args[5], 1)
     graph_out = 'preprefs.pdf'
     max_nb_refs=200
     bins.df = files.df = NULL
@@ -107,8 +110,8 @@ wrap <- function(args=commandArgs(TRUE)){
     files.df = files.df[which(files.df$reference),]
     message('Merge read count for reference samples')
     grDevices::pdf(graph_out)
-    qc.o = qc.samples(files.df, bins.df, ref_file, nb.ref.samples=max_nb_refs)
-    ## nb.cores=6 HOW TO SPECIFIY?
+    qc.o = qc.samples(files.df, bins.df, ref_file, nb.ref.samples=max_nb_refs,
+                      nb.cores=nb.cores)
     grDevices::dev.off()
     write(qc.o$cont.sample, file=cont_sample_file)
     message('Done')
@@ -130,7 +133,8 @@ wrap <- function(args=commandArgs(TRUE)){
     bg.chunk = utils::head(bins.df.chunk$bg.chunk, 1)
     bc.df = read.bedix(ref_file, bins.df[which(bins.df$bg.chunk==bg.chunk),])
     cont.sample = scan(cont_sample_file, '')
-    res = tn.norm(bc.df, cont.sample, bins=bins.df.chunk$bin, nb.support.bins=nb.support.bins)
+    res = tn.norm(bc.df, cont.sample, bins=bins.df.chunk$bin,
+                  nb.support.bins=nb.support.bins)
     save(res, file=res_file)
     message('Done')
   }
@@ -141,6 +145,7 @@ wrap <- function(args=commandArgs(TRUE)){
     norm_ref_prefix = args[2]
     nb_chunks = as.integer(args[3])
     ref_prefix = args[4]
+    done = ifelse(length(args)>4, args[5], NA)
     files.df = NULL
     load(popsv_config_file)
     norm_ref_files = paste0(norm_ref_prefix, '_', 1:nb_chunks, '.RData')
@@ -151,8 +156,12 @@ wrap <- function(args=commandArgs(TRUE)){
     tmp = lapply(norm_ref_files, function(ff){
       res = NULL
       load(ff)
-      utils::write.table(res$norm.stats, file=outfile, sep='\t', row.names=FALSE, append=file.exists(outfile), col.names=!file.exists(outfile), quote=FALSE)
+      utils::write.table(res$norm.stats, file=outfile, sep='\t', row.names=FALSE,
+                         append=file.exists(outfile), col.names=!file.exists(outfile),
+                         quote=FALSE)
     })
+    file.remove(norm_ref_files)
+    if(!is.na(done)) cat("Done", file=done)
     message('Done')
   }
 

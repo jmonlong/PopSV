@@ -25,7 +25,8 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
     stop(file, "Input file not found (with and without .bgz extension).")
   }
   if(!file.exists(paste0(file,".tbi"))){
-    stop(paste0(file,".tbi"),"Index file not found.")
+    message(paste0(file,".tbi"),"Index file not found. Trying to index it...")
+    Rsamtools::indexTabix(file, format = "bed", skip=1L)
   }
   if(is.null(subset.reg)){
     return(utils::read.table(file, as.is=as.is, header=header))
@@ -55,6 +56,8 @@ read.bedix <- function(file, subset.reg=NULL, header=TRUE, as.is = TRUE, exact.m
     }
     bed = bed[, lapply(.SD, function(ee)utils::type.convert(as.character(ee), as.is=TRUE))]
     bed = as.data.frame(bed)
+    bed$start = as.integer(bed$start)
+    bed$end = as.integer(bed$end)
     return(bed)
   }
 

@@ -41,7 +41,7 @@ tn.test.sample <- function(test.sample, files.df, cont.sample, bc.ref.f=NULL, no
   if(!is.null(bc.ref.f)){
     ref.headers = utils::read.table(bc.ref.f, nrows = 1, as.is = TRUE)
     colC = ifelse(ref.headers == cont.sample, "numeric", "NULL")
-    colC[1:3] = c("character", "integer", "integer")
+    colC[1:3] = c("character", "numeric", "numeric")
     cont.bc = utils::read.table(bc.ref.f, colClasses = colC, header = TRUE)
     colnames(cont.bc)[4] = "bc"
   } else {

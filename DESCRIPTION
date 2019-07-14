@@ -38,5 +38,6 @@ Imports:
     tidyr
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
+    BSgenome.Hsapiens.UCSC.hg38,
     testthat
 RoxygenNote: 6.1.1

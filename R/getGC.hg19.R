@@ -11,7 +11,7 @@ getGC.hg19 <- function(bins.df) {
     if(!all(c("chr","start","end") %in% colnames(bins.df))){
     stop("Missing column in 'bin.df'. 'chr', 'start' and 'end' are required.")
   }
-  if (!require(BSgenome.Hsapiens.UCSC.hg19)) {
+  if (!requireNamespace('BSgenome.Hsapiens.UCSC.hg19')) {
         stop("Please install BSgenome first by running:\n> source(\"http://bioconductor.org/biocLite.R\")\n> biocLite(\"BSgenome.Hsapiens.UCSC.hg19\")\n")
     }
     bins.df$chunk = rep(1:ceiling(nrow(bins.df)/1000), each = 1000)[1:nrow(bins.df)]

@@ -42,6 +42,8 @@ bin.bam <- function(bam.file, bin.df, outfile.prefix = NULL, appendIndex.outfile
 
   bin.df = bin.df[order(as.character(bin.df$chr), bin.df$start),]
   bin.df$chunk = rep(1:ceiling(nrow(bin.df)/chunk.size), each = chunk.size)[1:nrow(bin.df)]
+  bin.df$start = as.integer(bin.df$start)
+  bin.df$end = as.integer(bin.df$end)
 
   if(is.null(bai.file)){
     bai.file = sub("bam$", "bai", bam.file, perl = TRUE)

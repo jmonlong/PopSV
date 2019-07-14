@@ -91,7 +91,15 @@ test_that("Checks that files exists",{
   expect_error(read.bedix("fakefile.tsv"), "file not found")
   expect_equal(length(comp.index.files("test.tsv")), 1)
   file.remove("test.tsv.bgz.tbi")
-  expect_error(read.bedix("test.tsv.bgz"), "file not found")
+  file.remove("test.tsv.bgz")
+})
+
+test_that("Index if necessary",{
+  write.table(b2.df, file="test.tsv", quote=FALSE, sep="\t", row.names=FALSE)
+  expect_equal(length(comp.index.files("test.tsv")), 1)
+  file.remove("test.tsv.bgz.tbi")
+  expect_message(read.bedix("test.tsv.bgz"), "index")
+  expect_true(file.remove("test.tsv.bgz.tbi"))
   file.remove("test.tsv.bgz")
 })
 
