@@ -50,4 +50,5 @@ Both files are tab-delimited text files with columns:
 
 Columns *qv* and *cn2.dev* can be used to further select higher confidence calls. For example, one could select calls with small *qv* and/or high *cn2.dev*. Copy number estimation (column *cn*) is only reliable when the the variant spans several bins, hence it's normal to have partial estimates for small calls. Furthermore, copy number estimation in low-coverage regions is more challenging and calls in these regions often exhibits large *cn* (or *fc*).
 
-
+The regions with novel CNVs (as defined in the article) are listed in `CNV-novel-notTGP.tsv`.
+The `count`/`freq` columns represent the frequency of CNVs in our cohort.
