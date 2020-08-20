@@ -4,8 +4,12 @@
 \alias{chunk.bin}
 \title{Split the bins in chunks for parallel normalization}
 \usage{
-chunk.bin(bins.df, bg.chunk.size = 1e+05, sm.chunk.size = 1000,
-  large.chr.chunks = FALSE)
+chunk.bin(
+  bins.df,
+  bg.chunk.size = 1e+05,
+  sm.chunk.size = 1000,
+  large.chr.chunks = FALSE
+)
 }
 \arguments{
 \item{bins.df}{a data.frame with the bins definition (one row per bin). E.g. created by

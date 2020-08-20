@@ -4,8 +4,13 @@
 \alias{filter.noncovered.bins}
 \title{Filter non-covered bins}
 \usage{
-filter.noncovered.bins(bins.df, files.df, nb.samples = 10,
-  bc.med.min = NULL, plot = TRUE)
+filter.noncovered.bins(
+  bins.df,
+  files.df,
+  nb.samples = 10,
+  bc.med.min = NULL,
+  plot = TRUE
+)
 }
 \arguments{
 \item{bins.df}{the data.frame with the bins information that will be subsetted.}

@@ -4,8 +4,14 @@
 \alias{qc.sample}
 \title{QC samples}
 \usage{
-qc.sample(bins.df, files.df = NULL, cnv.df = NULL,
-  ref.samples = NULL, n.subset = 1000, nb.cores = 1)
+qc.sample(
+  bins.df,
+  files.df = NULL,
+  cnv.df = NULL,
+  ref.samples = NULL,
+  n.subset = 1000,
+  nb.cores = 1
+)
 }
 \arguments{
 \item{bins.df}{a data.frame with information about the bins. Columns 'chr', 'start', 'end' are required.}

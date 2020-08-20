@@ -4,9 +4,15 @@
 \alias{tn.norm}
 \title{Targeted-normalization of bin counts}
 \usage{
-tn.norm(bc, cont.sample, nb.support.bins = 1000, bins = NULL,
-  save.support.bins = TRUE, norm = c("1pass", "trim"),
-  force.diff.chr = TRUE)
+tn.norm(
+  bc,
+  cont.sample,
+  nb.support.bins = 1000,
+  bins = NULL,
+  save.support.bins = TRUE,
+  norm = c("1pass", "trim"),
+  force.diff.chr = TRUE
+)
 }
 \arguments{
 \item{bc}{a matrix or data.frame with the bin counts (bin x sample).}

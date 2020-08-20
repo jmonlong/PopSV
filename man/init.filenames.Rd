@@ -4,8 +4,14 @@
 \alias{init.filenames}
 \title{Init file names for analysis}
 \usage{
-init.filenames(files.df, dest.folder = ".", sample.folder = TRUE,
-  code = NULL, dest.folder.relative.path = TRUE, sub.folder = NULL)
+init.filenames(
+  files.df,
+  dest.folder = ".",
+  sample.folder = TRUE,
+  code = NULL,
+  dest.folder.relative.path = TRUE,
+  sub.folder = NULL
+)
 }
 \arguments{
 \item{files.df}{a data.frame with the information about the files to

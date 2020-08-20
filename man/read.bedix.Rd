@@ -4,8 +4,13 @@
 \alias{read.bedix}
 \title{Retrieve a subset of an indexed BED file.}
 \usage{
-read.bedix(file, subset.reg = NULL, header = TRUE, as.is = TRUE,
-  exact.match = FALSE)
+read.bedix(
+  file,
+  subset.reg = NULL,
+  header = TRUE,
+  as.is = TRUE,
+  exact.match = FALSE
+)
 }
 \arguments{
 \item{file}{the name of the file which the data are to be read from.

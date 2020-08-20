@@ -4,10 +4,19 @@
 \alias{qc.samples}
 \title{Join and QC the reference samples}
 \usage{
-qc.samples(files.df, bin.df, outfile.prefix, ref.samples = NULL,
-  nb.ref.samples = NULL, plot = TRUE, appendIndex.outfile = TRUE,
-  chunk.size = 1e+05, col.bc = "bc.gc.gz", nb.cores = 1,
-  median.norm = TRUE)
+qc.samples(
+  files.df,
+  bin.df,
+  outfile.prefix,
+  ref.samples = NULL,
+  nb.ref.samples = NULL,
+  plot = TRUE,
+  appendIndex.outfile = TRUE,
+  chunk.size = 1e+05,
+  col.bc = "bc.gc.gz",
+  nb.cores = 1,
+  median.norm = TRUE
+)
 }
 \arguments{
 \item{files.df}{a data.frame with the information about the files to

@@ -4,9 +4,16 @@
 \alias{write.split.samples}
 \title{Split and write results in one file per sample}
 \usage{
-write.split.samples(res, files.df, samples = NULL, files.col = c("z",
-  "fc"), compress.index = TRUE, nb.cores = 1, append = FALSE,
-  reorder = FALSE)
+write.split.samples(
+  res,
+  files.df,
+  samples = NULL,
+  files.col = c("z", "fc"),
+  compress.index = TRUE,
+  nb.cores = 1,
+  append = FALSE,
+  reorder = FALSE
+)
 }
 \arguments{
 \item{res}{a list with the results to split/write.}

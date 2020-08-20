@@ -4,8 +4,11 @@
 \alias{writeVcf}
 \title{Write VCF file}
 \usage{
-writeVcf(cnv.df, output.file = "cnvs.vcf",
-  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)
+writeVcf(
+  cnv.df,
+  output.file = "cnvs.vcf",
+  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
+)
 }
 \arguments{
 \item{cnv.df}{the data.frame with the cnv calls (from 'call.abnormal.cov').}

@@ -4,8 +4,17 @@
 \alias{pair.discordant.reads}
 \title{Pair discordant reads}
 \usage{
-pair.discordant.reads(chr, start.pos, end.pos, files.df, samp, controls,
-  bins.df = NULL, plot = TRUE, nb.cores = 1)
+pair.discordant.reads(
+  chr,
+  start.pos,
+  end.pos,
+  files.df,
+  samp,
+  controls,
+  bins.df = NULL,
+  plot = TRUE,
+  nb.cores = 1
+)
 }
 \arguments{
 \item{chr}{the chromosome name}

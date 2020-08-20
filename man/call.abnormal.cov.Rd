@@ -4,11 +4,22 @@
 \alias{call.abnormal.cov}
 \title{Call abnormal bins}
 \usage{
-call.abnormal.cov(files.df, samp, out.pdf = NULL, FDR.th = 0.05,
+call.abnormal.cov(
+  files.df,
+  samp,
+  out.pdf = NULL,
+  FDR.th = 0.05,
   merge.cons.bins = c("stitch", "zscores", "cbs", "no"),
-  stitch.dist = NULL, max.gap.size = 1e+05, z.th = c("sdest",
-  "consbins", "sdest2N"), norm.stats = NULL, min.normal.prop = 0.9,
-  aneu.chrs = NULL, gc.df = NULL, sub.z = NULL, outfile.pv = NULL)
+  stitch.dist = NULL,
+  max.gap.size = 1e+05,
+  z.th = c("sdest", "consbins", "sdest2N"),
+  norm.stats = NULL,
+  min.normal.prop = 0.9,
+  aneu.chrs = NULL,
+  gc.df = NULL,
+  sub.z = NULL,
+  outfile.pv = NULL
+)
 }
 \arguments{
 \item{files.df}{a data.frame with the paths to different sample files (bin count, Z-scores, ..). Here columns 'z' and 'fc' are used to retrieve Z-scores and fold changes.}

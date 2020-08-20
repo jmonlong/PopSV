@@ -99,7 +99,7 @@ test_that("Index if necessary",{
   expect_equal(length(comp.index.files("test.tsv")), 1)
   file.remove("test.tsv.bgz.tbi")
   expect_message(read.bedix("test.tsv.bgz"), "index")
-  expect_true(file.remove("test.tsv.bgz.tbi")
+  expect_true(file.remove("test.tsv.bgz.tbi"))
   file.remove("test.tsv.bgz")
 })
 

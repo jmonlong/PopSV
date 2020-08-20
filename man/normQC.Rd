@@ -4,8 +4,7 @@
 \alias{normQC}
 \title{Normalized bin count QC metrics for normalization benchmark}
 \usage{
-normQC(bc.df, n.subset = 10000, win.size = 100, nb.cores = 1,
-  plot = FALSE)
+normQC(bc.df, n.subset = 10000, win.size = 100, nb.cores = 1, plot = FALSE)
 }
 \arguments{
 \item{bc.df}{matrix with bin counts (bins x samples).}

@@ -4,9 +4,19 @@
 \alias{breakpoint.finder.interactive}
 \title{Interactive breakpoint finder}
 \usage{
-breakpoint.finder.interactive(chr, start, end, test.sample, files.df,
-  ref.samples, proper = TRUE, nb.cores = 1, bp.res = 1,
-  flanks = 2000, related.samples = NULL)
+breakpoint.finder.interactive(
+  chr,
+  start,
+  end,
+  test.sample,
+  files.df,
+  ref.samples,
+  proper = TRUE,
+  nb.cores = 1,
+  bp.res = 1,
+  flanks = 2000,
+  related.samples = NULL
+)
 }
 \arguments{
 \item{chr}{the chromosome}

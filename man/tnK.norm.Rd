@@ -4,8 +4,15 @@
 \alias{tnK.norm}
 \title{Weighted targeted normalization using K-mean optimization.}
 \usage{
-tnK.norm(bc.ref, samp, bc.to.norm = NULL, cont.sample,
-  pca.weights = FALSE, max.size = 1000, plot = FALSE)
+tnK.norm(
+  bc.ref,
+  samp,
+  bc.to.norm = NULL,
+  cont.sample,
+  pca.weights = FALSE,
+  max.size = 1000,
+  plot = FALSE
+)
 }
 \arguments{
 \item{bc.ref}{a data.frame with the coverage in the reference samples.}

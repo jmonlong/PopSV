@@ -4,8 +4,7 @@
 \alias{mergeConsBin.cbs}
 \title{Segmentation using CBS (NOT READY)}
 \usage{
-mergeConsBin.cbs(df, pv.th = 0.01, stitch.dist = 10000,
-  max.gap.size = 1e+05)
+mergeConsBin.cbs(df, pv.th = 0.01, stitch.dist = 10000, max.gap.size = 1e+05)
 }
 \arguments{
 \item{df}{a data.frame with at least 'chr', 'start' and 'end' columns.}

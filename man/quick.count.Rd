@@ -4,8 +4,14 @@
 \alias{quick.count}
 \title{Counts reads across samples in a small number of bins}
 \usage{
-quick.count(files.df, bins.df, nb.cores = 1, col.files = NULL,
-  nb.rand.bins = NULL, ...)
+quick.count(
+  files.df,
+  bins.df,
+  nb.cores = 1,
+  col.files = NULL,
+  nb.rand.bins = NULL,
+  ...
+)
 }
 \arguments{
 \item{files.df}{a data.frame with the information about the files to

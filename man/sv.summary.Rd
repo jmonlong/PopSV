@@ -4,8 +4,15 @@
 \alias{sv.summary}
 \title{Abnormal regions summary}
 \usage{
-sv.summary(res.df, out.pdf = NULL, print = TRUE, FDR.th = 0.05,
-  min.cn2Dev = 0, min.cov = 0, max.sing.kb = Inf)
+sv.summary(
+  res.df,
+  out.pdf = NULL,
+  print = TRUE,
+  FDR.th = 0.05,
+  min.cn2Dev = 0,
+  min.cov = 0,
+  max.sing.kb = Inf
+)
 }
 \arguments{
 \item{res.df}{the data.frame with the results.}

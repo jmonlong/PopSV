@@ -4,8 +4,17 @@
 \alias{coverage.plot.raw}
 \title{Plot the raw coverage in a region}
 \usage{
-coverage.plot.raw(chr, start, end, files.df, samples, proper = TRUE,
-  map.quality = 30, bp.res = 1, flanks = NULL)
+coverage.plot.raw(
+  chr,
+  start,
+  end,
+  files.df,
+  samples,
+  proper = TRUE,
+  map.quality = 30,
+  bp.res = 1,
+  flanks = NULL
+)
 }
 \arguments{
 \item{chr}{chromosome}

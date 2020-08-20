@@ -4,8 +4,13 @@
 \alias{comp.index.files}
 \title{Compress and index BED-like files}
 \usage{
-comp.index.files(files, outprefix = files, rm.input = TRUE,
-  overwrite.out = TRUE, reorder = FALSE)
+comp.index.files(
+  files,
+  outprefix = files,
+  rm.input = TRUE,
+  overwrite.out = TRUE,
+  reorder = FALSE
+)
 }
 \arguments{
 \item{files}{the names of the files to compress and index.}

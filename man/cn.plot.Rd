@@ -4,9 +4,18 @@
 \alias{cn.plot}
 \title{Plot copy-number estimates in a region.}
 \usage{
-cn.plot(files.df, gr = NULL, chr = NULL, start = NULL, end = NULL,
-  samples = NULL, flanks = 10000, highlight.region = TRUE,
-  draw.lines = TRUE, nb.cores = 1)
+cn.plot(
+  files.df,
+  gr = NULL,
+  chr = NULL,
+  start = NULL,
+  end = NULL,
+  samples = NULL,
+  flanks = 10000,
+  highlight.region = TRUE,
+  draw.lines = TRUE,
+  nb.cores = 1
+)
 }
 \arguments{
 \item{files.df}{a data.frame with the path to the different files associated with each sample.}

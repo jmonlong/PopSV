@@ -4,8 +4,13 @@
 \alias{tmm.norm}
 \title{Trimmed-Mean M normalization}
 \usage{
-tmm.norm(bc.df, cont.sample, trim.level = 0.3, nb.cores = 1,
-  norm.stats.comp = TRUE)
+tmm.norm(
+  bc.df,
+  cont.sample,
+  trim.level = 0.3,
+  nb.cores = 1,
+  norm.stats.comp = TRUE
+)
 }
 \arguments{
 \item{bc.df}{a data.frame with 'chr', 'start', 'end' columns and then one column per sample with its bin counts.}

@@ -4,8 +4,16 @@
 \alias{z.comp}
 \title{Z-score computation}
 \usage{
-z.comp(bc.f, norm.stats.f, files.df, z.poisson = FALSE, nb.cores = 1,
-  chunk.size = 10000, append = FALSE, recomp.msd = FALSE)
+z.comp(
+  bc.f,
+  norm.stats.f,
+  files.df,
+  z.poisson = FALSE,
+  nb.cores = 1,
+  chunk.size = 10000,
+  append = FALSE,
+  recomp.msd = FALSE
+)
 }
 \arguments{
 \item{bc.f}{the path to the normalized bin count file.}

@@ -4,10 +4,18 @@
 \alias{bin.bam}
 \title{Get read counts from BAM file}
 \usage{
-bin.bam(bam.file, bin.df, outfile.prefix = NULL,
-  appendIndex.outfile = TRUE, proper = TRUE, map.quality = 30,
-  chunk.size = 10000, check.chr.name = TRUE, no.checks = FALSE,
-  bai.file = NULL)
+bin.bam(
+  bam.file,
+  bin.df,
+  outfile.prefix = NULL,
+  appendIndex.outfile = TRUE,
+  proper = TRUE,
+  map.quality = 30,
+  chunk.size = 10000,
+  check.chr.name = TRUE,
+  no.checks = FALSE,
+  bai.file = NULL
+)
 }
 \arguments{
 \item{bam.file}{the BAM file or a list of BAM files (e.g. reverse and forward)}

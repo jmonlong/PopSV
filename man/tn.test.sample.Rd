@@ -4,10 +4,19 @@
 \alias{tn.test.sample}
 \title{Single sample targeted normalization and test}
 \usage{
-tn.test.sample(test.sample, files.df, cont.sample, bc.ref.f = NULL,
-  norm.stats.f, write.out.file = TRUE, compress.index = TRUE,
-  z.poisson = FALSE, aberrant.cases = FALSE, append = FALSE,
-  col.file = "bc.gc.gz")
+tn.test.sample(
+  test.sample,
+  files.df,
+  cont.sample,
+  bc.ref.f = NULL,
+  norm.stats.f,
+  write.out.file = TRUE,
+  compress.index = TRUE,
+  z.poisson = FALSE,
+  aberrant.cases = FALSE,
+  append = FALSE,
+  col.file = "bc.gc.gz"
+)
 }
 \arguments{
 \item{test.sample}{the name of the sample to test.}

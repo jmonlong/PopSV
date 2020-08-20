@@ -4,8 +4,14 @@
 \alias{aneuploidy.flag}
 \title{Flag chromosomal aneuploidy}
 \usage{
-aneuploidy.flag(files.df, col.file = "bc.gc.gz", verbose = TRUE,
-  ref.samples = NULL, centromere.pos = NULL, nb.cores = 1)
+aneuploidy.flag(
+  files.df,
+  col.file = "bc.gc.gz",
+  verbose = TRUE,
+  ref.samples = NULL,
+  centromere.pos = NULL,
+  nb.cores = 1
+)
 }
 \arguments{
 \item{files.df}{a data.frame with information about samples such as the path to the count files.}

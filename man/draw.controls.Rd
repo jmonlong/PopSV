@@ -4,9 +4,17 @@
 \alias{draw.controls}
 \title{Select control genomic regions for enrichment analysis}
 \usage{
-draw.controls(cnv.gr, feat.grl, nb.class = 100, nb.cores = 3,
-  redo.duplicates = TRUE, seed.nb.max = 1e+05, min.nb.gr = NULL,
-  chr.prefix = "", dist.gr = NULL)
+draw.controls(
+  cnv.gr,
+  feat.grl,
+  nb.class = 100,
+  nb.cores = 3,
+  redo.duplicates = TRUE,
+  seed.nb.max = 1e+05,
+  min.nb.gr = NULL,
+  chr.prefix = "",
+  dist.gr = NULL
+)
 }
 \arguments{
 \item{cnv.gr}{the input regions}

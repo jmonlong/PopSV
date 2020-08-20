@@ -4,9 +4,16 @@
 \alias{chrplot}
 \title{Chromosom plot of CNVs}
 \usage{
-chrplot(cnv.df, type = c("sample", "stacked"), bin.size = 5e+05,
-  chr.df = NULL, showSampleNames = FALSE, chr.prefix = FALSE,
-  chr.position = c("vertical", "packed"), show.all.chr = FALSE)
+chrplot(
+  cnv.df,
+  type = c("sample", "stacked"),
+  bin.size = 5e+05,
+  chr.df = NULL,
+  showSampleNames = FALSE,
+  chr.prefix = FALSE,
+  chr.position = c("vertical", "packed"),
+  show.all.chr = FALSE
+)
 }
 \arguments{
 \item{cnv.df}{a data.frame with the CNVs (columns 'chr', 'start', 'end') for each sample (column 'sample')}

@@ -4,8 +4,12 @@
 \alias{tn.norm.qc.div}
 \title{Targeted normalization QC: diversity of the supporting bins}
 \usage{
-tn.norm.qc.div(norm.stats, out.pdf = "normStats-QC-supportDiversity.pdf",
-  chunk.size = 1000, nb.cores = 1)
+tn.norm.qc.div(
+  norm.stats,
+  out.pdf = "normStats-QC-supportDiversity.pdf",
+  chunk.size = 1000,
+  nb.cores = 1
+)
 }
 \arguments{
 \item{norm.stats}{the name of the file with the normalization statistics ('norm.stats' in 'tn.norm' function) or directly a 'norm.stats' data.frame.}

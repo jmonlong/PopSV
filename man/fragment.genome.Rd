@@ -4,9 +4,14 @@
 \alias{fragment.genome}
 \title{Fragment a genome}
 \usage{
-fragment.genome(bin.size = 1000, slid.window = bin.size,
-  chr.prefix = FALSE, XY.chr = FALSE, quiet = FALSE,
-  genome = "hg19")
+fragment.genome(
+  bin.size = 1000,
+  slid.window = bin.size,
+  chr.prefix = FALSE,
+  XY.chr = FALSE,
+  quiet = FALSE,
+  genome = "hg19"
+)
 }
 \arguments{
 \item{bin.size}{the size of the bins}

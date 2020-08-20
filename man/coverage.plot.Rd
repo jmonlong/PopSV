@@ -4,10 +4,23 @@
 \alias{coverage.plot}
 \title{Plot the bin coverage in a region}
 \usage{
-coverage.plot(chr, start, end, bc.f, norm.stats.f = NULL, sv.df = NULL,
-  ref.samples = NULL, boxplot = FALSE, samples = NULL,
-  files.df = NULL, anno.df = NULL, anno.col = "geneName",
-  flanks = 10000, absolute.position = TRUE, nb.cores = 1)
+coverage.plot(
+  chr,
+  start,
+  end,
+  bc.f,
+  norm.stats.f = NULL,
+  sv.df = NULL,
+  ref.samples = NULL,
+  boxplot = FALSE,
+  samples = NULL,
+  files.df = NULL,
+  anno.df = NULL,
+  anno.col = "geneName",
+  flanks = 10000,
+  absolute.position = TRUE,
+  nb.cores = 1
+)
 }
 \arguments{
 \item{chr}{the chromosome}

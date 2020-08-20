@@ -56,41 +56,20 @@ wrap <- function(args=commandArgs(TRUE)){
 
   ## Count reads from a BAM file for a sample
   countsample <- function(args){
-    samp_name = args[1]
-    popsv_config_file = args[2]
-    bin_file = args[3]
-    done = ifelse(length(args)>3, args[4], NA)
-    message('Count reads for ', samp_name)
-    samp_name = make.names(samp_name)
-    bins.df = files.df = NULL
-    load(bin_file)
-    load(popsv_config_file)
-    file.i = which(files.df$sample == samp_name)
-    bam.f = files.df$bam[file.i]
-    bc.f = files.df$bc[file.i]
-    if(file.exists(bc.f)){
-      comp.index.files(bc.f, rm.input=FALSE, overwrite.out=TRUE, reorder=TRUE)
-    } else {
-      bb.o = bin.bam(bam.f, bins.df, bc.f)
-    }
-    if(!is.na(done)) cat("Done", file=done)
-    return('Done')
+    bam.f = args[1]
+    bins.df = NULL
+    load(args[2])
+    bc.f = args[3]
+    bc.f = gsub('\\.bgz$', '', bc.f)
+    bb.o = bin.bam(bam.f, bins.df, bc.f)
   }
 
   ## Correct the read counts for GC bias for a sample
   gccorrect <- function(args){
-    samp_name = args[1]
-    popsv_config_file = args[2]
-    bin_file = args[3]
-    done = ifelse(length(args)>3, args[4], NA)
-    samp_name = make.names(samp_name)
-    bins.df = files.df = NULL
-    load(bin_file)
-    load(popsv_config_file)
-    file.i = which(files.df$sample == samp_name)
-    message('Correct for GC bias')
-    correct.GC(files.df$bc.gz[file.i], bins.df, files.df$bc.gc[file.i])
-    if(!is.na(done)) cat("Done", file=done)
+    bins.df = NULL
+    load(args[2])
+    outfile.nogz = gsub('\\.bgz$', '', args[3])
+    correct.GC(args[1], bins.df, outfile.nogz)
     return('Done')
   }
 
@@ -105,16 +84,15 @@ wrap <- function(args=commandArgs(TRUE)){
     max_nb_refs=200
     bins.df = files.df = NULL
     ref_file = gsub('\\.bgz$', '', ref_file)
+    bins.df = NULL
     load(bin_file)
-    load(popsv_config_file)
-    files.df = files.df[which(files.df$reference),]
-    message('Merge read count for reference samples')
+    files.df = utils::read.table(popsv_config_file, as.is=TRUE, header=TRUE, sep='\t')
+    files.df = files.df[which(as.logical(files.df$reference)),]
     grDevices::pdf(graph_out)
     qc.o = qc.samples(files.df, bins.df, ref_file, nb.ref.samples=max_nb_refs,
                       nb.cores=nb.cores)
     grDevices::dev.off()
     write(qc.o$cont.sample, file=cont_sample_file)
-    message('Done')
   }
 
   ## Normalize the reference samples
@@ -135,35 +113,31 @@ wrap <- function(args=commandArgs(TRUE)){
     cont.sample = scan(cont_sample_file, '')
     res = tn.norm(bc.df, cont.sample, bins=bins.df.chunk$bin,
                   nb.support.bins=nb.support.bins)
-    save(res, file=res_file)
-    message('Done')
+    utils::write.table(res$norm.stats, file=res_file, sep='\t', row.names=FALSE, quote=FALSE)
   }
 
-  ## Merge the output of the normalization step
-  mergeoutrefs <- function(args){
-    popsv_config_file = args[1]
-    norm_ref_prefix = args[2]
-    nb_chunks = as.integer(args[3])
-    ref_prefix = args[4]
-    done = ifelse(length(args)>4, args[5], NA)
-    files.df = NULL
-    load(popsv_config_file)
-    norm_ref_files = paste0(norm_ref_prefix, '_', 1:nb_chunks, '.RData')
-    outfile = paste0(ref_prefix, 'norm-stats.tsv')
-    if(file.exists(outfile)){
-      file.remove(outfile)
-    }
-    tmp = lapply(norm_ref_files, function(ff){
-      res = NULL
-      load(ff)
-      utils::write.table(res$norm.stats, file=outfile, sep='\t', row.names=FALSE,
-                         append=file.exists(outfile), col.names=!file.exists(outfile),
-                         quote=FALSE)
-    })
-    file.remove(norm_ref_files)
-    if(!is.na(done)) cat("Done", file=done)
-    message('Done')
-  }
+  ## ## Merge the output of the normalization step
+  ## mergeoutrefs <- function(args){
+  ##   norm_ref_prefix = args[1]
+  ##   nb_chunks = as.integer(args[2])
+  ##   ref_prefix = args[3]
+  ##   done = ifelse(length(args)>3, args[4], NA)
+  ##   norm_ref_files = paste0(norm_ref_prefix, '_', 1:nb_chunks, '.RData')
+  ##   outfile = paste0(ref_prefix, 'norm-stats.tsv')
+  ##   if(file.exists(outfile)){
+  ##     file.remove(outfile)
+  ##   }
+  ##   tmp = lapply(norm_ref_files, function(ff){
+  ##     res = NULL
+  ##     load(ff)
+  ##     utils::write.table(res$norm.stats, file=outfile, sep='\t', row.names=FALSE,
+  ##                        append=file.exists(outfile), col.names=!file.exists(outfile),
+  ##                        quote=FALSE)
+  ##   })
+  ##   file.remove(norm_ref_files)
+  ##   if(!is.na(done)) cat("Done", file=done)
+  ##   message('Done')
+  ## }
 
   ## Call CNV in a sample
   callsample <- function(args){
@@ -172,12 +146,13 @@ wrap <- function(args=commandArgs(TRUE)){
     bin_file = args[3]
     cont_sample_file = args[4]
     ref_file = args[5]
-    ref_prefix = args[6]
+    norm_stats = args[6]
     FDR_th = as.numeric(args[7])
     cnv_file = args[8]
     samp_name = make.names(samp_name)
     bins.df = files.df = NULL
-    load(popsv_config_file)
+    files.df = utils::read.table(popsv_config_file, as.is=TRUE, header=TRUE, sep='\t')
+    bins.df = NULL
     load(bin_file)
     cont.sample = scan(cont_sample_file, '')
     if(!file.exists(files.df$z[which(files.df$sample == samp_name)])){
@@ -187,7 +162,7 @@ wrap <- function(args=commandArgs(TRUE)){
       }
       message('Normalize bin count and compute Z-score')
       tn.test.sample(samp_name, files.df, cont.sample, ref_file,
-                     paste0(ref_prefix, 'norm-stats.tsv'), z.poisson=TRUE,
+                     norm_stats, z.poisson=TRUE,
                      aberrant.cases=FALSE)
     }
     message('Call CNVs')
@@ -195,7 +170,7 @@ wrap <- function(args=commandArgs(TRUE)){
     sub.z = min(1e3, nrow(bins.df)/3)
     cnv.df = call.abnormal.cov(files.df=files.df, samp=samp_name, FDR.th=FDR_th,
                                merge.cons.bins="cbs", z.th="sdest",
-                               norm.stats=paste0(ref_prefix, 'norm-stats.tsv'),
+                               norm.stats=norm_stats,
                                stitch.dist=stitch.dist, gc.df=bins.df,
                                min.normal.prop=.6, sub.z=sub.z)
     message('Write CNV output')
@@ -216,8 +191,8 @@ wrap <- function(args=commandArgs(TRUE)){
     preprefs(args[-1])
   } else if(args[1] == 'normrefs'){
     normrefs(args[-1])
-  } else if(args[1] == 'mergeoutrefs'){
-    mergeoutrefs(args[-1])
+  ## } else if(args[1] == 'mergeoutrefs'){
+  ##   mergeoutrefs(args[-1])
   } else if(args[1] == 'callsample'){
     callsample(args[-1])
   } else {

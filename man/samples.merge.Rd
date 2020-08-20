@@ -4,8 +4,7 @@
 \alias{samples.merge}
 \title{Merge data.frame across samples}
 \usage{
-samples.merge(files.df, samples, files.col, nb.cores = 1,
-  sig.digits = 6)
+samples.merge(files.df, samples, files.col, nb.cores = 1, sig.digits = 6)
 }
 \arguments{
 \item{files.df}{a data.frame with information about each output file.}
