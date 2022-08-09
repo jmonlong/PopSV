@@ -1,0 +1,167 @@
+import pandas as pd
+
+NB_CHUNKS = config['nb_chunks']
+LABEL = config['label']
+GENOME = config['genome']
+
+if 'bin_size' not in config:
+    config['bin_size'] = 500
+
+# recreate 'init.filename' behavior to setup path for each per-sample file to make during the pipeline
+file_inf = pd.read_table(config['sample_info']).set_index("sample", drop=False)
+# convert samples names to R-friendly names
+### replace spaces and -
+file_inf['sample'] = [samp.replace(' ', '_').replace('-', '_') for samp in file_inf['sample']]
+### no starting with an illegal character (number or .)
+def replace_illegal_pref(sampname):
+    ill = [str(ii) for ii in range(10)] + ['.']
+    if sampname[0] in ill:
+        return('X' + sampname)
+    else:
+        return(sampname)
+file_inf['sample'] = [replace_illegal_pref(samp) for samp in file_inf['sample']]
+# path used internally by PopSV
+file_inf['bc.gc.gz'] = expand('{label}_bcGcCor/{sample}.{label}.bc.gcCor.tsv.bgz', sample=file_inf['sample'], label=LABEL)
+file_inf['z'] = expand('{label}_z/{sample}.{label}.z.tsv', sample=file_inf['sample'], label=LABEL)
+file_inf['fc'] = expand('{label}_fc/{sample}.{label}.fc.tsv', sample=file_inf['sample'], label=LABEL)
+file_inf['bc.gc.norm'] = expand('{label}_bcNorm/{sample}.{label}.bc.gcCor.norm.tsv', sample=file_inf['sample'], label=LABEL)
+# add 'bc' path if NA
+file_inf['bc'] = file_inf['bc'].fillna(LABEL + '_bc/' + file_inf['sample'] + '.' + LABEL + '.bc.tsv')
+file_inf['bam'] = file_inf['bam'].fillna('none')
+
+SAMPS = file_inf['sample']
+if 'samples' in config:
+    SAMPS = config['samples']
+
+rule all:
+    input:
+        expand('{label}_cnvs/{samp}.{label}.cnv.tsv', samp=SAMPS, label=LABEL)
+
+# write TSV
+rule make_info_tsv:
+    output: LABEL + '_fileinfo.tsv'
+    run:
+        file_inf.to_csv(LABEL + '_fileinfo.tsv', sep='\t')
+
+# prepare the bins (make bins if necessary, extract GC content info, design chunks for later)
+rule prepbins:
+    input: config['bin_file']
+    output:
+        '{label}_bins.RData'
+    params:
+        bin_size=config['bin_size']
+    shell:
+        'Rscript -e "PopSV::wrap()" prepbins {input} {params.bin_size} {NB_CHUNKS} {output} {GENOME}'
+
+# count the reads in each bin for a sample (from a BAM file)
+def get_bam(wildcards):
+    res = {} 
+    res['bam'] = file_inf['bam'][wildcards.sample]
+    res['bins'] = wildcards.label + '_bins.RData'
+    return(res)
+rule countsample:
+    input:
+        unpack(get_bam)
+    output:
+        '{label}_bc/{sample}.{label}.bc.tsv.bgz'
+    shell:
+        'Rscript -e "PopSV::wrap()" countsample {input.bam} {input.bins} {output}'
+
+# if the bin counts are provided, sort/bgzip/index the file.
+def get_bc(wildcards):
+    res = {} 
+    res['bc'] = file_inf['bc'][wildcards.sample]
+    res['bins'] = wildcards.label + '_bins.RData'
+    return(res)
+rule zip_idx_bc:
+    input:
+        unpack(get_bc)
+    output:
+        '{label}_bc/{sample}.{label}.bc.tsv.bgz'
+    params:
+        noext='{label}_bc/{sample}.{label}.bc.tsv'
+    shell:
+        'Rscript -e "PopSV::comp.index.files(\'{input.bc}\', outprefix=\'{params.noext}\', rm.input=FALSE, overwrite.out=TRUE, reorder=TRUE)"'
+
+# correct the GC-bias in the bin counts for a sample
+rule gccorrect:
+    input:
+        bc='{label}_bc/{sample}.{label}.bc.tsv.bgz',
+        bins='{label}_bins.RData'
+    output: '{label}_bcGcCor/{sample}.{label}.bc.gcCor.tsv.bgz'
+    shell:
+        'Rscript -e "PopSV::wrap()" gccorrect {input.bc} {input.bins} {output}'
+
+# merge bin counts for reference samples (eventually select a subset of reference samples)
+rule preprefs:
+    input:
+        info='{label}_fileinfo.tsv',
+        bins='{label}_bins.RData',
+        files=expand('{{label}}_bcGcCor/{sample}.{{label}}.bc.gcCor.tsv.bgz', sample=file_inf[file_inf['reference']]['sample'])
+    output:
+        bc_ref= '{label}_bc-refs.tsv.bgz',
+        bc_ref_dx= '{label}_bc-refs.tsv.bgz.tbi',
+        cont_name='{label}_control.txt'
+    threads: config['cores']
+    shell:
+        'Rscript -e "PopSV::wrap()" preprefs {input.info} {input.bins} {output.bc_ref} {output.cont_name} {threads}'
+
+if config['norm_method'] == 'tn':
+    # learn how to normalize bin counts using the referrence samples, per chunk
+    rule normrefs:
+        input:
+            bc_ref='{label}_bc-refs.tsv.bgz',
+            bins='{label}_bins.RData',
+            cont_name='{label}_control.txt'
+        output:
+            '{label}_norm_chunk_{chunk}.tsv'
+        params:
+            nb_supp_bins=config['nb_supp_bins']
+        shell:
+            'Rscript -e "PopSV::wrap()" normrefs {input} {wildcards.chunk} {output} {params.nb_supp_bins}'
+
+    # merge normalization chunks
+    rule mergeoutrefs:
+        input:
+            first= '{label}_norm_chunk_1.tsv',
+            others= expand('{{label}}_norm_chunk_{chunk}.tsv', chunk=range(2, NB_CHUNKS+1))
+        output: '{label}_norm-stats.tsv'
+        shell:
+            """
+            rm -f {output}
+            head -1 {input.first} > {output}
+            for ff in {input}
+            do
+            tail -n +2 $ff >> {output}
+            done
+            rm {input}
+            """
+else: 
+    rule simplenormrefs:
+        input:
+            bc_ref='{label}_bc-refs.tsv.bgz',
+            cont_name='{label}_control.txt'
+        output: '{label}_norm-stats.tsv'
+        threads: config['cores']
+        shell:
+            'Rscript -e "PopSV::wrap()" simplenormrefs {input} {output} {threads}'
+
+# call CNV in a sample
+rule callsample:
+    input:
+        bc='{label}_bcGcCor/{sample}.{label}.bc.gcCor.tsv.bgz',
+        ns='{label}_norm-stats.tsv',
+        info='{label}_fileinfo.tsv',
+        bins='{label}_bins.RData',
+        cont_name='{label}_control.txt',
+        bcref='{label}_bc-refs.tsv.bgz'
+    output:
+        cnv='{label}_cnvs/{sample}.{label}.cnv.tsv',
+        z='{label}_z/{sample}.{label}.z.tsv.bgz',
+        fc='{label}_fc/{sample}.{label}.fc.tsv.bgz',
+        bc='{label}_bcNorm/{sample}.{label}.bc.gcCor.norm.tsv.bgz',
+        pdf='{label}_cnvs/{sample}.{label}.qc.pdf',
+    params:
+        fdr=config['fdr']
+    shell:
+        'Rscript -e "PopSV::wrap()" callsample {wildcards.sample} {input.info} {input.bins} {input.cont_name} {input.bcref} {input.ns} {params.fdr} {output.cnv} {output.pdf}'

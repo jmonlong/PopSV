@@ -1,0 +1,21 @@
+## tab-separated file with information about the samples:
+## 'sample' with sample name; 'bam' path to bam file; 'bc' path to bin count file; 'reference' should be considered for reference samples (TRUE/FALSE)
+## for a sample either 'bam' or 'bc' should be different from NA.
+sample_info: 'info.tsv'
+## file defininf the bins or size of the genomic bins (in bp).
+bin_file: 'bin-500bp.tsv'
+# bin_size: 500
+## label used for all the file
+label: 'test'
+## genome to use when designing bins and extracting GC content
+genome: 'hg19'
+## how many chunks of bins should be used for targeted normalization
+nb_chunks: 10
+## the number of supporting bins to use for targeted normalization
+nb_supp_bins: 1000
+## the False Discovery Rate for the CNV calling
+fdr: 0.01
+## number of cores to use for the few multi-threaded jobs (other steps are single-core jobs)
+cores: 4
+## normalization method: 'tn' for targeted normalization; 'tmm' for TMM normalization
+norm_method: 'tn'
