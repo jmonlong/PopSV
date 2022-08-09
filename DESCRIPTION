@@ -35,7 +35,8 @@ Imports:
     reshape,
     DNAcopy,
     rtracklayer,
-    tidyr
+    tidyr,
+    R.utils
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     BSgenome.Hsapiens.UCSC.hg38,

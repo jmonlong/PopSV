@@ -6,8 +6,22 @@
 ##' @export
 wrap <- function(args=commandArgs(TRUE)){
 
+  printhelp <- function(cmd.name, args.desc){
+    help.m = paste(cmd.name, 'wrap command:\n')
+    help.m = c(help.m,
+               sapply(1:length(args.desc),
+                      function(ii) paste0('\t', ii, '. ', args.desc[ii], '\n')))
+  message(help.m)
+  }
+  
   ## Create the config file from a TSV file with sample name and bam paths
   initfilename <- function(args){
+    if(length(args)==0){
+      printhelp('initfilename',
+                c('TSV file with path to BAM files for each sample',
+                  'output PopSV config',
+                  'text file listing samples to use as reference (Optional)'))
+    }
     sample_bam_file = args[1]
     popsv_config_file = args[2]
     ref_samps_file = ifelse(length(args)>2, args[3], NA)
@@ -28,6 +42,14 @@ wrap <- function(args=commandArgs(TRUE)){
   ## If the bin file doesn't exist, bins with 'bin_size' will be generated.
   ## 'genome' either 'hg19' or 'GRCh38'
   prepbins <- function(args){
+    if(length(args)==0){
+      printhelp('prepbins',
+                c('input TSV file defining the bins',
+                  "bin size to use if input TSV bin file doesn't exist",
+                  "number of bin chunks (used for parallelization later)",
+                  "output bin file",
+                  "genome (Optional, default 'hg19')"))
+    }
     bin_file_input = args[1]
     bin_size = as.integer(args[2])
     nb_chunks = as.integer(args[3])
@@ -56,6 +78,10 @@ wrap <- function(args=commandArgs(TRUE)){
 
   ## Count reads from a BAM file for a sample
   countsample <- function(args){
+    if(length(args)==0){
+      printhelp('countsample',
+                c('BAM file', 'bin info file', 'output bin counts'))
+    }
     bam.f = args[1]
     bins.df = NULL
     load(args[2])
@@ -66,6 +92,10 @@ wrap <- function(args=commandArgs(TRUE)){
 
   ## Correct the read counts for GC bias for a sample
   gccorrect <- function(args){
+    if(length(args)==0){
+      printhelp('gccorrect',
+                c('input bin counts', 'bin info file', 'output bin counts'))
+    }
     bins.df = NULL
     load(args[2])
     outfile.nogz = gsub('\\.bgz$', '', args[3])
@@ -75,15 +105,23 @@ wrap <- function(args=commandArgs(TRUE)){
 
   ## Merge read counts for reference samples
   preprefs <- function(args){
+    if(length(args)==0){
+      printhelp('preprefs',
+                c('PopSV config file',
+                  'bin info file',
+                  'output bin counts for the reference samples',
+                  'output file with the name of the control sample (for normalization)',
+                  'number of cores/threads (Optional. Default 1)'))
+    }
     popsv_config_file = args[1]
     bin_file = args[2]
     ref_file = args[3]
     cont_sample_file = args[4]
     nb.cores = ifelse(length(args)>4, args[5], 1)
-    graph_out = 'preprefs.pdf'
     max_nb_refs=200
     bins.df = files.df = NULL
     ref_file = gsub('\\.bgz$', '', ref_file)
+    graph_out = paste0(gsub('\\.tsv$', '', ref_file), '.pdf')
     bins.df = NULL
     load(bin_file)
     files.df = utils::read.table(popsv_config_file, as.is=TRUE, header=TRUE, sep='\t')
@@ -97,6 +135,15 @@ wrap <- function(args=commandArgs(TRUE)){
 
   ## Normalize the reference samples
   normrefs <- function(args){
+    if(length(args)==0){
+      printhelp('normrefs',
+                c('bin counts for the reference samples',
+                  'bin info file',
+                  'file with the name of control sample',
+                  'chunk id to normalize',
+                  'output normalization stats',
+                  'number of supporting bins'))
+    }
     ref_file = args[1]
     bin_file = args[2]
     cont_sample_file = args[3]
@@ -113,6 +160,25 @@ wrap <- function(args=commandArgs(TRUE)){
     cont.sample = scan(cont_sample_file, '')
     res = tn.norm(bc.df, cont.sample, bins=bins.df.chunk$bin,
                   nb.support.bins=nb.support.bins)
+    utils::write.table(res$norm.stats, file=res_file, sep='\t', row.names=FALSE, quote=FALSE)
+  }
+
+  ## Normalize the reference samples using a simple normalization approach
+  simplenormrefs <- function(args){
+    if(length(args)==0){
+      printhelp('simplenormrefs',
+                c('bin counts for the reference samples',
+                  'file with the name of control sample',
+                  'output normalization stats',
+                  'number of cores/threads (Optional. Default 1)'))
+    }
+    ref_file = args[1]
+    cont_sample_file = args[2]
+    res_file = args[3]
+    nb.cores = ifelse(length(args)>3, as.numeric(args[4]), 1)
+    bc.df = read.bedix(ref_file)
+    cont.sample = scan(cont_sample_file, '')
+    res = tmm.norm(bc.df, cont.sample, nb.cores=nb.cores)
     utils::write.table(res$norm.stats, file=res_file, sep='\t', row.names=FALSE, quote=FALSE)
   }
 
@@ -141,6 +207,18 @@ wrap <- function(args=commandArgs(TRUE)){
 
   ## Call CNV in a sample
   callsample <- function(args){
+    if(length(args)==0){
+      printhelp('callsample',
+                c('sample name',
+                  'PopSV config file',
+                  'bin info file',
+                  'file with the name of the control sample',
+                  'bin counts for the reference samples',
+                  'normalization stats',
+                  'False discovery rate (FDR)',
+                  'output file with CNV calls',
+                  'output PDF with some QC'))
+    }
     samp_name = args[1]
     popsv_config_file = args[2]
     bin_file = args[3]
@@ -149,6 +227,7 @@ wrap <- function(args=commandArgs(TRUE)){
     norm_stats = args[6]
     FDR_th = as.numeric(args[7])
     cnv_file = args[8]
+    out_pdf = args[9]
     samp_name = make.names(samp_name)
     bins.df = files.df = NULL
     files.df = utils::read.table(popsv_config_file, as.is=TRUE, header=TRUE, sep='\t')
@@ -161,9 +240,15 @@ wrap <- function(args=commandArgs(TRUE)){
         ref_file = paste0(ref_file, '.bgz')
       }
       message('Normalize bin count and compute Z-score')
-      tn.test.sample(samp_name, files.df, cont.sample, ref_file,
-                     norm_stats, z.poisson=TRUE,
-                     aberrant.cases=FALSE)
+      ## read a few lines of the normalization stats to guess if targeted-normalization or TMM
+      norm.stats.df = utils::read.table(norm_stats, as.is=TRUE, sep='\t', header=TRUE, nrows=1)
+      if(all(colnames(norm.stats.df) %in% c('chr', 'start', 'end', "m", "sd", "nb.remove", "chr2", "start2"))){
+        tmm.test.sample(samp_name, files.df, cont.sample, ref_file, norm_stats, z.poisson=TRUE)
+      } else {
+        tn.test.sample(samp_name, files.df, cont.sample, ref_file,
+                       norm_stats, z.poisson=TRUE,
+                       aberrant.cases=FALSE)
+      }
     }
     message('Call CNVs')
     stitch.dist = mean(bins.df$end-bins.df$start+1)*2
@@ -172,12 +257,13 @@ wrap <- function(args=commandArgs(TRUE)){
                                merge.cons.bins="cbs", z.th="sdest",
                                norm.stats=norm_stats,
                                stitch.dist=stitch.dist, gc.df=bins.df,
-                               min.normal.prop=.6, sub.z=sub.z)
+                               min.normal.prop=.6, sub.z=sub.z,
+                               out.pdf=out_pdf)
     message('Write CNV output')
     utils::write.table(cnv.df, file=cnv_file, quote=FALSE, sep='\t', row.names=FALSE)
     message('Done')
   }
-
+  
   ## Read arguments and call function
   if(args[1] == 'initfilename'){
     initfilename(args[-1])
@@ -191,11 +277,15 @@ wrap <- function(args=commandArgs(TRUE)){
     preprefs(args[-1])
   } else if(args[1] == 'normrefs'){
     normrefs(args[-1])
+  } else if(args[1] == 'simplenormrefs'){
+    simplenormrefs(args[-1])
   ## } else if(args[1] == 'mergeoutrefs'){
   ##   mergeoutrefs(args[-1])
   } else if(args[1] == 'callsample'){
     callsample(args[-1])
   } else {
+    message("Steps whould be: initfilename, prepbins, countsample, ",
+            "gccorrect, preprefs, normrefs, simplenormrefs, callsample")
     stop('Unknown step: ', args[1])
   }
 
